@@ -63,35 +63,35 @@ Key journals:
 
 Search Strings
 
-These will quickly reveal the current research landscape:
+    These will quickly reveal the current research landscape:
 
-"artificial intelligence nursing education"
-"large language model clinical simulation"
-"virtual patient simulation nursing"
-"generative AI healthcare education"
-"simulation analytics nursing education"
-"clinical competency prediction machine learning"
-"adaptive learning nursing students"
-"AI debriefing healthcare simulation"
-"LLM-based virtual patient"
-"AI feedback nursing simulation"
-Where I Would Look for a Publishable Research Gap
+    "artificial intelligence nursing education"
+    "large language model clinical simulation"
+    "virtual patient simulation nursing"
+    "generative AI healthcare education"
+    "simulation analytics nursing education"
+    "clinical competency prediction machine learning"
+    "adaptive learning nursing students"
+    "AI debriefing healthcare simulation"
+    "LLM-based virtual patient"
+    "AI feedback nursing simulation"
+    Where I Would Look for a Publishable Research Gap
 
-Given your AI background, I would focus on:
+Given my AI background, recommendations from chatGPT:
 
-LLM-powered virtual patients for nursing education.
-Automated assessment of simulation performance.
-AI-assisted debriefing after simulation sessions.
-Predicting student competency progression from simulation data.
-Multimodal analysis (speech + text + actions) during simulation exercises.
-Personalized simulation scenario generation using generative AI.
+    LLM-powered virtual patients for nursing education.
+    Automated assessment of simulation performance.
+    AI-assisted debriefing after simulation sessions.
+    Predicting student competency progression from simulation data.
+    Multimodal analysis (speech + text + actions) during simulation exercises.
+    Personalized simulation scenario generation using generative AI.
 
-These topics sit directly at the intersection of AI, healthcare, simulation, and education, and are currently receiving substantial attention from both nursing researchers and AI researchers.
+    These topics sit directly at the intersection of AI, healthcare, simulation, and education, and are currently receiving substantial attention from both nursing researchers and AI researchers.
 
 Before reading hundreds of papers, spend 2–3 days collecting recent review papers (2023–2026) on:
 
-AI in nursing education
-Clinical simulation in nursing
-Generative AI in healthcare education
-Virtual patient systems
-Learning analytics in healthcare training
+    AI in nursing education
+    Clinical simulation in nursing
+    Generative AI in healthcare education
+    Virtual patient systems
+    Learning analytics in healthcare training
