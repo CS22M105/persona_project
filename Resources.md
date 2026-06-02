@@ -3,7 +3,7 @@
 ## Nursing and Healthcare Education
 - National League for Nursing publications
 - International Nursing Association for Clinical Simulation and Learning standards
-- Clinical Simulation in Nursing
+- ***Clinical Simulation in Nursing***
 - Nurse Education Today
 - Nurse Education in Practice
 - Journal of Nursing Education
@@ -29,7 +29,7 @@ Focus on:
 
 ### Important journals:
 
-- Simulation in Healthcare
+- ***Simulation in Healthcare***
 - BMJ Simulation and Technology Enhanced Learning
 
 ## AI in Healthcare
@@ -54,7 +54,7 @@ Key journals:
 
 ## Databases to Search
 
-- PubMed
+- ***PubMed***
 - Google Scholar
 - Scopus
 - Web of Science
