@@ -60,6 +60,7 @@ Key journals:
 - Web of Science
 - IEEE
 - Association for Computing Machinery
+- ***Cinahl***
 
 Search Strings
 
