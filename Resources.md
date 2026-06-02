@@ -95,3 +95,5 @@ Before reading hundreds of papers, spend 2–3 days collecting recent review pap
     Generative AI in healthcare education
     Virtual patient systems
     Learning analytics in healthcare training
+
+Task: I am moving on with review papers first!
