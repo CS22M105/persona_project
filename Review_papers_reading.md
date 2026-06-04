@@ -32,11 +32,11 @@
 }
 - Summary notes: 
     - AI-enhanced nursing education in four main areas: 
-        (a) personalized learning systems tailored content to individual needs, 
-        (b) simulation-based training improved decision-making in high-acuity scenarios,
-        (c) automated assessment tools provided immediate, unbiased feedback, and 
-        (d) at the institutional level, AI supported curriculum management and predictive analytics. 
-        Common risks included technological inequities, faculty preparedness gaps, and ethical concerns around privacy and bias.
+        - (a) personalized learning systems tailored content to individual needs, 
+        - (b) simulation-based training improved decision-making in high-acuity scenarios,
+        - (c) automated assessment tools provided immediate, unbiased feedback, and 
+        - (d) at the institutional level, AI supported curriculum management and predictive analytics. 
+        - Common risks included technological inequities, faculty preparedness gaps, and ethical concerns around privacy and bias.
     - Concept of virtual simulations using AI.
     - Studies of my interset out of 28 articles in the review.
         1. Bland (2025) : To enhance medical student engagement and knowledge retention in phamacology through a multimodal genAI based approach using Cinamatic Clinical Narratives (CCNs). Recommendation: Expand the use of CCNs in medical education. Incorpotate AI-driven storytelling to enhance engagement. Develop guidelines for integrating genAI ethically into medical education.
