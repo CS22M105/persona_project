@@ -13,20 +13,21 @@
   year={2026},
   publisher={SAGE Publications Sage CA: Los Angeles, CA}
 }
-- Summary: - AI-enhanced nursing education in four main areas: 
-        - (a) personalized learning systems tailored content to individual needs, 
-        - (b) simulation-based training improved decision-making in high-acuity scenarios,
-        - (c) automated assessment tools provided immediate, unbiased feedback, and 
-        - (d) at the institutional level, AI supported curriculum management and predictive analytics. 
-        - Common risks included technological inequities, faculty preparedness gaps, and ethical concerns around privacy and bias.
-    - Concept of virtual simulations using AI.
-    - Studies of my interset out of 28 articles in the review.
-        1. Bland (2025) : To enhance medical student engagement and knowledge retention in phamacology through a multimodal genAI based approach using Cinamatic Clinical Narratives (CCNs). Recommendation: Expand the use of CCNs in medical education. Incorpotate AI-driven storytelling to enhance engagement. Develop guidelines for integrating genAI ethically into medical education.
-        2. Ghosh and Bir (2023): To evaluate ChatGPTs ability to solve higher-order competency-based medical education (CBME) questions in medical biochemistry.
-        3. Lane et.at. (2024) : To explore the implementation of genAI inn nursing education and provide a strategic guide for its responsible use.
-        4. Weiderner and Fischer (2024) : To explore how medical students perceive the use of AI in medicine, as well as the teaching of AI, and AI ethics in medical education.
-        5. Creighton et al. (2025) : To evaluate the effectiveness of a digital serious game in improving nursing students' self-efficacy regarding academic integrity, academic offenses, professionalism and AI use.
-    - My obervation and possible ideas: AI-simulation based learning, AI tools in ambulatory setting, virtual patient interactions, AI based chatbots (for administrative enquiries, improving responsiveness, and reducing staff workload), Automated evaluation systems (students answer the questions and validated by it, analyze the response, give personlaized feedback), 
+- Summary:
+- - AI-enhanced nursing education in four main areas: 
+  - (a) personalized learning systems tailored content to individual needs, 
+  - (b) simulation-based training improved decision-making in high-acuity scenarios,
+  - (c) automated assessment tools provided immediate, unbiased feedback, and 
+  - (d) at the institutional level, AI supported curriculum management and predictive analytics. 
+  - Common risks included technological inequities, faculty preparedness gaps, and ethical concerns around privacy and bias.
+  - Concept of virtual simulations using AI.
+  - Studies of my interset out of 28 articles in the review.
+      1. Bland (2025) : To enhance medical student engagement and knowledge retention in phamacology through a multimodal genAI based approach using Cinamatic Clinical Narratives (CCNs). Recommendation: Expand the use of CCNs in medical education. Incorpotate AI-driven storytelling to enhance engagement. Develop guidelines for integrating genAI ethically into medical education.
+      2. Ghosh and Bir (2023): To evaluate ChatGPTs ability to solve higher-order competency-based medical education (CBME) questions in medical biochemistry.
+      3. Lane et.at. (2024) : To explore the implementation of genAI inn nursing education and provide a strategic guide for its responsible use.
+      4. Weiderner and Fischer (2024) : To explore how medical students perceive the use of AI in medicine, as well as the teaching of AI, and AI ethics in medical education.
+      5. Creighton et al. (2025) : To evaluate the effectiveness of a digital serious game in improving nursing students' self-efficacy regarding academic integrity, academic offenses, professionalism and AI use.
+  - My obervation and possible ideas: AI-simulation based learning, AI tools in ambulatory setting, virtual patient interactions, AI based chatbots (for administrative enquiries, improving responsiveness, and reducing staff workload), Automated evaluation systems (students answer the questions and validated by it, analyze the response, give personlaized feedback), 
 - Note: 
     Best broad paper for AI in nursing education. It searched PubMed, CINAHL, IEEE Xplore, and Scopus and includes academic, clinical, and hybrid nursing education settings.
 
