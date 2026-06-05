@@ -14,7 +14,7 @@
   publisher={SAGE Publications Sage CA: Los Angeles, CA}
 }
 - Summary:
-- - AI-enhanced nursing education in four main areas: 
+  - AI-enhanced nursing education in four main areas: 
   - (a) personalized learning systems tailored content to individual needs, 
   - (b) simulation-based training improved decision-making in high-acuity scenarios,
   - (c) automated assessment tools provided immediate, unbiased feedback, and 
