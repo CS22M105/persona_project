@@ -13,25 +13,7 @@
   year={2026},
   publisher={SAGE Publications Sage CA: Los Angeles, CA}
 }
-- Summary:
-- Note: 
-    Best broad paper for AI in nursing education. It searched PubMed, CINAHL, IEEE Xplore, and Scopus and includes academic, clinical, and hybrid nursing education settings.
-
-## Enhancing learning outcomes through AI-driven simulation in nursing education: A systematic review
-
-- Authors: Sengul & Sarikose (2025)
-- link: https://www.sciencedirect.com/science/article/abs/pii/S1876139925001148
-- Citation: @article{sengul2025enhancing,
-  title={Enhancing learning outcomes through AI-driven simulation in nursing education: A systematic review},
-  author={Sengul, Tuba and Sar{\i}k{\"o}se, Seda},
-  journal={Clinical Simulation in Nursing},
-  volume={106},
-  pages={101797},
-  year={2025},
-  publisher={Elsevier}
-}
-- Summary notes: 
-    - AI-enhanced nursing education in four main areas: 
+- Summary: - AI-enhanced nursing education in four main areas: 
         - (a) personalized learning systems tailored content to individual needs, 
         - (b) simulation-based training improved decision-making in high-acuity scenarios,
         - (c) automated assessment tools provided immediate, unbiased feedback, and 
@@ -45,11 +27,28 @@
         4. Weiderner and Fischer (2024) : To explore how medical students perceive the use of AI in medicine, as well as the teaching of AI, and AI ethics in medical education.
         5. Creighton et al. (2025) : To evaluate the effectiveness of a digital serious game in improving nursing students' self-efficacy regarding academic integrity, academic offenses, professionalism and AI use.
     - My obervation and possible ideas: AI-simulation based learning, AI tools in ambulatory setting, virtual patient interactions, AI based chatbots (for administrative enquiries, improving responsiveness, and reducing staff workload), Automated evaluation systems (students answer the questions and validated by it, analyze the response, give personlaized feedback), 
+- Note: 
+    Best broad paper for AI in nursing education. It searched PubMed, CINAHL, IEEE Xplore, and Scopus and includes academic, clinical, and hybrid nursing education settings.
+
+## 2. Enhancing learning outcomes through AI-driven simulation in nursing education: A systematic review
+
+- Authors: Sengul & Sarikose (2025)
+- link: https://www.sciencedirect.com/science/article/abs/pii/S1876139925001148
+- Citation: @article{sengul2025enhancing,
+  title={Enhancing learning outcomes through AI-driven simulation in nursing education: A systematic review},
+  author={Sengul, Tuba and Sar{\i}k{\"o}se, Seda},
+  journal={Clinical Simulation in Nursing},
+  volume={106},
+  pages={101797},
+  year={2025},
+  publisher={Elsevier}
+}
+- Summary notes: 
 
 - Note:
     Strong match for AI + simulation + nursing education. Covers chatbots, avatars, NLP, virtual patients, and AI debriefing, with outcomes like clinical reasoning, communication, empathy, self-efficacy, and satisfaction.
 
-## GenAI-Supported Virtual Patients in Health Care Education: Systematic Review
+## 3. GenAI-Supported Virtual Patients in Health Care Education: Systematic Review
 
 - Authors: Jiang et.al. (2026)
 - link: https://www.jmir.org/2026/1/e82756/
