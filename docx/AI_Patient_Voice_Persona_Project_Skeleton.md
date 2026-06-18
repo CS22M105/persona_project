@@ -1,3 +1,7 @@
+## One-Sentence Pitch
+
+This project creates an instructor-controlled AI patient voice that makes manikin simulations more realistic and consistent while preserving faculty control and supporting transcript-based debriefing.
+
 # AI Patient Voice Persona for Nursing Simulation
 
 **Project type:** Nursing simulation internship prototype  
@@ -381,9 +385,3 @@ Minimum product safeguards:
 - final project document
 - short presentation or demo video
 - faculty/peer feedback summary, if available
-
----
-
-## One-Sentence Pitch
-
-This project creates an instructor-controlled AI patient voice that makes manikin simulations more realistic and consistent while preserving faculty control and supporting transcript-based debriefing.
