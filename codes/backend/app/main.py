@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.health import router as health_router
+from app.api.scenarios import router as scenarios_router
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -17,6 +18,7 @@ app.add_middleware(
 )
 
 app.include_router(health_router)
+app.include_router(scenarios_router)
 
 
 # cd /Users/farhatjahan/Desktop/YU/summer26/YU_internship/Sim_Intern/persona_project/codes/backend
