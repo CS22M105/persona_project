@@ -541,3 +541,62 @@ Frontend displays the patient response.
 Important:
 
 Step 3 should also be implemented slowly, one substep at a time, with each file explained before moving to the next.
+
+---
+
+# Progress Update: Virtual Environment Decision
+
+**Date:** June 27, 2026  
+**Topic:** Python virtual environment location  
+**Status:** Decided  
+
+## Decision
+
+The cloned project does **not** require a separate root-level `persona` virtual environment.
+
+The recommended backend virtual environment location is:
+
+```text
+persona_project_clone/codes/backend/.venv
+```
+
+The frontend dependencies should remain inside:
+
+```text
+persona_project_clone/codes/frontend/node_modules
+```
+
+## Why a Root `persona` Venv Is Not Needed
+
+The project has separate backend and frontend dependency systems:
+
+- Backend Python dependencies are listed in `codes/backend/requirements.txt`.
+- Frontend JavaScript dependencies are listed in `codes/frontend/package.json`.
+- The backend README instructions create the Python venv inside `codes/backend`.
+- The frontend uses `npm install`, which creates `node_modules` inside `codes/frontend`.
+
+Because of this structure, a root-level `persona` venv would be redundant and could make setup confusing.
+
+## Clean Setup Pattern
+
+Use this structure:
+
+```text
+persona_project_clone/
+  codes/
+    backend/
+      .venv/          # Python backend virtual environment
+      requirements.txt
+    frontend/
+      node_modules/   # Frontend npm dependencies
+      package.json
+```
+
+## Benefit
+
+This keeps each part of the project self-contained:
+
+- backend Python packages stay with the backend
+- frontend npm packages stay with the frontend
+- the repository is easier to clone and set up
+- future contributors do not need to guess which virtual environment to activate
