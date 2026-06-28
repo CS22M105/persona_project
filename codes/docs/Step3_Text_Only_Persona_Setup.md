@@ -894,3 +894,371 @@ Compile check completed:
 ```
 
 Substep 3.5 is complete.
+
+---
+
+## Substep 3.6 Completed: Register Chat Route
+
+Date: June 27, 2026
+
+Updated:
+
+```text
+codes/backend/app/main.py
+```
+
+Purpose:
+
+- imports the chat router from `app.api.chat`
+- registers the chat router with the FastAPI app
+- makes `POST /chat` available as a real backend endpoint
+
+What changed:
+
+```text
+main.py
+  |
+  |-- includes health router
+  |-- includes scenarios router
+  |-- includes chat router
+```
+
+Validation completed:
+
+```text
+.venv/bin/python -c 'from app.main import app; print([route.path for route in app.routes if hasattr(route, "path")])'
+```
+
+Confirmed route list includes:
+
+```text
+/chat
+```
+
+Compile check completed:
+
+```text
+.venv/bin/python -m compileall app
+```
+
+Substep 3.6 is complete.
+
+---
+
+## Substep 3.7 Completed: Test Backend Chat Route
+
+Date: June 27, 2026
+
+Purpose:
+
+- confirm the backend app can serve the registered `/chat` route over HTTP
+- confirm valid student messages return mock patient responses
+- confirm invalid messages are rejected by the request schema
+- confirm no OpenAI API key is needed for the mock chat route
+
+Important note:
+
+Step 3.7 does not use OpenAI. The response comes from:
+
+```text
+POST /chat
+    |
+    v
+ChatRequest schema
+    |
+    v
+COPD/SOB scenario JSON
+    |
+    v
+mock_persona.py
+    |
+    v
+ChatResponse schema
+```
+
+Backend server command used:
+
+```text
+.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Test 1: chest pain question
+
+```text
+curl -s -X POST http://127.0.0.1:8000/chat -H 'Content-Type: application/json' -d '{"message":"Do you have chest pain?"}'
+```
+
+Result:
+
+```json
+{
+  "reply": "It is not sharp pain, but my chest feels tight when I try to breathe.",
+  "scenario_id": "copd-sob",
+  "speaker": "patient"
+}
+```
+
+Test 2: oxygen question
+
+```text
+curl -s -X POST http://127.0.0.1:8000/chat -H 'Content-Type: application/json' -d '{"message":"Do you use oxygen at home?"}'
+```
+
+Result:
+
+```json
+{
+  "reply": "I sometimes use oxygen at night, but I do not usually need it during the day.",
+  "scenario_id": "copd-sob",
+  "speaker": "patient"
+}
+```
+
+Test 3: empty message validation
+
+```text
+curl -s -X POST http://127.0.0.1:8000/chat -H 'Content-Type: application/json' -d '{"message":""}'
+```
+
+Result:
+
+```text
+422 Unprocessable Content
+```
+
+Reason:
+
+The `ChatRequest` schema requires `message` to contain at least one character.
+
+Substep 3.7 is complete.
+
+---
+
+## Substep 3.8 Completed: Frontend Chat API Client
+
+Date: June 27, 2026
+
+Created:
+
+```text
+codes/frontend/src/api/chat.ts
+```
+
+Updated:
+
+```text
+codes/frontend/src/api/client.ts
+```
+
+Purpose:
+
+- gives the frontend one typed function for sending chat messages
+- keeps backend communication outside React page components
+- matches the backend `POST /chat` request and response contract
+- prepares the project for the future chat UI in Substep 3.9
+
+New frontend function:
+
+```text
+sendChatMessage(message)
+```
+
+Current frontend chat API flow:
+
+```text
+React page later calls sendChatMessage(message)
+    |
+    v
+chat.ts sends POST /chat
+    |
+    v
+backend returns ChatResponse
+    |
+    v
+chat.ts returns the response to the React page
+```
+
+Request body sent by frontend:
+
+```json
+{
+  "message": "Do you have chest pain?"
+}
+```
+
+Expected response shape:
+
+```json
+{
+  "reply": "It is not sharp pain, but my chest feels tight when I try to breathe.",
+  "scenario_id": "copd-sob",
+  "speaker": "patient"
+}
+```
+
+Important boundary:
+
+Substep 3.8 does not create the chat screen. It only creates the frontend API helper that the future chat screen will use.
+
+Validation completed:
+
+```text
+npm run build
+```
+
+Result:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
+Substep 3.8 is complete.
+
+---
+
+## Substep 3.9 Completed: Simple Chat UI
+
+Date: June 27, 2026
+
+Created:
+
+```text
+codes/frontend/src/pages/Chat.tsx
+```
+
+Updated:
+
+```text
+codes/frontend/src/App.tsx
+codes/frontend/src/styles.css
+```
+
+Purpose:
+
+- creates the first visible text-only patient conversation screen
+- gives the student a message input and Send button
+- displays patient and student messages in a conversation area
+- proves the UI behavior before connecting to the backend
+
+Current UI behavior:
+
+```text
+Student types message
+    |
+    v
+Student clicks Send
+    |
+    v
+Student message appears in conversation
+    |
+    v
+Local placeholder patient response appears
+```
+
+Important boundary:
+
+Substep 3.9 does not call the backend yet. The local placeholder response will be replaced by `sendChatMessage(message)` in Substep 3.10.
+
+Validation completed:
+
+```text
+npm run build
+```
+
+Result:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
+Substep 3.9 is complete.
+
+---
+
+## Substep 3.10 Completed: Connect UI to Backend
+
+Date: June 27, 2026
+
+Updated:
+
+```text
+codes/frontend/src/pages/Chat.tsx
+codes/frontend/src/styles.css
+```
+
+Purpose:
+
+- replaces the local placeholder patient response with the real backend mock response
+- uses `sendChatMessage(message)` from `codes/frontend/src/api/chat.ts`
+- shows a sending state while waiting for the backend
+- shows an error message if the backend request fails
+
+Current connected flow:
+
+```text
+Student types message in Chat.tsx
+    |
+    v
+Student clicks Send
+    |
+    v
+Chat.tsx calls sendChatMessage(message)
+    |
+    v
+chat.ts sends POST /chat
+    |
+    v
+FastAPI loads COPD/SOB scenario
+    |
+    v
+mock_persona.py creates patient reply
+    |
+    v
+Chat.tsx displays patient reply
+```
+
+Important note:
+
+This is still a mock persona response. OpenAI is not used yet, and no OpenAI API key is required.
+
+Validation completed:
+
+```text
+npm run build
+```
+
+Result:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
+CORS validation completed:
+
+```text
+curl -s -i -X OPTIONS http://127.0.0.1:8000/chat -H 'Origin: http://localhost:5173' -H 'Access-Control-Request-Method: POST'
+```
+
+Confirmed:
+
+```text
+access-control-allow-origin: http://localhost:5173
+```
+
+Backend chat validation completed:
+
+```text
+curl -s -X POST http://127.0.0.1:8000/chat -H 'Content-Type: application/json' -H 'Origin: http://localhost:5173' -d '{"message":"Do you use an inhaler?"}'
+```
+
+Result:
+
+```json
+{
+  "reply": "I used my rescue inhaler earlier, but it did not help much.",
+  "scenario_id": "copd-sob",
+  "speaker": "patient"
+}
+```
+
+Substep 3.10 is complete.
