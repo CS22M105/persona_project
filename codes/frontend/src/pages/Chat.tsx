@@ -16,7 +16,11 @@ const initialMessages: ChatMessage[] = [
   },
 ];
 
-export function Chat() {
+type ChatProps = {
+  embedded?: boolean;
+};
+
+export function Chat({ embedded = false }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [messageInput, setMessageInput] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -59,9 +63,8 @@ export function Chat() {
     }
   }
 
-  return (
-    <main className="app-shell chat-shell">
-      <section className="chat-panel" aria-labelledby="chat-title">
+  const chatPanel = (
+    <section className="chat-panel" aria-labelledby="chat-title">
         <header className="chat-header">
           <div>
             <p className="eyebrow">COPD/SOB scenario</p>
@@ -110,6 +113,15 @@ export function Chat() {
           </button>
         </form>
       </section>
+  );
+
+  if (embedded) {
+    return chatPanel;
+  }
+
+  return (
+    <main className="app-shell chat-shell">
+      {chatPanel}
     </main>
   );
 }

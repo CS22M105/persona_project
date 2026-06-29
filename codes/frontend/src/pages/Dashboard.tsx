@@ -6,6 +6,7 @@ import {
   PatientState,
   StateEvent,
 } from "../api/state";
+import { Chat } from "./Chat";
 
 const cueButtons = [
   { cueId: "spo2_dropped", label: "SpO2 dropped" },
@@ -134,6 +135,11 @@ export function Dashboard() {
               ) : (
                 <p>No state events yet.</p>
               )}
+            </section>
+
+            <section aria-labelledby="dashboard-chat-title">
+              <h2 id="dashboard-chat-title">Patient Conversation</h2>
+              <Chat embedded />
             </section>
           </>
         ) : null}

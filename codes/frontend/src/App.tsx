@@ -1,7 +1,7 @@
-import { Chat } from "./pages/Chat";
+import { Dashboard } from "./pages/Dashboard";
 
 export function App() {
-  return <Chat />;
+  return <Dashboard />;
 }
 
 // npm run dev

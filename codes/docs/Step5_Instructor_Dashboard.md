@@ -682,6 +682,67 @@ Definition of done:
 - app opens to dashboard
 - chat remains available inside dashboard or directly beside it
 
+Completed on June 29, 2026.
+
+Updated:
+
+```text
+codes/frontend/src/App.tsx
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/pages/Chat.tsx
+```
+
+Why these files were updated:
+
+- `App.tsx` needed to open the instructor dashboard as the main screen
+- `Dashboard.tsx` needed to include the patient conversation so the demo can show cue changes and chat responses together
+- `Chat.tsx` needed an embedded mode so it can be reused inside the dashboard without nesting a full page layout
+
+What changed:
+
+```text
+App.tsx
+    |
+    v
+renders Dashboard
+    |
+    v
+Dashboard loads patient state and events
+    |
+    v
+Dashboard also renders embedded Chat
+```
+
+How embedded chat works:
+
+```text
+<Chat />
+```
+
+still renders the standalone chat page.
+
+```text
+<Chat embedded />
+```
+
+renders only the chat panel so it can sit inside the dashboard.
+
+Why this matters:
+
+The instructor dashboard and the patient conversation must be visible together for the demo. The instructor can later click a cue, then immediately ask a follow-up question in chat and see the state-aware patient response.
+
+Validation completed:
+
+```text
+npm run build
+```
+
+Confirmed:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
 ### Substep 5.5: Add dashboard styling
 
 Update:
