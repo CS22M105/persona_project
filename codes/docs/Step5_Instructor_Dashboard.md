@@ -538,6 +538,59 @@ Definition of done:
 - frontend can call `GET /state/events`
 - TypeScript build passes
 
+Completed on June 29, 2026.
+
+Created:
+
+```text
+codes/frontend/src/api/state.ts
+```
+
+Why this file was created:
+
+- the dashboard needs a clean way to call backend state endpoints
+- React components should not repeat raw `fetch` logic for every state action
+- typed frontend responses make dashboard development easier and safer
+- this prepares the codebase for future auth/session headers without rewriting dashboard UI logic
+
+What the file contains:
+
+```text
+PatientState TypeScript type
+StateEvent TypeScript type
+getPatientState()
+resetPatientState()
+applyInstructorCue(cueId)
+getStateEvents()
+```
+
+How it works:
+
+```text
+Dashboard component later calls state.ts function
+    |
+    v
+state.ts sends HTTP request to FastAPI backend
+    |
+    v
+backend returns patient state or state events
+    |
+    v
+state.ts returns typed data to dashboard
+```
+
+Validation completed:
+
+```text
+npm run build
+```
+
+Confirmed:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
 ### Substep 5.3: Create basic dashboard page
 
 Create:
