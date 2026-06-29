@@ -971,6 +971,72 @@ Definition of done:
 - frontend build passes
 - backend server is stopped after testing
 
+Completed on June 29, 2026.
+
+Why this verification was done:
+
+- Substep 5.6 connected dashboard controls to backend state APIs
+- the project needed proof that dashboard state updates and chat responses work together
+- this validates the main demo workflow before Step 5 completion documentation
+
+Verification note:
+
+Browser automation was not available in this tool session, so verification was completed through:
+
+```text
+frontend production build
+frontend local URL check
+backend HTTP workflow using the same endpoints the dashboard and chat call
+```
+
+Frontend validation completed:
+
+```text
+npm run build
+```
+
+Confirmed:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
+Local frontend check completed:
+
+```text
+curl -s -I http://localhost:5173/
+```
+
+Confirmed:
+
+```text
+HTTP/1.1 200 OK
+```
+
+Dashboard/chat workflow validation completed:
+
+```text
+reset_visible_state 92 91
+baseline_chat I am feeling short of breath and a little scared. Can you help me?
+spo2_visible_state 88 severe
+spo2_chat Worse. I cannot catch my breath.
+hr_visible_state 128 high
+hr_chat My heart feels like it is racing. I feel scared.
+timeline [('state_reset', None), ('instructor_cue', 'spo2_dropped'), ('instructor_cue', 'hr_increased')]
+```
+
+What this proves:
+
+```text
+Reset restores baseline state
+SpO2 dropped cue changes visible state
+HR increased cue changes visible state
+Event timeline records instructor cues
+Chat response follows latest patient state
+```
+
+Backend and frontend servers were stopped after testing.
+
 ### Substep 5.8: Document Step 5 completion
 
 Update:
