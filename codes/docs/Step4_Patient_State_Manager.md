@@ -701,6 +701,85 @@ Definition of done:
 - `POST /state/cues/{cue_id}` works
 - `GET /state/events` works
 
+Completed on June 29, 2026.
+
+Created:
+
+```text
+codes/backend/app/api/state.py
+```
+
+Why this file was created:
+
+- the frontend and future instructor dashboard need HTTP endpoints for patient state
+- API code should coordinate requests and responses, not own state mutation logic
+- keeping state logic in `state_manager.py` makes the app easier to scale later
+- unknown instructor cues should return a clear API error instead of crashing the backend
+
+Routes created:
+
+```text
+GET /state
+POST /state/reset
+POST /state/cues/{cue_id}
+GET /state/events
+```
+
+How it works:
+
+```text
+frontend or future dashboard calls state API
+    |
+    v
+api/state.py receives request
+    |
+    v
+api/state.py calls state_manager.py
+    |
+    v
+state_manager.py returns current/updated state
+    |
+    v
+api/state.py wraps response in Pydantic response schema
+```
+
+Important boundary:
+
+The route file exists now, but it is not registered with the FastAPI app yet. Registration in `main.py` belongs to Substep 4.5.
+
+Validation completed:
+
+```text
+.venv/bin/python -c 'import asyncio; from app.api.state import reset_current_state, read_current_state, apply_state_cue, read_state_events; reset_response = asyncio.run(reset_current_state()); print("reset", reset_response.state.vitals.heart_rate, reset_response.state.vitals.spo2); state_response = asyncio.run(read_current_state()); print("current", state_response.state.stage); cue_response = asyncio.run(apply_state_cue("spo2_dropped")); print("cue", cue_response.state.vitals.spo2, cue_response.state.symptoms.breathing_effort); events_response = asyncio.run(read_state_events()); print("events", [(event.event_type, event.cue_id) for event in events_response.events])'
+```
+
+Confirmed:
+
+```text
+reset -> HR 92, SpO2 91
+current -> initial_assessment
+spo2_dropped -> SpO2 88, breathing effort severe
+events -> state_reset, spo2_dropped
+```
+
+Unknown cue validation completed:
+
+```text
+.venv/bin/python -c $'import asyncio\nfrom fastapi import HTTPException\nfrom app.api.state import apply_state_cue\ntry:\n    asyncio.run(apply_state_cue("unknown_cue"))\nexcept HTTPException as error:\n    print("unknown", error.status_code)'
+```
+
+Confirmed:
+
+```text
+unknown cue -> 404
+```
+
+Compile check completed:
+
+```text
+.venv/bin/python -m compileall app
+```
+
 ### Substep 4.5: Register state route
 
 Update:
@@ -713,6 +792,52 @@ Definition of done:
 
 - FastAPI route list includes `/state`
 - backend compile check passes
+
+Completed on June 29, 2026.
+
+Updated:
+
+```text
+codes/backend/app/main.py
+```
+
+Why this file was updated:
+
+- `api/state.py` defined the state routes, but FastAPI cannot serve them until `main.py` includes the router
+- registering the router makes the state endpoints available to the frontend and future instructor dashboard
+- this keeps route registration centralized in the app entry point
+
+What changed:
+
+```text
+main.py
+  |
+  |-- includes health router
+  |-- includes scenarios router
+  |-- includes chat router
+  |-- includes state router
+```
+
+Validation completed:
+
+```text
+.venv/bin/python -c 'from app.main import app; print([route.path for route in app.routes if hasattr(route, "path")])'
+```
+
+Confirmed route list includes:
+
+```text
+/state
+/state/reset
+/state/cues/{cue_id}
+/state/events
+```
+
+Compile check completed:
+
+```text
+.venv/bin/python -m compileall app
+```
 
 ### Substep 4.6: Test state API
 
