@@ -1002,6 +1002,71 @@ Definition of done:
 - tested commands are recorded
 - known limitations are documented
 
+Completed on June 29, 2026.
+
+Why this documentation update was done:
+
+- Step 4 changed the project from a static chatbot into a state-aware patient persona
+- the completion summary makes the implementation easier to review, present, and hand off
+- it records the current limitation of in-memory state so future product work does not confuse demo behavior with production persistence
+
+Completed files:
+
+```text
+codes/backend/app/schemas/state.py
+codes/backend/app/services/state_manager.py
+codes/backend/app/api/state.py
+codes/backend/app/main.py
+codes/backend/app/api/chat.py
+codes/backend/app/services/mock_persona.py
+codes/docs/Step4_Patient_State_Manager.md
+```
+
+What Step 4 added:
+
+```text
+PatientState schema
+StateEvent schema
+in-memory current state
+state reset
+instructor cue application
+state event timeline
+state API routes
+state-aware chat response behavior
+```
+
+Final Step 4 proof:
+
+```text
+Initial state:
+HR 92, SpO2 91, stage initial_assessment
+
+After spo2_dropped:
+SpO2 88, breathing effort severe, anxiety high
+
+After hr_increased:
+HR 128, anxiety high
+
+Chat response after spo2_dropped:
+Worse. I cannot catch my breath.
+
+Chat response after hr_increased:
+My heart feels like it is racing. I feel scared.
+```
+
+Known limitations:
+
+- state is stored in backend memory only
+- state resets when the backend restarts
+- this supports one local demo session, not multiple simultaneous users
+- no database persistence exists yet
+- no instructor dashboard UI exists yet
+- no OpenAI or voice logic is used in Step 4
+
+Product note:
+
+The current service boundary is intentionally product-friendly. Later, `state_manager.py` can be backed by Redis for live state and PostgreSQL for persisted sessions/events without changing the frontend API contract.
+
 ---
 
 ## Step 4 Acceptance Criteria

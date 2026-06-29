@@ -942,3 +942,256 @@ This will require:
 - safety rules so the AI speaks only as the patient
 - backend error handling for AI failures
 - testing for realistic and safe patient responses
+
+---
+
+# Progress Update: Step 4 Patient State Manager
+
+Date: June 29, 2026
+
+## 1. Why Step 4 Was Done
+
+Step 4 was completed to make the AI patient persona aware of changing patient conditions during a simulation.
+
+Before Step 4, the app could answer student questions using the COPD/SOB scenario, but the patient condition did not change over time. After Step 4, the instructor can apply patient condition cues in the backend, and the next patient response changes based on the latest state.
+
+This is an important product milestone because it proves the core value:
+
+```text
+Instructor cue -> patient state changes -> persona response changes
+```
+
+This is the foundation for a future instructor dashboard and voice patient persona.
+
+## 2. Backend Work Completed
+
+### State Schemas
+
+Created:
+
+```text
+codes/backend/app/schemas/state.py
+```
+
+Purpose:
+
+- defines patient vitals, symptoms, emotion, voice behavior, interventions, and safety controls
+- defines `PatientState`
+- defines `StateEvent`
+- defines response shapes for state and event APIs
+
+### State Manager Service
+
+Created:
+
+```text
+codes/backend/app/services/state_manager.py
+```
+
+Purpose:
+
+- stores the current patient state in backend memory
+- loads the initial state from `copd_sob.json`
+- resets the state
+- applies instructor cues
+- logs state events
+
+Current storage:
+
+```text
+in-memory backend state
+```
+
+Reason:
+
+- fast enough for the July 25 internship demo
+- easy to understand and test
+- can later be replaced with Redis/PostgreSQL for product scaling
+
+### State API Routes
+
+Created:
+
+```text
+codes/backend/app/api/state.py
+```
+
+Routes added:
+
+```text
+GET /state
+POST /state/reset
+POST /state/cues/{cue_id}
+GET /state/events
+```
+
+Purpose:
+
+- lets a future instructor dashboard read current patient state
+- lets instructor cues update patient state
+- returns event history for future timeline/report features
+
+### Registered State Routes
+
+Updated:
+
+```text
+codes/backend/app/main.py
+```
+
+Purpose:
+
+- connects the state router to the FastAPI app
+- makes state endpoints available over HTTP
+
+## 3. Chat Behavior Updated
+
+Updated:
+
+```text
+codes/backend/app/api/chat.py
+codes/backend/app/services/mock_persona.py
+```
+
+Purpose:
+
+- chat now reads the latest patient state before replying
+- mock persona responses now change after instructor cues
+- frontend API contract remains unchanged
+
+Current state-aware chat flow:
+
+```text
+Student sends message
+    |
+    v
+POST /chat
+    |
+    v
+Backend loads scenario
+    |
+    v
+Backend reads current patient state
+    |
+    v
+Mock persona creates state-aware response
+    |
+    v
+Frontend displays patient reply
+```
+
+## 4. Tests and Validation Completed
+
+Backend compile check:
+
+```text
+.venv/bin/python -m compileall app
+```
+
+State API HTTP tests confirmed:
+
+```text
+reset 200 92 91
+current 200 initial_assessment 92 91
+spo2 200 88 severe high
+hr 200 128 high
+events 200 [('state_reset', None), ('instructor_cue', 'spo2_dropped'), ('instructor_cue', 'hr_increased')]
+unknown 404 Unknown instructor cue: unknown_cue
+```
+
+State-aware chat tests confirmed:
+
+```text
+baseline I am feeling short of breath and a little scared. Can you help me?
+spo2 Worse. I cannot catch my breath.
+hr My heart feels like it is racing. I feel scared.
+```
+
+## 5. Current Project Status After Step 4
+
+Completed:
+
+- Step 1: backend/frontend foundation and health check
+- Step 2: COPD/SOB scenario configuration and scenario API
+- Step 3: text-only mock patient persona with connected frontend chat UI
+- Step 4: patient state manager and state-aware chat behavior
+
+Current app can:
+
+- show a chat interface
+- accept a student question
+- send the question to the backend
+- load the COPD/SOB scenario
+- maintain current patient state in memory
+- reset patient state
+- apply instructor cues
+- log state events
+- change the next patient reply based on the latest state
+
+Not yet built:
+
+- instructor dashboard UI
+- voice assistant
+- OpenAI-generated responses
+- transcript persistence
+- final report generation
+- authentication
+- database persistence
+
+## 6. Why Step 4 Is Valuable
+
+Step 4 makes the project feel like a simulation product instead of a simple chatbot.
+
+It directly answers the earlier design concern:
+
+```text
+How will the persona know that HR increased or SpO2 dropped?
+```
+
+Answer:
+
+```text
+The instructor applies a matching cue through the AI system.
+The backend updates patient state.
+The next AI patient response uses the updated state.
+```
+
+This is the correct product boundary because the app does not control the Laerdal manikin directly.
+
+## 7. Product Scaling Note
+
+The current state manager uses in-memory storage because the internship demo needs speed and clarity.
+
+For a sellable product, the same concept should later move to:
+
+```text
+Redis for live patient state
+PostgreSQL for session/event persistence
+WebSockets for live dashboard updates
+authentication for instructor/admin access
+audit logs for instructor actions
+```
+
+The current API design keeps that future path open.
+
+## 8. Next Step
+
+The next recommended step is:
+
+```text
+Step 5: Build the Instructor Dashboard
+```
+
+Reason:
+
+The backend state manager is ready. The next visible product value is giving the instructor buttons such as:
+
+```text
+SpO2 dropped
+HR increased
+Breathing worsened
+Oxygen applied
+Patient improving
+```
+
+Those buttons should call the state API and show the current patient state on screen.
