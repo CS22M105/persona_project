@@ -850,6 +850,40 @@ Definition of done:
 - applying `hr_increased` changes HR to 128
 - event list includes cue events
 
+Completed on June 29, 2026.
+
+Why this test was done:
+
+- Substeps 4.2 through 4.5 created schemas, service logic, API routes, and router registration
+- this substep proves those parts work together through real HTTP requests
+- testing through HTTP is important because the future instructor dashboard will call these endpoints, not Python functions directly
+- state tests must run sequentially because each request can change the next state
+
+Backend server command used:
+
+```text
+.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Sequential HTTP validation command used:
+
+```text
+.venv/bin/python -c $'import json\nfrom urllib import request, error\nBASE = "http://127.0.0.1:8000"\ndef call(method, path):\n    req = request.Request(f"{BASE}{path}", method=method)\n    try:\n        with request.urlopen(req) as response:\n            return response.status, json.loads(response.read().decode())\n    except error.HTTPError as exc:\n        return exc.code, json.loads(exc.read().decode())\nstatus, reset = call("POST", "/state/reset")\nprint("reset", status, reset["state"]["vitals"]["heart_rate"], reset["state"]["vitals"]["spo2"])\nstatus, current = call("GET", "/state")\nprint("current", status, current["state"]["stage"], current["state"]["vitals"]["heart_rate"], current["state"]["vitals"]["spo2"])\nstatus, spo2 = call("POST", "/state/cues/spo2_dropped")\nprint("spo2", status, spo2["state"]["vitals"]["spo2"], spo2["state"]["symptoms"]["breathing_effort"], spo2["state"]["emotion"]["anxiety"])\nstatus, hr = call("POST", "/state/cues/hr_increased")\nprint("hr", status, hr["state"]["vitals"]["heart_rate"], hr["state"]["emotion"]["anxiety"])\nstatus, events = call("GET", "/state/events")\nprint("events", status, [(event["event_type"], event["cue_id"]) for event in events["events"]])\nstatus, unknown = call("POST", "/state/cues/unknown_cue")\nprint("unknown", status, unknown["detail"])'
+```
+
+Confirmed:
+
+```text
+reset 200 92 91
+current 200 initial_assessment 92 91
+spo2 200 88 severe high
+hr 200 128 high
+events 200 [('state_reset', None), ('instructor_cue', 'spo2_dropped'), ('instructor_cue', 'hr_increased')]
+unknown 404 Unknown instructor cue: unknown_cue
+```
+
+The backend server was stopped after testing.
+
 ### Substep 4.7: Make chat use current state
 
 Update:
@@ -864,6 +898,95 @@ Definition of done:
 - chat route reads the latest patient state
 - mock patient response changes after cue updates
 - no frontend changes required yet
+
+Completed on June 29, 2026.
+
+Updated:
+
+```text
+codes/backend/app/api/chat.py
+codes/backend/app/services/mock_persona.py
+```
+
+Why these files were updated:
+
+- the chat route previously used only the student message and scenario file
+- the project needs patient replies to follow instructor-cued state changes
+- this update proves the core product behavior: changing patient condition changes the next persona response
+- no frontend change was needed because the existing `POST /chat` API contract stayed the same
+
+What changed in `api/chat.py`:
+
+```text
+POST /chat
+    |
+    v
+load scenario
+    |
+    v
+read current patient state from state_manager.py
+    |
+    v
+send message + scenario + current state to mock_persona.py
+```
+
+What changed in `mock_persona.py`:
+
+```text
+build_mock_persona_response(message, scenario, patient_state)
+```
+
+The mock persona now checks current patient state before falling back to the original keyword responses.
+
+State-aware response examples:
+
+| Current State | Example Student Message | Patient Reply |
+|---|---|---|
+| initial assessment | How are you feeling? | I am feeling short of breath and a little scared. Can you help me? |
+| after `spo2_dropped` | How are you feeling now? | Worse. I cannot catch my breath. |
+| after `hr_increased` | What do you feel now? | My heart feels like it is racing. I feel scared. |
+
+Direct backend validation completed:
+
+```text
+.venv/bin/python -c 'import asyncio; from app.api.chat import create_chat_response; from app.schemas.chat import ChatRequest; from app.services.state_manager import reset_state, apply_instructor_cue; reset_state(); baseline = asyncio.run(create_chat_response(ChatRequest(message="How are you feeling?"))); print("baseline", baseline.reply); apply_instructor_cue("spo2_dropped"); spo2 = asyncio.run(create_chat_response(ChatRequest(message="How are you feeling now?"))); print("spo2", spo2.reply); apply_instructor_cue("hr_increased"); hr = asyncio.run(create_chat_response(ChatRequest(message="What do you feel now?"))); print("hr", hr.reply)'
+```
+
+Confirmed:
+
+```text
+baseline I am feeling short of breath and a little scared. Can you help me?
+spo2 Worse. I cannot catch my breath.
+hr My heart feels like it is racing. I feel scared.
+```
+
+Compile check completed:
+
+```text
+.venv/bin/python -m compileall app
+```
+
+HTTP validation completed:
+
+```text
+.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Then:
+
+```text
+.venv/bin/python -c $'import json\nfrom urllib import request\nBASE = "http://127.0.0.1:8000"\ndef post(path, payload=None):\n    body = None if payload is None else json.dumps(payload).encode()\n    req = request.Request(f"{BASE}{path}", data=body, method="POST")\n    if payload is not None:\n        req.add_header("Content-Type", "application/json")\n    with request.urlopen(req) as response:\n        return json.loads(response.read().decode())\npost("/state/reset")\nbaseline = post("/chat", {"message": "How are you feeling?"})\nprint("baseline", baseline["reply"])\npost("/state/cues/spo2_dropped")\nspo2 = post("/chat", {"message": "How are you feeling now?"})\nprint("spo2", spo2["reply"])\npost("/state/cues/hr_increased")\nhr = post("/chat", {"message": "What do you feel now?"})\nprint("hr", hr["reply"])'
+```
+
+Confirmed:
+
+```text
+baseline I am feeling short of breath and a little scared. Can you help me?
+spo2 Worse. I cannot catch my breath.
+hr My heart feels like it is racing. I feel scared.
+```
+
+The backend server was stopped after testing.
 
 ### Substep 4.8: Document Step 4 completion
 
