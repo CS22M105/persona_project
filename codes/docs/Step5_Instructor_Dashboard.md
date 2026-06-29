@@ -607,6 +607,68 @@ Definition of done:
 - dashboard shows reset button
 - no styling polish yet beyond usable layout
 
+Completed on June 29, 2026.
+
+Created:
+
+```text
+codes/frontend/src/pages/Dashboard.tsx
+```
+
+Why this file was created:
+
+- instructors need a visual page for patient state instead of backend curl commands
+- Step 4 created the state API, but Step 5 starts turning that API into a usable control-room interface
+- the dashboard page will become the main instructor workflow for cueing patient condition changes
+
+What the page does now:
+
+```text
+loads current patient state
+loads state event timeline
+shows patient status, stage, vitals, symptoms, emotion, interventions, and safety flags
+shows reset button
+shows instructor cue buttons
+shows event timeline
+shows loading and backend error state
+```
+
+How it works:
+
+```text
+Dashboard mounts
+    |
+    v
+calls getPatientState()
+calls getStateEvents()
+    |
+    v
+stores state/events in React state
+    |
+    v
+renders current patient condition and event timeline
+```
+
+Important boundary:
+
+The reset and cue buttons are visible but disabled in Substep 5.3. They will be connected to backend actions in Substep 5.6.
+
+Reason:
+
+Substep 5.3 is only for creating the basic page structure. Connecting button actions is kept separate so the project remains easy to understand and test one step at a time.
+
+Validation completed:
+
+```text
+npm run build
+```
+
+Confirmed:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
 ### Substep 5.4: Wire dashboard as main app screen
 
 Update:
