@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 
 import { sendChatMessage } from "../api/chat";
 
@@ -22,10 +22,10 @@ export function Chat() {
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const trimmedMessage = messageInput.trim();
+  async function handleSubmit(formData: FormData) {
+    const submittedMessage = formData.get("message");
+    const trimmedMessage =
+      typeof submittedMessage === "string" ? submittedMessage.trim() : "";
 
     if (!trimmedMessage || isSending) {
       return;
@@ -92,12 +92,13 @@ export function Chat() {
 
         {errorMessage ? <p className="chat-error">{errorMessage}</p> : null}
 
-        <form className="chat-form" onSubmit={handleSubmit}>
+        <form action={handleSubmit} className="chat-form">
           <label className="sr-only" htmlFor="chat-message">
             Student message
           </label>
           <input
             id="chat-message"
+            name="message"
             onChange={(event) => setMessageInput(event.target.value)}
             placeholder="Ask the patient a question..."
             type="text"
