@@ -1195,3 +1195,312 @@ Patient improving
 ```
 
 Those buttons should call the state API and show the current patient state on screen.
+
+---
+
+# Progress Update: Step 5 Instructor Dashboard
+
+Date: June 29, 2026
+
+## 1. Why Step 5 Was Done
+
+Step 5 was completed to turn the backend patient state manager into a usable instructor-facing dashboard.
+
+Before Step 5, instructor cues could be tested only through backend API calls. After Step 5, the project has a visible dashboard where the instructor can see patient state, click cue buttons, view the event timeline, and use the patient chat in the same screen.
+
+This is an important product milestone because it creates the control surface that faculty would actually use during a simulation.
+
+Core workflow now supported:
+
+```text
+Instructor opens dashboard
+    |
+    v
+Instructor views current patient state
+    |
+    v
+Instructor clicks condition cue
+    |
+    v
+Backend updates patient state
+    |
+    v
+Dashboard updates visible state and event timeline
+    |
+    v
+Next patient chat response reflects updated condition
+```
+
+## 2. Documentation Completed
+
+Created:
+
+```text
+codes/docs/Step5_Instructor_Dashboard.md
+```
+
+Purpose:
+
+- defines the instructor dashboard goal
+- explains the dashboard workflow
+- documents frontend files and responsibilities
+- lists required controls
+- defines acceptance criteria
+- keeps the July 25 deadline in focus
+- records product-scaling notes
+
+## 3. Frontend State API Client Completed
+
+Created:
+
+```text
+codes/frontend/src/api/state.ts
+```
+
+Purpose:
+
+- gives the frontend typed functions for state APIs
+- keeps raw `fetch` calls out of dashboard UI code
+- prepares the app for future auth/session headers
+
+Functions added:
+
+```text
+getPatientState()
+resetPatientState()
+applyInstructorCue(cueId)
+getStateEvents()
+```
+
+## 4. Instructor Dashboard Page Completed
+
+Created:
+
+```text
+codes/frontend/src/pages/Dashboard.tsx
+```
+
+Purpose:
+
+- displays current patient state
+- displays instructor cue buttons
+- displays reset button
+- displays state event timeline
+- embeds patient chat into the dashboard
+- shows loading and error states
+
+Current dashboard sections:
+
+```text
+Current State
+Instructor Controls
+Event Timeline
+Patient Conversation
+```
+
+## 5. App Screen Updated
+
+Updated:
+
+```text
+codes/frontend/src/App.tsx
+codes/frontend/src/pages/Chat.tsx
+```
+
+Purpose:
+
+- app now opens to the instructor dashboard
+- chat can still be used inside the dashboard
+- `Chat` now supports embedded mode
+
+Chat usage:
+
+```text
+<Chat />
+```
+
+renders standalone chat.
+
+```text
+<Chat embedded />
+```
+
+renders the chat panel inside the dashboard.
+
+## 6. Dashboard Styling Completed
+
+Updated:
+
+```text
+codes/frontend/src/styles.css
+```
+
+Purpose:
+
+- creates a dashboard layout suitable for simulation control use
+- groups state, controls, timeline, and chat into readable sections
+- supports desktop and smaller screen layouts
+
+Dashboard layout:
+
+```text
+Current State card
+Instructor Controls card
+Event Timeline card
+Patient Conversation card
+```
+
+Design reason:
+
+The dashboard should feel like a quiet control-room tool. The instructor needs to scan HR, SpO2, state changes, and chat quickly.
+
+## 7. Dashboard Controls Connected
+
+Updated:
+
+```text
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/styles.css
+```
+
+Purpose:
+
+- reset button now calls backend reset API
+- cue buttons now call backend cue API
+- dashboard updates visible patient state after each successful action
+- event timeline refreshes after reset/cue actions
+- buttons are disabled while an action is running
+
+Connected controls:
+
+```text
+Reset patient state
+SpO2 dropped
+HR increased
+Breathing worsened
+Oxygen applied
+Bronchodilator given
+Patient improving
+```
+
+## 8. Tests and Validation Completed
+
+Frontend build:
+
+```text
+npm run build
+```
+
+Result:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
+Dashboard/state API validation:
+
+```text
+reset 92 91
+spo2 88 severe
+hr 128 high
+events [('state_reset', None), ('instructor_cue', 'spo2_dropped'), ('instructor_cue', 'hr_increased')]
+```
+
+Dashboard and chat workflow validation:
+
+```text
+reset_visible_state 92 91
+baseline_chat I am feeling short of breath and a little scared. Can you help me?
+spo2_visible_state 88 severe
+spo2_chat Worse. I cannot catch my breath.
+hr_visible_state 128 high
+hr_chat My heart feels like it is racing. I feel scared.
+timeline [('state_reset', None), ('instructor_cue', 'spo2_dropped'), ('instructor_cue', 'hr_increased')]
+```
+
+What this proves:
+
+```text
+Dashboard cue updates backend patient state
+Dashboard visible state updates after cue
+Event timeline records cue actions
+Patient chat response follows latest state
+```
+
+## 9. Current Project Status After Step 5
+
+Completed:
+
+- Step 1: backend/frontend foundation and health check
+- Step 2: COPD/SOB scenario configuration and scenario API
+- Step 3: text-only mock patient persona with connected frontend chat UI
+- Step 4: patient state manager and state-aware chat behavior
+- Step 5: instructor dashboard with connected state controls
+
+Current app can:
+
+- show instructor dashboard
+- show current COPD/SOB patient state
+- reset patient state
+- apply instructor cues from dashboard buttons
+- update visible state after cues
+- show state event timeline
+- show patient chat inside dashboard
+- change patient response after state changes
+
+Not yet built:
+
+- voice assistant
+- OpenAI-generated responses
+- transcript persistence
+- final report generation
+- authentication
+- database persistence
+- production multi-session support
+
+## 10. Why Step 5 Is Valuable
+
+Step 5 makes the project demo-ready in a way that is easy for simulation faculty to understand.
+
+The instructor no longer needs to imagine how the AI patient state would be controlled. The dashboard shows the concept directly:
+
+```text
+Click cue -> state changes -> event is logged -> patient response changes
+```
+
+This is the strongest product demonstration so far.
+
+## 11. Product Scaling Note
+
+The dashboard currently works with one in-memory demo session.
+
+For a future sellable product, this dashboard can evolve toward:
+
+```text
+instructor login
+session selection
+multi-room support
+Redis-backed live state
+PostgreSQL-backed event history
+WebSocket live updates
+audit logs
+scenario editor
+report generation
+voice controls
+```
+
+The current API/client structure keeps that path open.
+
+## 12. Next Recommended Step
+
+The next recommended step is:
+
+```text
+Step 6: Decide between OpenAI text persona upgrade or voice interaction preparation
+```
+
+Recommendation for July 25:
+
+Before jumping fully into voice, add a stronger OpenAI-powered text persona behind the existing chat API if time allows. That gives a more realistic patient while preserving the same dashboard/state workflow.
+
+Voice can then be added after the text persona reliably follows instructor-cued state.
