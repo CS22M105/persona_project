@@ -759,6 +759,87 @@ Definition of done:
 - event timeline is readable
 - mobile layout remains usable enough for demo
 
+Completed on June 29, 2026.
+
+Updated:
+
+```text
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/styles.css
+```
+
+Why these files were updated:
+
+- the dashboard needed stable class names for a maintainable layout
+- the instructor view needs to be readable under simulation-lab/control-room conditions
+- vitals, cues, events, and chat must be visible without feeling like separate unrelated pages
+- the styling should support the July 25 demo without overbuilding a full design system
+
+What changed in `Dashboard.tsx`:
+
+```text
+added dashboard-specific class names
+grouped state, controls, timeline, and chat into dashboard cards
+kept cue/reset buttons visible but disabled until Substep 5.6
+removed temporary implementation note from the visible UI
+```
+
+What changed in `styles.css`:
+
+```text
+full-width dashboard shell
+two-column desktop dashboard grid
+current-state card
+grouped cue button grid
+event timeline card
+embedded chat card
+mobile stacking layout
+disabled control-button styling
+```
+
+How it works:
+
+```text
+Dashboard page
+    |
+    v
+dashboard grid
+    |
+    |-- current state card
+    |-- instructor controls card
+    |-- event timeline card
+    |-- embedded chat card
+```
+
+Design reason:
+
+The UI should feel like a quiet simulation control tool. The instructor needs fast scanning and one-click controls, not a marketing-style page.
+
+Validation completed:
+
+```text
+npm run build
+```
+
+Confirmed:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
+Local run check:
+
+```text
+Backend: http://127.0.0.1:8000
+Frontend: http://localhost:5173/
+```
+
+Confirmed backend state endpoint returned:
+
+```text
+HR 92, SpO2 91, stage initial_assessment
+```
+
 ### Substep 5.6: Connect cue buttons to backend
 
 Update:

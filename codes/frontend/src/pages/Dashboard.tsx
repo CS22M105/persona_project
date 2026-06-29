@@ -45,22 +45,26 @@ export function Dashboard() {
   }, []);
 
   return (
-    <main className="app-shell">
-      <section className="status-panel" aria-labelledby="dashboard-title">
-        <p className="eyebrow">Instructor dashboard</p>
-        <h1 id="dashboard-title">COPD/SOB Control View</h1>
-        <p className="lede">
-          Current patient state, instructor cues, and state event timeline.
-        </p>
+    <main className="app-shell dashboard-shell">
+      <section className="dashboard-page" aria-labelledby="dashboard-title">
+        <header className="dashboard-header">
+          <div>
+            <p className="eyebrow">Instructor dashboard</p>
+            <h1 id="dashboard-title">COPD/SOB Control View</h1>
+          </div>
+          {patientState ? (
+            <span className="scenario-badge">Session: {patientState.status}</span>
+          ) : null}
+        </header>
 
         {isLoading ? <p>Loading patient state...</p> : null}
         {errorMessage ? <p className="chat-error">{errorMessage}</p> : null}
 
         {patientState ? (
-          <>
-            <section aria-labelledby="state-title">
+          <div className="dashboard-grid">
+            <section className="dashboard-card state-card" aria-labelledby="state-title">
               <h2 id="state-title">Current State</h2>
-              <dl>
+              <dl className="state-grid">
                 <StateRow label="Status" value={patientState.status} />
                 <StateRow label="Stage" value={patientState.stage} />
                 <StateRow label="HR" value={`${patientState.vitals.heart_rate} bpm`} />
@@ -99,28 +103,24 @@ export function Dashboard() {
               </dl>
             </section>
 
-            <section aria-labelledby="controls-title">
+            <section className="dashboard-card controls-card" aria-labelledby="controls-title">
               <h2 id="controls-title">Instructor Controls</h2>
-              <button disabled type="button">
+              <button className="control-button control-button-secondary" disabled type="button">
                 Reset patient state
               </button>
-              <div>
+              <div className="cue-grid">
                 {cueButtons.map((cue) => (
-                  <button disabled key={cue.cueId} type="button">
+                  <button className="control-button" disabled key={cue.cueId} type="button">
                     {cue.label}
                   </button>
                 ))}
               </div>
-              <p>
-                Buttons are visible in this substep and will be connected to the
-                backend in Substep 5.6.
-              </p>
             </section>
 
-            <section aria-labelledby="events-title">
+            <section className="dashboard-card timeline-card" aria-labelledby="events-title">
               <h2 id="events-title">Event Timeline</h2>
               {events.length > 0 ? (
-                <ol>
+                <ol className="event-list">
                   {events.map((event) => (
                     <li key={event.event_id}>
                       <strong>{event.label ?? event.event_type}</strong>
@@ -137,11 +137,11 @@ export function Dashboard() {
               )}
             </section>
 
-            <section aria-labelledby="dashboard-chat-title">
+            <section className="dashboard-card chat-card" aria-labelledby="dashboard-chat-title">
               <h2 id="dashboard-chat-title">Patient Conversation</h2>
               <Chat embedded />
             </section>
-          </>
+          </div>
         ) : null}
       </section>
     </main>
