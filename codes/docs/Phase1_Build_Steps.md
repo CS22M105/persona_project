@@ -42,6 +42,168 @@ Success criteria:
 
 ---
 
+## Technology Choice Rationale
+
+### Why React for the Frontend
+
+We chose a React frontend because it fits the project's needs well: an interactive AI patient voice/persona app benefits from reusable UI components, fast state updates, and a responsive user experience.
+
+React is a good choice here because:
+
+- It makes it easy to build dynamic screens for patient personas, chat-like interactions, forms, and generated AI responses.
+- Its component model helps keep the UI organized and reusable as the project grows.
+- It has strong ecosystem support for routing, styling, API calls, authentication, and deployment.
+- It works well with a Python or Node backend through REST APIs or WebSockets.
+- It is widely used in industry, so it is easier to maintain, document, and hand off to future developers.
+
+In short: React lets us build a clean, scalable, and interactive frontend quickly, which is important for an AI-driven healthcare simulation project.
+
+### Why Only React?
+
+Other frontend choices we could have used were **Vue**, **Angular**, **Svelte**, plain **HTML/JavaScript**, a backend-rendered UI like **Flask/Django templates**, or a cross-platform option like **Flutter**.
+
+For our requirements, React was the strongest fit.
+
+#### Vue
+
+Vue would also work well. It is simpler than React in some ways and good for dashboards.
+
+Fit with our project: good for instructor buttons, transcript display, and state updates.
+
+Why not choose it: smaller ecosystem and less common in many AI/web prototype stacks compared with React.
+
+#### Angular
+
+Angular is powerful for large enterprise apps.
+
+Fit with our project: good for structured dashboards, authentication, role-based access, and future product scaling.
+
+Why not choose it: heavier, more setup, and slower for a July prototype. Our Phase 1 goal is a fast demo, not a large enterprise frontend.
+
+#### Svelte
+
+Svelte is lightweight and fast.
+
+Fit with our project: good for a responsive UI and simple state-driven screens.
+
+Why not choose it: smaller ecosystem and fewer widely used libraries/examples for complex AI dashboard workflows compared with React.
+
+#### Plain HTML, CSS, JavaScript
+
+This would be the simplest technically.
+
+Fit with our project: okay for a very basic demo.
+
+Why not choose it: the app needs live state, transcript updates, scenario controls, pause/takeover buttons, and future growth. Plain JavaScript would become harder to maintain quickly.
+
+#### Flask/Django Templates
+
+Since the backend may be Python-based, we could render pages directly from Flask or Django.
+
+Fit with our project: good for simple forms, reports, login pages, and server-generated summaries.
+
+Why not choose it: less ideal for live interactive UI, real-time voice state, dynamic cue buttons, and transcript updates.
+
+#### Flutter
+
+Flutter could build a polished app for desktop, tablet, or mobile.
+
+Fit with our project: useful if the instructor dashboard needed to become a dedicated tablet app.
+
+Why not choose it: extra complexity, less natural for a web-first prototype, and backend/AI integrations are usually faster to prototype with React.
+
+#### Why React Fits Best
+
+Our frontend needs are:
+
+- instructor dashboard with fast scenario-specific buttons
+- live patient state updates
+- transcript and event timeline display
+- pause, mute, reset, and takeover controls
+- API connection to the AI/persona backend
+- future support for authentication, reports, and integrations
+- fast prototype timeline
+
+React handles these especially well because it is component-based, widely supported, good for real-time interactive interfaces, and easy to connect with backend APIs. Compared with the alternatives, React gives the best balance of speed, flexibility, ecosystem, and future scalability for this project.
+
+### Why FastAPI for the Backend
+
+We chose FastAPI because the backend needs to expose clean API routes, validate structured data, manage AI/persona requests, and eventually support real-time features. FastAPI fits this project well because it is Python-based, fast to develop with, and strong for typed API contracts.
+
+FastAPI is a good choice here because:
+
+- It is excellent for REST API endpoints such as health checks, scenarios, chat, state updates, and reports.
+- It uses Pydantic models for request and response validation, which keeps frontend/backend communication predictable.
+- It automatically generates interactive API documentation, which is helpful for testing and internship handoff.
+- It works naturally with Python AI tooling and OpenAI API calls.
+- It can support async workflows, WebSockets, and real-time session services later.
+- It is lightweight enough for a prototype but structured enough for production growth.
+
+In short: FastAPI lets us build a clear, testable, Python-based backend quickly while keeping a path toward a secure production architecture.
+
+### Why Only FastAPI?
+
+Other backend choices we could have used were **Flask**, **Django**, **Express/Node.js**, **NestJS**, or **Spring Boot**.
+
+For our requirements, FastAPI was the strongest fit.
+
+#### Flask
+
+Flask is simple and flexible.
+
+Fit with our project: good for a small prototype with a few routes.
+
+Why not choose it: FastAPI gives stronger built-in request validation, type hints, async support, and automatic API docs with less extra setup.
+
+#### Django
+
+Django is a full-featured Python web framework.
+
+Fit with our project: good for authentication, admin panels, database-backed apps, and report management.
+
+Why not choose it: heavier than needed for Phase 1. The project currently needs API endpoints and AI service orchestration more than a full server-rendered web framework.
+
+#### Express/Node.js
+
+Express is a popular JavaScript backend framework.
+
+Fit with our project: good for lightweight APIs and JavaScript full-stack development.
+
+Why not choose it: the project benefits from Python's AI ecosystem, and FastAPI gives stronger typed request/response validation out of the box.
+
+#### NestJS
+
+NestJS is a structured Node.js backend framework.
+
+Fit with our project: good for larger production systems with strong architecture patterns.
+
+Why not choose it: more setup and abstraction than needed for a July prototype, and it moves the backend away from Python AI tooling.
+
+#### Spring Boot
+
+Spring Boot is powerful for enterprise Java applications.
+
+Fit with our project: good for large secure systems with complex enterprise requirements.
+
+Why not choose it: too heavy for this internship prototype and slower for rapid AI/backend experimentation.
+
+#### Why FastAPI Fits Best
+
+Our backend needs are:
+
+- scenario and persona API routes
+- chat request/response validation
+- patient state update endpoints
+- instructor-cued control logic
+- transcript and event logging
+- future OpenAI integration
+- future WebSocket or realtime session support
+- clear API documentation for testing and handoff
+
+FastAPI handles these especially well because it is Python-native, typed, lightweight, async-ready, and easy to connect with React. Compared with the alternatives, FastAPI gives the best balance of speed, clarity, validation, AI compatibility, and future scalability for this project.
+
+---
+
 ## 2. Define the First Scenario
 
 Start with one scenario only:
@@ -378,4 +540,3 @@ Final demo artifacts:
 ```
 
 The most important rule is to build the text and state logic first. Voice should come after the persona and dashboard behavior are already working.
-
