@@ -600,3 +600,345 @@ This keeps each part of the project self-contained:
 - frontend npm packages stay with the frontend
 - the repository is easier to clone and set up
 - future contributors do not need to guess which virtual environment to activate
+
+---
+
+# Progress Update: Step 3 Text-Only Patient Persona
+
+**Date:** June 27, 2026  
+**Step:** Step 3 - Build Text-Only Persona First  
+**Status:** Completed through connected mock chat flow  
+
+## 1. Step 3 Goal
+
+The goal of Step 3 was to build the first text-only patient conversation flow before adding OpenAI, voice, instructor dashboard controls, patient-state changes, transcripts, or reports.
+
+This step proves that the core application path works:
+
+```text
+Student enters message
+    |
+    v
+Frontend sends message to backend
+    |
+    v
+Backend loads COPD/SOB scenario
+    |
+    v
+Backend creates patient-style response
+    |
+    v
+Frontend displays patient reply
+```
+
+## 2. Why We Used a Mock Persona First
+
+We intentionally used a mock response service instead of OpenAI at this stage.
+
+Reasons:
+
+- avoids needing an OpenAI API key during early testing
+- avoids API cost while the basic app flow is still being built
+- makes responses predictable and easier to debug
+- proves frontend-backend communication before adding AI complexity
+- keeps the future OpenAI integration easier because the API contract is already defined
+
+No OpenAI API key is required for the current Step 3 implementation.
+
+## 3. Backend Work Completed
+
+### Chat Schemas
+
+Created:
+
+```text
+codes/backend/app/schemas/__init__.py
+codes/backend/app/schemas/chat.py
+```
+
+Purpose:
+
+- defines the request shape the frontend sends
+- defines the response shape the backend returns
+- makes the chat API contract clear and stable
+
+Request shape:
+
+```json
+{
+  "message": "Do you have chest pain?"
+}
+```
+
+Response shape:
+
+```json
+{
+  "reply": "It is not sharp pain, but my chest feels tight when I try to breathe.",
+  "scenario_id": "copd-sob",
+  "speaker": "patient"
+}
+```
+
+### Mock Persona Service
+
+Created:
+
+```text
+codes/backend/app/services/mock_persona.py
+```
+
+Purpose:
+
+- generates a predictable patient-style response
+- uses the COPD/SOB scenario's allowed disclosures
+- keeps response logic outside the API route
+- prepares the project for later OpenAI replacement
+
+Current mock behavior:
+
+```text
+If message mentions breathing -> return onset response
+If message mentions chest pain -> return chest tightness response
+If message mentions oxygen -> return home oxygen response
+If message mentions inhaler -> return inhaler response
+If message mentions smoking -> return smoking history response
+If message mentions allergies -> return allergy response
+Otherwise -> return generic shortness-of-breath response
+```
+
+### Chat API Route
+
+Created:
+
+```text
+codes/backend/app/api/chat.py
+```
+
+Purpose:
+
+- exposes the backend chat endpoint
+- receives the student message
+- loads the COPD/SOB scenario
+- calls the mock persona service
+- returns a structured patient response
+
+Endpoint:
+
+```text
+POST /chat
+```
+
+### Registered Chat Route
+
+Updated:
+
+```text
+codes/backend/app/main.py
+```
+
+Purpose:
+
+- connects the chat router to the FastAPI app
+- makes `/chat` available as a real backend endpoint
+
+Backend routes now include:
+
+```text
+/health
+/scenarios/copd-sob
+/chat
+```
+
+## 4. Frontend Work Completed
+
+### Frontend Chat API Client
+
+Created:
+
+```text
+codes/frontend/src/api/chat.ts
+```
+
+Updated:
+
+```text
+codes/frontend/src/api/client.ts
+```
+
+Purpose:
+
+- gives the frontend a typed `sendChatMessage(message)` function
+- keeps API calls outside the React page component
+- sends student messages to `POST /chat`
+- returns the backend patient response to the UI
+
+### Simple Chat UI
+
+Created:
+
+```text
+codes/frontend/src/pages/Chat.tsx
+```
+
+Updated:
+
+```text
+codes/frontend/src/App.tsx
+codes/frontend/src/styles.css
+```
+
+Purpose:
+
+- creates the first text-only patient conversation screen
+- displays patient and student messages
+- provides a student message input and Send button
+- shows a sending state while waiting for backend response
+- shows an error message if the backend is unavailable
+
+The app now opens directly to the chat page.
+
+## 5. Connected Step 3 Flow
+
+Current working flow:
+
+```text
+Chat.tsx
+    |
+    | student clicks Send
+    v
+sendChatMessage(message)
+    |
+    | POST /chat
+    v
+backend/app/api/chat.py
+    |
+    | load scenario
+    v
+backend/app/services/scenario_loader.py
+    |
+    | read COPD/SOB JSON
+    v
+backend/app/scenarios/copd_sob.json
+    |
+    | create mock reply
+    v
+backend/app/services/mock_persona.py
+    |
+    | return ChatResponse
+    v
+Chat.tsx displays patient reply
+```
+
+## 6. Tests and Validation Completed
+
+Backend direct validation:
+
+```text
+.venv/bin/python -m compileall app
+```
+
+Backend HTTP validation:
+
+```text
+POST http://127.0.0.1:8000/chat
+```
+
+Example tested request:
+
+```json
+{
+  "message": "Do you use an inhaler?"
+}
+```
+
+Example response:
+
+```json
+{
+  "reply": "I used my rescue inhaler earlier, but it did not help much.",
+  "scenario_id": "copd-sob",
+  "speaker": "patient"
+}
+```
+
+Validation error tested:
+
+```text
+Empty message returns 422 Unprocessable Content
+```
+
+Frontend validation:
+
+```text
+npm run build
+```
+
+Result:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
+CORS validation:
+
+```text
+Frontend origin http://localhost:5173 is accepted by the backend.
+```
+
+## 7. Current Project Status After Step 3
+
+Completed:
+
+- Step 1: backend/frontend foundation and health check
+- Step 2: COPD/SOB scenario configuration and scenario API
+- Step 3: text-only mock patient persona with connected frontend chat UI
+
+Current app can:
+
+- show a chat interface
+- accept a student question
+- send the question to the backend
+- load the COPD/SOB scenario
+- return a mock patient response
+- display the patient response in the frontend
+
+Not yet built:
+
+- OpenAI-generated persona responses
+- voice assistant
+- instructor dashboard controls
+- live patient condition changes
+- transcript storage
+- report generation
+- authentication
+- database persistence
+
+## 8. Why Step 3 Is Valuable
+
+Step 3 is valuable because it proves the central product workflow at a small scale.
+
+The project is no longer only documentation or setup. It now has a working end-to-end chat path:
+
+```text
+React UI -> FastAPI backend -> scenario data -> persona response -> React UI
+```
+
+This gives a stable base for the next major upgrade: replacing the mock response with an AI-generated patient response while keeping the same frontend and backend structure.
+
+## 9. Next Step
+
+The next planned improvement is:
+
+```text
+Step 3.11: Replace mock persona response with OpenAI later
+```
+
+This will require:
+
+- OpenAI API key setup
+- secure environment variable handling
+- prompt design for the COPD/SOB patient persona
+- safety rules so the AI speaks only as the patient
+- backend error handling for AI failures
+- testing for realistic and safe patient responses
