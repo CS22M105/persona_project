@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 
 import {
+  applyInstructorCue,
   getPatientState,
   getStateEvents,
   PatientState,
+  resetPatientState,
   StateEvent,
 } from "../api/state";
 import { Chat } from "./Chat";
@@ -21,6 +23,7 @@ export function Dashboard() {
   const [patientState, setPatientState] = useState<PatientState | null>(null);
   const [events, setEvents] = useState<StateEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -43,6 +46,43 @@ export function Dashboard() {
 
     loadDashboardData();
   }, []);
+
+  async function refreshEvents() {
+    const eventsResponse = await getStateEvents();
+    setEvents(eventsResponse.events);
+  }
+
+  async function handleResetState() {
+    setActiveAction("reset");
+    setErrorMessage("");
+
+    try {
+      const stateResponse = await resetPatientState();
+      setPatientState(stateResponse.state);
+      await refreshEvents();
+    } catch {
+      setErrorMessage("Patient state failed to reset. Make sure the backend is running.");
+    } finally {
+      setActiveAction(null);
+    }
+  }
+
+  async function handleCueClick(cueId: string) {
+    setActiveAction(cueId);
+    setErrorMessage("");
+
+    try {
+      const stateResponse = await applyInstructorCue(cueId);
+      setPatientState(stateResponse.state);
+      await refreshEvents();
+    } catch {
+      setErrorMessage("Instructor cue failed. Make sure the backend is running.");
+    } finally {
+      setActiveAction(null);
+    }
+  }
+
+  const isActionRunning = activeAction !== null;
 
   return (
     <main className="app-shell dashboard-shell">
@@ -105,16 +145,30 @@ export function Dashboard() {
 
             <section className="dashboard-card controls-card" aria-labelledby="controls-title">
               <h2 id="controls-title">Instructor Controls</h2>
-              <button className="control-button control-button-secondary" disabled type="button">
-                Reset patient state
+              <button
+                className="control-button control-button-secondary"
+                disabled={isActionRunning}
+                onClick={handleResetState}
+                type="button"
+              >
+                {activeAction === "reset" ? "Resetting..." : "Reset patient state"}
               </button>
               <div className="cue-grid">
                 {cueButtons.map((cue) => (
-                  <button className="control-button" disabled key={cue.cueId} type="button">
-                    {cue.label}
+                  <button
+                    className="control-button"
+                    disabled={isActionRunning}
+                    key={cue.cueId}
+                    onClick={() => handleCueClick(cue.cueId)}
+                    type="button"
+                  >
+                    {activeAction === cue.cueId ? "Updating..." : cue.label}
                   </button>
                 ))}
               </div>
+              {activeAction ? (
+                <p className="dashboard-note">Updating patient state...</p>
+              ) : null}
             </section>
 
             <section className="dashboard-card timeline-card" aria-labelledby="events-title">

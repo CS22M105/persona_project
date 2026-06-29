@@ -855,6 +855,110 @@ Definition of done:
 - timeline updates after cues
 - reset returns HR 92 and SpO2 91
 
+Completed on June 29, 2026.
+
+Updated:
+
+```text
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/styles.css
+```
+
+Why these files were updated:
+
+- the instructor dashboard needed working control buttons, not only visible placeholders
+- reset and cue buttons should call the frontend state API client created in Substep 5.2
+- visible state must update immediately after backend state changes
+- event timeline must refresh after reset/cue actions
+- instructors need feedback while a state update request is running
+
+What changed in `Dashboard.tsx`:
+
+```text
+added handleResetState()
+added handleCueClick(cueId)
+added refreshEvents()
+added activeAction state
+connected Reset patient state button
+connected all cue buttons
+disabled buttons while an action is running
+updates patientState after backend response
+refreshes events after backend response
+```
+
+How it works:
+
+```text
+Instructor clicks cue button
+    |
+    v
+Dashboard calls applyInstructorCue(cueId)
+    |
+    v
+FastAPI updates patient state
+    |
+    v
+Dashboard stores returned patient state
+    |
+    v
+Dashboard calls getStateEvents()
+    |
+    v
+Event timeline refreshes
+```
+
+Reset flow:
+
+```text
+Instructor clicks Reset patient state
+    |
+    v
+Dashboard calls resetPatientState()
+    |
+    v
+Backend restores COPD/SOB initial state
+    |
+    v
+Dashboard shows HR 92 and SpO2 91
+    |
+    v
+Event timeline refreshes
+```
+
+What changed in `styles.css`:
+
+```text
+added dashboard-note styling for action feedback
+```
+
+Validation completed:
+
+```text
+npm run build
+```
+
+Confirmed:
+
+```text
+TypeScript and Vite build completed successfully.
+```
+
+Backend endpoint check completed:
+
+```text
+reset 92 91
+spo2 88 severe
+hr 128 high
+events [('state_reset', None), ('instructor_cue', 'spo2_dropped'), ('instructor_cue', 'hr_increased')]
+```
+
+Local run check:
+
+```text
+Backend: http://127.0.0.1:8000
+Frontend: http://localhost:5173/
+```
+
 ### Substep 5.7: Verify dashboard and chat together
 
 Run backend and frontend.
