@@ -59,6 +59,7 @@ def _build_input_text(
     context = {
         "scenario": _build_scenario_context(scenario),
         "current_patient_state": patient_state.model_dump(mode="json"),
+        "state_response_guidance": _build_state_response_guidance(patient_state),
         "student_message": student_message,
     }
 
@@ -77,6 +78,63 @@ def _build_scenario_context(scenario: dict[str, Any]) -> dict[str, Any]:
         "allowed_disclosures": scenario.get("allowed_disclosures", []),
         "learning_objectives": scenario.get("learning_objectives", []),
     }
+
+
+def _build_state_response_guidance(patient_state: PatientState) -> list[str]:
+    guidance = [
+        f"Current stage is {patient_state.stage}.",
+        (
+            "Current vitals: "
+            f"heart rate {patient_state.vitals.heart_rate}, "
+            f"SpO2 {patient_state.vitals.spo2}, "
+            f"respiratory rate {patient_state.vitals.respiratory_rate}, "
+            f"blood pressure {patient_state.vitals.blood_pressure}."
+        ),
+        (
+            "Current symptoms: "
+            f"breathing effort {patient_state.symptoms.breathing_effort}, "
+            f"chest tightness {patient_state.symptoms.chest_tightness}, "
+            f"cough {patient_state.symptoms.cough}, "
+            f"dizziness {patient_state.symptoms.dizziness}."
+        ),
+        (
+            "Current emotion: "
+            f"anxiety {patient_state.emotion.anxiety}, "
+            f"fatigue {patient_state.emotion.fatigue}."
+        ),
+        (
+            "Current voice behavior: "
+            f"{patient_state.voice_behavior.speech_pattern}, "
+            f"{patient_state.voice_behavior.tone}."
+        ),
+    ]
+
+    if patient_state.symptoms.breathing_effort == "severe":
+        guidance.append(
+            "If asked how the patient feels, make the patient sound more breathless and use very short phrases."
+        )
+
+    if patient_state.vitals.heart_rate >= 120:
+        guidance.append(
+            "If asked what the patient feels now, mention that the heart feels like it is racing or pounding."
+        )
+
+    if patient_state.vitals.spo2 <= 88:
+        guidance.append(
+            "If asked whether the patient is worse, mention difficulty catching breath."
+        )
+
+    if patient_state.interventions.oxygen_applied:
+        guidance.append(
+            "If asked about oxygen, say whether it is helping based on the current state, but do not claim full recovery unless the stage says improvement."
+        )
+
+    if patient_state.stage == "partial_improvement":
+        guidance.append(
+            "If asked how the patient feels, mention that breathing is easier but the patient is still tired or not fully back to normal."
+        )
+
+    return guidance
 
 
 def _format_hidden_information(hidden_information: list[dict[str, Any]]) -> str:

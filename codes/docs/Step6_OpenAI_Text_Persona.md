@@ -763,6 +763,80 @@ oxygen_applied -> oxygen-aware reply
 patient_improving -> improved but still tired reply
 ```
 
+Status:
+
+```text
+Completed
+```
+
+Files changed:
+
+```text
+codes/backend/app/services/persona_prompt_builder.py
+codes/backend/app/scenarios/copd_sob.json
+codes/docs/Step6_OpenAI_Text_Persona.md
+Progress_Report.md
+```
+
+What changed:
+
+```text
+persona_prompt_builder.py:
+Added state_response_guidance to the prompt input.
+
+copd_sob.json:
+Updated patient_improving cue to lower heart_rate to 104.
+```
+
+Why:
+
+- The first live state-aware run showed OpenAI followed the state, but the `hr_increased` response needed clearer guidance to mention racing/pounding heart.
+- The `patient_improving` cue improved SpO2/RR/anxiety but did not lower heart rate, so the model correctly kept mentioning a racing heart.
+- The prompt now gives state-specific guidance while still letting OpenAI generate natural patient wording.
+- The scenario now makes the improvement state clinically consistent.
+
+OpenAI verification results:
+
+```text
+baseline:
+source=openai
+patient reported shortness of breath, tiredness, and mild chest tightness
+
+spo2_dropped:
+source=openai
+patient reported not being able to catch breath
+
+hr_increased:
+source=openai
+patient reported breathlessness, chest tightness, and heart pounding
+
+oxygen_applied:
+source=openai
+patient reported oxygen helped only a little and breathing was still difficult
+
+patient_improving:
+source=openai
+patient reported breathing was easier, but still tired with mild chest tightness
+```
+
+Route-level verification:
+
+```text
+POST /chat after spo2_dropped returned status 200.
+scenario_id was copd-sob.
+speaker was patient.
+reply reflected worsening shortness of breath.
+```
+
+What was not changed:
+
+```text
+No frontend code changed.
+No /chat request or response format changed.
+No API key was committed.
+No voice_spike code was touched.
+```
+
 ### 6.10 Update progress report
 
 Append what changed, why, verification results, and remaining risks.

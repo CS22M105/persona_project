@@ -1965,3 +1965,89 @@ Next step:
 ```text
 Step 6.9: test whether instructor-cued state changes affect OpenAI-generated patient replies.
 ```
+
+## 23. Step 6.9 State-Aware OpenAI Chat Verified - June 30, 2026
+
+Step 6.9 goal:
+
+```text
+Verify that instructor-cued patient state changes affect OpenAI-generated patient replies.
+```
+
+Updated:
+
+```text
+codes/backend/app/services/persona_prompt_builder.py
+codes/backend/app/scenarios/copd_sob.json
+codes/docs/Step6_OpenAI_Text_Persona.md
+```
+
+What changed:
+
+```text
+persona_prompt_builder.py:
+Added state_response_guidance to the prompt input.
+
+copd_sob.json:
+Updated patient_improving cue so heart_rate changes to 104.
+```
+
+Why this was done:
+
+- The first live state-aware run confirmed OpenAI was being used, but the HR increased reply did not clearly mention the racing heart.
+- The prompt builder now gives state-specific guidance for severe breathing effort, low SpO2, high HR, oxygen use, and improvement.
+- The patient_improving cue now lowers HR so the improvement state does not incorrectly preserve the racing-heart condition.
+
+Live OpenAI verification:
+
+```text
+baseline:
+source=openai
+fallback_reason=None
+patient reported shortness of breath, tiredness, and mild chest tightness
+
+spo2_dropped:
+source=openai
+fallback_reason=None
+patient reported not being able to catch breath
+
+hr_increased:
+source=openai
+fallback_reason=None
+patient reported breathlessness, chest tightness, and heart pounding
+
+oxygen_applied:
+source=openai
+fallback_reason=None
+patient reported oxygen helped only a little and breathing was still difficult
+
+patient_improving:
+source=openai
+fallback_reason=None
+patient reported easier breathing, continued tiredness, and mild chest tightness
+```
+
+Route-level verification:
+
+```text
+POST /chat after spo2_dropped returned status 200.
+scenario_id was copd-sob.
+speaker was patient.
+reply reflected worsening shortness of breath.
+```
+
+What was not changed:
+
+```text
+No frontend code changed.
+No /chat request or response format changed.
+No API key was committed.
+No voice_spike code was touched.
+```
+
+Result:
+
+```text
+Step 6.9 passed.
+OpenAI text persona follows instructor-cued patient state.
+```

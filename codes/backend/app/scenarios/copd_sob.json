@@ -154,6 +154,7 @@
       "state_updates": {
         "stage": "partial_improvement",
         "vitals": {
+          "heart_rate": 104,
           "spo2": 93,
           "respiratory_rate": 22
         },
