@@ -430,6 +430,66 @@ Create prompt-building logic using scenario and patient state.
 
 Test prompt output without calling OpenAI.
 
+Status:
+
+```text
+Completed
+```
+
+Files changed:
+
+```text
+codes/backend/app/services/persona_prompt_builder.py
+codes/docs/Step6_OpenAI_Text_Persona.md
+Progress_Report.md
+```
+
+What was added:
+
+```text
+PersonaPrompt
+build_persona_prompt()
+```
+
+Where it fits:
+
+```text
+scenario JSON + current PatientState + student message
+    |
+    v
+build_persona_prompt()
+    |
+    v
+instructions + input_text
+    |
+    v
+future OpenAI persona service
+```
+
+Why:
+
+- Prompt construction should be isolated from the `/chat` route.
+- The OpenAI service should receive a clean prompt package instead of building scenario/state text itself.
+- The prompt can now be tested without making any OpenAI API calls.
+- The builder includes scenario rules, hidden information rules, allowed disclosures, current patient state, and the student message.
+
+What was not changed:
+
+```text
+No OpenAI API call was added.
+No chat route behavior was changed.
+No frontend code was changed.
+USE_OPENAI_PERSONA remains false.
+```
+
+Verification:
+
+```text
+Compiled persona_prompt_builder.py successfully.
+Generated a baseline prompt from COPD/SOB scenario and current patient state.
+Confirmed the generated prompt includes patient role rules, current state, and the student message.
+```
+
 ### 6.5 Build OpenAI persona service
 
 Create the backend service that calls OpenAI text generation.

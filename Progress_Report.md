@@ -1684,3 +1684,59 @@ No chat route behavior changed.
 No frontend code changed.
 USE_OPENAI_PERSONA remains false.
 ```
+
+## 18. Step 6.4 Persona Prompt Builder Added - June 30, 2026
+
+Created:
+
+```text
+codes/backend/app/services/persona_prompt_builder.py
+```
+
+Updated:
+
+```text
+codes/docs/Step6_OpenAI_Text_Persona.md
+```
+
+What was added:
+
+```text
+PersonaPrompt
+build_persona_prompt()
+```
+
+What the new code does:
+
+```text
+Takes student message
+Takes COPD/SOB scenario JSON
+Takes current PatientState
+Builds instructions for the AI patient role
+Builds input_text containing scenario context, current patient state, and student message
+Returns a PersonaPrompt object for the future OpenAI service
+```
+
+Why this was done:
+
+- The `/chat` route should stay thin and should not contain prompt-building details.
+- The future OpenAI service should receive a structured prompt package.
+- Prompt output can now be tested without calling OpenAI.
+- This prepares Step 6.5, where the OpenAI persona service will use the prompt builder.
+
+What was not changed:
+
+```text
+No OpenAI API call was added.
+No chat route behavior changed.
+No frontend code changed.
+USE_OPENAI_PERSONA remains false.
+```
+
+Verification:
+
+```text
+persona_prompt_builder.py compiled successfully.
+Prompt generation ran locally using the COPD/SOB scenario and current patient state.
+Prompt output included patient role instructions, current patient state, and the student message.
+```
