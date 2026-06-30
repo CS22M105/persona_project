@@ -1856,3 +1856,48 @@ With USE_OPENAI_PERSONA=false, build_persona_response() returned source="mock_fa
 Fallback reply still used current COPD/SOB state.
 Existing chat.py still compiled successfully.
 ```
+
+## 21. Step 6.7 Chat Route Connected to Persona Response Service - June 30, 2026
+
+Updated:
+
+```text
+codes/backend/app/api/chat.py
+codes/docs/Step6_OpenAI_Text_Persona.md
+```
+
+What changed:
+
+```text
+Before:
+/chat called build_mock_persona_response() directly.
+
+After:
+/chat calls build_persona_response().
+```
+
+Why this was done:
+
+- `/chat` now uses the safe persona response service created in Step 6.6.
+- The backend can use OpenAI later when `USE_OPENAI_PERSONA=true`.
+- The same route automatically falls back to mock behavior when OpenAI is disabled or unavailable.
+- The frontend API remains stable.
+
+What was not changed:
+
+```text
+The /chat request format did not change.
+The /chat response format did not change.
+No frontend code changed.
+USE_OPENAI_PERSONA remains false.
+No live OpenAI API call was made.
+```
+
+Verification:
+
+```text
+chat.py compiled successfully.
+POST /chat returned the expected patient response shape.
+With USE_OPENAI_PERSONA=false, /chat used the mock fallback path.
+After spo2_dropped cue, /chat returned: Worse. I cannot catch my breath.
+```

@@ -636,6 +636,55 @@ Update `chat.py` so the existing chat route uses OpenAI when enabled.
 
 Frontend should not need code changes.
 
+Status:
+
+```text
+Completed
+```
+
+Files changed:
+
+```text
+codes/backend/app/api/chat.py
+codes/docs/Step6_OpenAI_Text_Persona.md
+Progress_Report.md
+```
+
+What changed:
+
+```text
+Before:
+/chat called build_mock_persona_response() directly.
+
+After:
+/chat calls build_persona_response().
+build_persona_response() tries OpenAI when enabled and uses mock fallback when OpenAI is disabled or unavailable.
+```
+
+Why:
+
+- `/chat` should use the same safe persona response path that future OpenAI and fallback behavior share.
+- The frontend should not need to know whether the backend used OpenAI or fallback.
+- This keeps one stable API while allowing backend behavior to grow.
+
+What did not change:
+
+```text
+The /chat request body did not change.
+The /chat response body did not change.
+No frontend code changed.
+USE_OPENAI_PERSONA remains false, so current local behavior still uses mock_fallback.
+```
+
+Verification:
+
+```text
+chat.py compiled successfully.
+POST /chat still returned the same response shape.
+With USE_OPENAI_PERSONA=false, /chat returned a mock fallback reply.
+After spo2_dropped cue, /chat returned the state-aware severe breathing reply.
+```
+
 ### 6.8 Test baseline OpenAI chat
 
 Verify the patient responds naturally in baseline COPD/SOB state.
