@@ -1740,3 +1740,62 @@ persona_prompt_builder.py compiled successfully.
 Prompt generation ran locally using the COPD/SOB scenario and current patient state.
 Prompt output included patient role instructions, current patient state, and the student message.
 ```
+
+## 19. Step 6.5 OpenAI Persona Service Added - June 30, 2026
+
+Created:
+
+```text
+codes/backend/app/services/openai_persona.py
+```
+
+Updated:
+
+```text
+codes/docs/Step6_OpenAI_Text_Persona.md
+```
+
+What was added:
+
+```text
+OpenAIPersonaUnavailableError
+build_openai_persona_response()
+```
+
+What the new code does:
+
+```text
+Checks USE_OPENAI_PERSONA
+Checks backend OpenAI API key configuration
+Builds prompt using build_persona_prompt()
+Creates OpenAI SDK client from backend settings
+Calls the OpenAI Responses API
+Returns response.output_text as the patient reply
+Raises OpenAIPersonaUnavailableError if disabled, misconfigured, timed out, failed, or empty
+```
+
+Why this was done:
+
+- OpenAI-specific SDK logic should stay outside the `/chat` route.
+- The service can be connected to `/chat` later without rewriting prompt-builder logic.
+- The service is prepared for concise, low-latency patient replies using configured model, timeout, max output tokens, reasoning effort, and verbosity.
+- The disabled-mode guard keeps the current mock chat behavior safe until Step 6.7.
+
+What was not changed:
+
+```text
+No chat route behavior changed.
+No frontend code changed.
+No fallback connection was added yet.
+USE_OPENAI_PERSONA remains false.
+No live OpenAI API call was made during verification.
+```
+
+Verification:
+
+```text
+openai_persona.py compiled successfully.
+OpenAI persona service imported successfully.
+Disabled-mode guard raised OpenAIPersonaUnavailableError as expected.
+Existing chat.py still compiled successfully.
+```

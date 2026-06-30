@@ -496,6 +496,72 @@ Create the backend service that calls OpenAI text generation.
 
 Keep this isolated from `chat.py`.
 
+Status:
+
+```text
+Completed
+```
+
+Files changed:
+
+```text
+codes/backend/app/services/openai_persona.py
+codes/docs/Step6_OpenAI_Text_Persona.md
+Progress_Report.md
+```
+
+What was added:
+
+```text
+OpenAIPersonaUnavailableError
+build_openai_persona_response()
+```
+
+Where it fits:
+
+```text
+student message + scenario + current PatientState
+    |
+    v
+build_persona_prompt()
+    |
+    v
+build_openai_persona_response()
+    |
+    v
+OpenAI Responses API
+    |
+    v
+patient reply text
+```
+
+Why:
+
+- OpenAI-specific code should live in its own backend service.
+- The `/chat` route should not directly know SDK details.
+- The service uses the prompt builder from Step 6.4.
+- The service reads model, timeout, output length, reasoning effort, and verbosity from backend settings.
+- The service refuses to run when `USE_OPENAI_PERSONA=false`, which protects the current mock demo behavior.
+
+What was not changed:
+
+```text
+No chat route behavior was changed.
+No frontend code was changed.
+No fallback connection was added yet.
+USE_OPENAI_PERSONA remains false.
+No live OpenAI API call was made during verification.
+```
+
+Verification:
+
+```text
+openai_persona.py compiled successfully.
+The service imported successfully.
+Disabled-mode guard raised OpenAIPersonaUnavailableError as expected.
+Existing /chat route still imports and compiles.
+```
+
 ### 6.6 Add fallback and error handling
 
 If OpenAI fails, return mock response.
