@@ -568,6 +568,68 @@ If OpenAI fails, return mock response.
 
 Do not expose API keys, raw provider errors, or stack traces.
 
+Status:
+
+```text
+Completed
+```
+
+Files changed:
+
+```text
+codes/backend/app/services/persona_response_service.py
+codes/docs/Step6_OpenAI_Text_Persona.md
+Progress_Report.md
+```
+
+What was added:
+
+```text
+PersonaResponse
+build_persona_response()
+```
+
+Where it fits:
+
+```text
+student message + scenario + current PatientState
+    |
+    v
+build_persona_response()
+    |
+    |-- tries build_openai_persona_response()
+    |
+    |-- if disabled, misconfigured, failed, timed out, empty, or unexpected error
+    v
+uses build_mock_persona_response()
+```
+
+Why:
+
+- The demo should continue working if OpenAI is disabled or unavailable.
+- Fallback behavior should be centralized in one backend service.
+- The `/chat` route should not need to know how OpenAI failures are handled.
+- Raw OpenAI/provider errors should not be exposed to the frontend.
+- The response includes an internal `source` field so backend tests can tell whether OpenAI or fallback produced the reply.
+
+What was not changed:
+
+```text
+No chat route behavior was changed.
+No frontend code was changed.
+No live OpenAI API call was made.
+USE_OPENAI_PERSONA remains false.
+```
+
+Verification:
+
+```text
+persona_response_service.py compiled successfully.
+With USE_OPENAI_PERSONA=false, build_persona_response() returned a mock_fallback response.
+Fallback reply still followed the current COPD/SOB patient state.
+Existing chat.py still compiled successfully.
+```
+
 ### 6.7 Connect `/chat` to OpenAI service
 
 Update `chat.py` so the existing chat route uses OpenAI when enabled.

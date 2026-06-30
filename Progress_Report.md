@@ -1799,3 +1799,60 @@ OpenAI persona service imported successfully.
 Disabled-mode guard raised OpenAIPersonaUnavailableError as expected.
 Existing chat.py still compiled successfully.
 ```
+
+## 20. Step 6.6 Fallback and Error Handling Added - June 30, 2026
+
+Created:
+
+```text
+codes/backend/app/services/persona_response_service.py
+```
+
+Updated:
+
+```text
+codes/docs/Step6_OpenAI_Text_Persona.md
+```
+
+What was added:
+
+```text
+PersonaResponse
+build_persona_response()
+```
+
+What the new code does:
+
+```text
+Tries build_openai_persona_response()
+Returns source="openai" if OpenAI succeeds
+Falls back to build_mock_persona_response() if OpenAI is disabled, misconfigured, fails, times out, returns empty output, or raises an unexpected error
+Returns source="mock_fallback" when fallback is used
+Logs backend-only fallback reason
+Does not expose raw provider errors to the frontend
+```
+
+Why this was done:
+
+- The July 25 demo should keep working even if OpenAI is unavailable.
+- Fallback behavior should be centralized in a backend service instead of spread through the API route.
+- Step 6.7 can connect `/chat` to one safe persona response function.
+- The existing mock persona remains valuable as offline/demo fallback.
+
+What was not changed:
+
+```text
+No chat route behavior changed.
+No frontend code changed.
+No live OpenAI API call was made.
+USE_OPENAI_PERSONA remains false.
+```
+
+Verification:
+
+```text
+persona_response_service.py compiled successfully.
+With USE_OPENAI_PERSONA=false, build_persona_response() returned source="mock_fallback".
+Fallback reply still used current COPD/SOB state.
+Existing chat.py still compiled successfully.
+```
