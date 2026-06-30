@@ -389,6 +389,41 @@ Add the official OpenAI Python package to backend requirements.
 
 Verify dependency installation in the backend virtual environment.
 
+Status:
+
+```text
+Completed
+```
+
+Files changed:
+
+```text
+codes/backend/requirements.txt
+codes/docs/Step6_OpenAI_Text_Persona.md
+Progress_Report.md
+```
+
+What was added:
+
+```text
+openai==2.44.0
+```
+
+Why:
+
+- The backend needs the official OpenAI Python SDK before the OpenAI persona service can be built.
+- Pinning the installed version makes the project easier to reproduce on another machine.
+- Installing the dependency now verifies that the backend virtual environment can import the SDK before service code is added.
+
+What was not changed:
+
+```text
+No OpenAI API call was added.
+No chat route behavior was changed.
+No frontend code was changed.
+USE_OPENAI_PERSONA remains false.
+```
+
 ### 6.4 Build persona prompt builder
 
 Create prompt-building logic using scenario and patient state.

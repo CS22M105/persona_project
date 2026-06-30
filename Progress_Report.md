@@ -1645,3 +1645,42 @@ No OpenAI API call was added.
 No frontend code was changed.
 No voice_spike code was touched.
 ```
+
+## 17. Step 6.3 OpenAI Dependency Added - June 30, 2026
+
+Updated:
+
+```text
+codes/backend/requirements.txt
+codes/docs/Step6_OpenAI_Text_Persona.md
+```
+
+What was added:
+
+```text
+openai==2.44.0
+```
+
+Why this was done:
+
+- The backend needs the official OpenAI Python SDK before building the OpenAI text persona service.
+- The exact installed SDK version was pinned for reproducible setup.
+- The dependency was installed and verified in `codes/backend/.venv`.
+
+Verification:
+
+```text
+OpenAI SDK import succeeded.
+Installed OpenAI SDK version: 2.44.0
+Backend requirements now include openai==2.44.0.
+```
+
+What was not done:
+
+```text
+No OpenAI API call was added.
+No prompt builder was added yet.
+No chat route behavior changed.
+No frontend code changed.
+USE_OPENAI_PERSONA remains false.
+```
