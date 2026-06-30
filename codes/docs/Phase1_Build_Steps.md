@@ -346,43 +346,49 @@ Success criteria:
 
 ---
 
-## 6. Add Voice Interaction
+## 6. Add OpenAI Text Persona
 
-Add voice only after text mode, state manager, and dashboard are working.
+Upgrade the current mock text patient into an OpenAI-powered text persona.
 
-Voice flow:
+Reason for this change:
+
+The isolated voice spike proved that voice is feasible, but the main product should first make the patient persona realistic, state-aware, and reliable. This creates a stronger July 25 demo and prepares the system for transcript persistence and reports.
+
+Text persona flow:
 
 ```text
-student speech
+student text
         |
         v
-OpenAI Realtime voice session
+backend loads scenario and current patient state
         |
         v
-AI patient voice response
+OpenAI text persona response
         |
         v
-speaker or manikin room audio
+dashboard chat display
 ```
 
 Main tasks:
 
-- Backend creates short-lived Realtime credentials.
-- Frontend connects to OpenAI Realtime through WebRTC.
-- Student microphone streams audio.
-- AI patient voice plays through selected speaker.
-- Instructor state changes update the Realtime session context.
+- Add secure backend OpenAI configuration.
+- Add an OpenAI text persona service.
+- Build a prompt from scenario rules and current patient state.
+- Keep the existing mock persona as fallback.
+- Keep the existing `/chat` API unchanged.
+- Verify cue changes affect OpenAI-generated replies.
 
 Security rule:
 
 - The OpenAI API key must stay on the backend.
-- The frontend should receive only temporary Realtime credentials.
+- The frontend must never receive the permanent API key.
 
 Success criteria:
 
-- Student can speak to the AI patient.
-- AI responds by voice.
-- Instructor cue changes affect the next AI response.
+- Student can type to the AI patient.
+- AI answers as the COPD/SOB patient.
+- AI follows the latest instructor-cued state.
+- Mock fallback still works if OpenAI is disabled or unavailable.
 
 ---
 
@@ -440,7 +446,47 @@ Success criteria:
 
 ---
 
-## 9. Add Safety Controls
+## 9. Add Voice Interaction
+
+Add voice after the OpenAI text persona, transcript persistence, and report foundation are working.
+
+Voice flow:
+
+```text
+student speech
+        |
+        v
+OpenAI Realtime voice session
+        |
+        v
+AI patient voice response
+        |
+        v
+speaker or manikin room audio
+```
+
+Main tasks:
+
+- Backend creates short-lived Realtime credentials.
+- Frontend connects to OpenAI Realtime through WebRTC.
+- Student microphone streams audio.
+- AI patient voice plays through selected speaker.
+- Instructor state changes update the Realtime session context.
+
+Security rule:
+
+- The OpenAI API key must stay on the backend.
+- The frontend should receive only temporary Realtime credentials.
+
+Success criteria:
+
+- Student can speak to the AI patient.
+- AI responds by voice.
+- Instructor cue changes affect the next AI response.
+
+---
+
+## 10. Add Safety Controls and Instructor Takeover Polish
 
 Safety controls are required before any realistic pilot.
 
@@ -469,7 +515,35 @@ Success criteria:
 
 ---
 
-## 10. Test with a Mock Simulation
+## 11. Prepare Final Internship Demo
+
+The final demo should show the value of the project clearly.
+
+Demo sequence:
+
+- Show instructor dashboard.
+- Start COPD/SOB scenario.
+- Ask the AI patient assessment questions.
+- Trigger a condition change from the dashboard.
+- Show that the AI response changes.
+- End the session.
+- Show transcript and final report if available.
+- Explain that SimCapture can record the room audio/video separately.
+
+Final demo artifacts:
+
+- working app demo
+- COPD/SOB scenario
+- instructor dashboard
+- OpenAI text interaction
+- transcript
+- final report if completed
+- optional voice spike or integrated voice
+- short presentation or demo video
+
+---
+
+## Mock Simulation Test Script
 
 Run a complete COPD/SOB mock session.
 
@@ -496,33 +570,6 @@ Success criteria:
 
 ---
 
-## 11. Prepare Final Internship Demo
-
-The final demo should show the value of the project clearly.
-
-Demo sequence:
-
-- Show instructor dashboard.
-- Start COPD/SOB scenario.
-- Ask the AI patient assessment questions.
-- Trigger a condition change from the dashboard.
-- Show that the AI response changes.
-- End the session.
-- Show transcript and final report.
-- Explain that SimCapture can record the room audio/video separately.
-
-Final demo artifacts:
-
-- working app demo
-- COPD/SOB scenario
-- instructor dashboard
-- voice or text interaction
-- transcript
-- final report
-- short presentation or demo video
-
----
-
 ## Recommended Build Order
 
 ```text
@@ -531,12 +578,12 @@ Final demo artifacts:
 3. text-only persona
 4. patient state manager
 5. instructor dashboard
-6. voice interaction
+6. OpenAI text persona using current patient state
 7. transcript and event timeline
 8. final report
-9. safety controls
-10. mock simulation test
+9. voice interaction
+10. safety controls / pause / instructor takeover polish
 11. final demo preparation
 ```
 
-The most important rule is to build the text and state logic first. Voice should come after the persona and dashboard behavior are already working.
+The most important rule is to make the patient persona and session record reliable before fully integrating voice. Voice remains important, but it should sit on top of a stable text, state, transcript, and report foundation.

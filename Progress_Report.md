@@ -1504,3 +1504,107 @@ Recommendation for July 25:
 Before jumping fully into voice, add a stronger OpenAI-powered text persona behind the existing chat API if time allows. That gives a more realistic patient while preserving the same dashboard/state workflow.
 
 Voice can then be added after the text persona reliably follows instructor-cued state.
+
+## 13. Voice Spike Started - June 30, 2026
+
+Created an isolated voice spike under:
+
+```text
+codes/voice_spike/
+```
+
+Why this was done:
+
+- voice feasibility is essential to the project value
+- voice should be tested before changing the main dashboard/chat code
+- OpenAI API key handling must be validated safely
+- microphone and speaker behavior should be tested independently
+
+What was added:
+
+- `codes/voice_spike/backend`: FastAPI backend for Realtime session creation
+- `codes/voice_spike/frontend`: browser microphone/speaker WebRTC test page
+- `codes/voice_spike/docs/Voice_Spike_Setup.md`: setup, security, and control-flow documentation
+- `codes/voice_spike/README.md`: quick start instructions
+
+Security decision:
+
+```text
+The permanent OpenAI API key is stored only in codes/voice_spike/backend/.env.
+The browser receives only a temporary OpenAI Realtime client secret value.
+```
+
+Current voice spike boundary:
+
+```text
+No changes were made to the main Phase 1 backend/frontend behavior.
+The spike runs separately on backend port 8010 and frontend port 5174.
+```
+
+## 14. Voice Spike Endpoint Update - June 30, 2026
+
+During live testing, the first Realtime session request returned a 404 from the OpenAI endpoint. The isolated spike was updated to use the current Realtime WebRTC flow:
+
+```text
+Backend creates temporary client secret:
+POST /v1/realtime/client_secrets
+
+Browser connects WebRTC SDP:
+POST /v1/realtime/calls
+```
+
+Why this was done:
+
+- the earlier beta-style session endpoint was not accepted
+- the browser should still receive only a temporary client secret value
+- the permanent OpenAI API key remains only in codes/voice_spike/backend/.env
+- the change stays inside codes/voice_spike and does not affect the main Phase 1 app
+
+## 15. Step 6 Documentation Prepared - June 30, 2026
+
+Created:
+
+```text
+codes/docs/Step6_OpenAI_Text_Persona.md
+```
+
+Updated:
+
+```text
+codes/docs/Phase1_Build_Steps.md
+```
+
+Why this was done:
+
+- the isolated voice spike confirmed that voice is feasible
+- the main product still needs a stronger OpenAI text persona before transcript/report work
+- the roadmap needed to reflect the new safer order:
+
+```text
+Step 6: OpenAI text persona using current patient state
+Step 7: Transcript and event timeline persistence
+Step 8: Final debrief report
+Step 9: Voice interaction
+Step 10: Safety controls / instructor takeover polish
+Step 11: Final demo preparation
+```
+
+Step 6 documentation defines:
+
+- OpenAI text persona goal
+- scope and non-scope
+- target `/chat` control flow
+- proposed backend files
+- API key safety rules
+- prompt requirements
+- fallback strategy using existing mock persona
+- substeps 6.1 through 6.10
+- acceptance criteria and manual test script
+
+Important decision:
+
+```text
+Keep mock_persona.py as fallback.
+Add OpenAI persona service beside it.
+Keep the frontend /chat API unchanged.
+```
