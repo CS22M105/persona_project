@@ -1901,3 +1901,63 @@ POST /chat returned the expected patient response shape.
 With USE_OPENAI_PERSONA=false, /chat used the mock fallback path.
 After spo2_dropped cue, /chat returned: Worse. I cannot catch my breath.
 ```
+
+## 22. Step 6.8 Baseline OpenAI Chat Test Attempted - June 30, 2026
+
+Step 6.8 goal:
+
+```text
+Verify that baseline COPD/SOB chat can return an OpenAI-generated patient reply.
+```
+
+What was attempted:
+
+```text
+Baseline patient state was reset.
+The test message was: How are you feeling right now?
+USE_OPENAI_PERSONA=true was set only inside the test process.
+The existing backend persona service was used.
+```
+
+Result:
+
+```text
+The request reached OpenAI, but OpenAI rejected the available local API key.
+The backend fallback path returned the mock patient response safely.
+```
+
+Fallback response:
+
+```text
+I am feeling short of breath and a little scared. Can you help me?
+```
+
+Why this is still useful:
+
+- The app did not break when OpenAI failed.
+- The fallback safety path from Step 6.6 worked.
+- No raw provider error is exposed through `/chat`.
+- No API key was printed into project files or committed.
+
+Current Step 6.8 status:
+
+```text
+Blocked until a valid OpenAI API key is configured in codes/backend/.env.
+```
+
+What was not changed:
+
+```text
+No frontend code changed.
+No /chat request or response format changed.
+No API key was committed.
+USE_OPENAI_PERSONA remains false in committed/example config.
+```
+
+Next action:
+
+```text
+Create or update codes/backend/.env with a valid OpenAI API key.
+Set USE_OPENAI_PERSONA=true only when ready for the live OpenAI text test.
+Rerun Step 6.8.
+```

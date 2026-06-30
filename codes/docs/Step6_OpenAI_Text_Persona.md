@@ -689,6 +689,51 @@ After spo2_dropped cue, /chat returned the state-aware severe breathing reply.
 
 Verify the patient responds naturally in baseline COPD/SOB state.
 
+Status:
+
+```text
+Blocked until a valid OpenAI API key is configured for the main backend.
+```
+
+What was attempted:
+
+```text
+Ran a baseline COPD/SOB OpenAI persona request with:
+student message: How are you feeling right now?
+state: reset baseline patient state
+USE_OPENAI_PERSONA=true for the test process only
+```
+
+Result:
+
+```text
+The request reached OpenAI, but OpenAI rejected the available local key.
+The backend fallback path returned the mock patient response safely.
+```
+
+Why this matters:
+
+- The Step 6 OpenAI code path is ready to test, but live OpenAI output requires a valid key.
+- The current app remains demo-safe because fallback still works.
+- The key should be configured in `codes/backend/.env`, not frontend files or Markdown.
+
+What was not changed:
+
+```text
+No frontend code changed.
+No /chat request or response format changed.
+No API key was committed.
+USE_OPENAI_PERSONA remains false in committed/example config.
+```
+
+Next action required:
+
+```text
+Create or update codes/backend/.env with a valid OpenAI API key.
+Set USE_OPENAI_PERSONA=true only when ready to run the live OpenAI text test.
+Then rerun Step 6.8.
+```
+
 ### 6.9 Test state-aware OpenAI chat
 
 Verify instructor cues affect the next OpenAI response:
