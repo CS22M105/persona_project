@@ -163,6 +163,9 @@ OPENAI_API_KEY
 OPENAI_TEXT_MODEL
 USE_OPENAI_PERSONA
 OPENAI_REQUEST_TIMEOUT_SECONDS
+OPENAI_MAX_OUTPUT_TOKENS
+OPENAI_REASONING_EFFORT
+OPENAI_TEXT_VERBOSITY
 ```
 
 Recommended local `.env` location:
@@ -345,6 +348,41 @@ Add OpenAI text settings to backend config and `.env.example`.
 
 Do not call OpenAI yet.
 
+Status:
+
+```text
+Completed
+```
+
+Files changed:
+
+```text
+codes/backend/app/core/config.py
+codes/backend/.env.example
+codes/docs/Step6_OpenAI_Text_Persona.md
+Progress_Report.md
+```
+
+What was added:
+
+```text
+OPENAI_TEXT_MODEL=gpt-5.5
+USE_OPENAI_PERSONA=false
+OPENAI_REQUEST_TIMEOUT_SECONDS=20
+OPENAI_MAX_OUTPUT_TOKENS=180
+OPENAI_REASONING_EFFORT=low
+OPENAI_TEXT_VERBOSITY=low
+```
+
+Why:
+
+- `OPENAI_TEXT_MODEL` chooses the text model for the patient persona.
+- `USE_OPENAI_PERSONA=false` prevents accidental OpenAI calls until the service is wired intentionally.
+- `OPENAI_REQUEST_TIMEOUT_SECONDS` prevents slow API calls from hanging the demo.
+- `OPENAI_MAX_OUTPUT_TOKENS` keeps patient replies short.
+- `OPENAI_REASONING_EFFORT=low` favors lower latency for live simulation chat.
+- `OPENAI_TEXT_VERBOSITY=low` supports concise patient-style responses.
+
 ### 6.3 Add OpenAI dependency
 
 Add the official OpenAI Python package to backend requirements.
@@ -493,4 +531,3 @@ clear dashboard demonstration
 - OpenAI text generation guide: https://platform.openai.com/docs/guides/text
 - OpenAI Responses API reference: https://platform.openai.com/docs/api-reference/responses/create
 - OpenAI API key safety guidance: https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety
-

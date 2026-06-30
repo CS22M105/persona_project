@@ -1608,3 +1608,40 @@ Keep mock_persona.py as fallback.
 Add OpenAI persona service beside it.
 Keep the frontend /chat API unchanged.
 ```
+
+## 16. Step 6.2 Backend OpenAI Configuration Added - June 30, 2026
+
+Updated:
+
+```text
+codes/backend/app/core/config.py
+codes/backend/.env.example
+codes/docs/Step6_OpenAI_Text_Persona.md
+```
+
+What was added:
+
+```text
+OPENAI_TEXT_MODEL=gpt-5.5
+USE_OPENAI_PERSONA=false
+OPENAI_REQUEST_TIMEOUT_SECONDS=20
+OPENAI_MAX_OUTPUT_TOKENS=180
+OPENAI_REASONING_EFFORT=low
+OPENAI_TEXT_VERBOSITY=low
+```
+
+Why this was done:
+
+- Step 6 needs backend settings before any OpenAI service code is added.
+- `USE_OPENAI_PERSONA=false` keeps the current mock chat behavior active until OpenAI is intentionally connected.
+- The API key remains backend-only through `codes/backend/.env`.
+- Timeout, output length, reasoning effort, and verbosity settings prepare the app for safe live-demo behavior.
+
+What was not done:
+
+```text
+No OpenAI dependency was installed.
+No OpenAI API call was added.
+No frontend code was changed.
+No voice_spike code was touched.
+```
