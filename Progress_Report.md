@@ -2100,6 +2100,90 @@ Why this was done:
 - The frontend should display the patient reaction, not create clinical content itself.
 - This supports a better July 25 demo because the instructor can click a cue and students can immediately hear/read the patient change.
 
+Detailed backend flow:
+
+```text
+1. Instructor clicks a cue button in the dashboard.
+2. Frontend calls POST /state/cues/{cue_id}.
+3. api/state.py calls apply_instructor_cue(cue_id).
+4. state_manager.py updates the in-memory PatientState.
+5. api/state.py loads the COPD/SOB scenario.
+6. api/state.py calls build_auto_patient_message(cue_id, scenario, updated_state).
+7. auto_patient_message.py creates a special prompt for spontaneous patient reaction.
+8. auto_patient_message.py reuses build_persona_response().
+9. persona_response_service.py uses OpenAI when enabled.
+10. If OpenAI is unavailable, persona_response_service.py falls back to the mock patient response.
+11. api/state.py returns PatientStateResponse with:
+    updated state
+    auto_patient_message
+```
+
+Detailed frontend flow:
+
+```text
+1. Dashboard.tsx receives the response from applyInstructorCue(cueId).
+2. Dashboard.tsx updates the Current State panel using response.state.
+3. Dashboard.tsx stores response.auto_patient_message in component state.
+4. Dashboard.tsx passes autoPatientMessage to the embedded Chat component.
+5. Chat.tsx watches autoPatientMessage with useEffect.
+6. Chat.tsx converts the auto patient message into a normal chat message.
+7. Chat.tsx appends the patient message into the conversation.
+8. Chat.tsx checks message_id first so the same auto message is not inserted twice.
+```
+
+Response contract added to state cue endpoint:
+
+```json
+{
+  "state": {
+    "scenario_id": "copd-sob",
+    "status": "active",
+    "stage": "initial_assessment"
+  },
+  "auto_patient_message": {
+    "message_id": "auto-...",
+    "speaker": "patient",
+    "text": "My heart feels like it is racing. I feel scared.",
+    "trigger": "instructor_cue",
+    "cue_id": "hr_increased",
+    "cue_label": "Heart rate increased"
+  }
+}
+```
+
+Design decision:
+
+```text
+The automatic patient response is generated inside the state cue endpoint instead of requiring the frontend to call /chat.
+```
+
+Reason:
+
+- The event that causes the speech is the instructor cue, not a student message.
+- The backend has the safest access to the current patient state, scenario rules, OpenAI settings, and fallback behavior.
+- The frontend remains a display layer and does not invent clinical symptoms.
+- This structure will be easier to persist later in Step 7 as transcript and event timeline data.
+
+Current limitation:
+
+```text
+The auto response is synchronous.
+The dashboard waits for state update plus patient message generation before the cue request finishes.
+```
+
+Why this is acceptable for now:
+
+- It is simple and reliable for the July 25 demo.
+- It avoids WebSocket complexity at this stage.
+- It proves the product behavior before adding persistence or voice.
+
+Future production improvement:
+
+```text
+For a scaled product, the cue endpoint can update state immediately.
+Then a background job or WebSocket event can deliver the patient response to the room.
+```
+
 Verification:
 
 ```text
@@ -2110,6 +2194,23 @@ POST /state/cues/spo2_dropped returned status 200 with auto_patient_message.
 Fallback-mode auto response: "Worse. I cannot catch my breath."
 Live OpenAI route check for hr_increased returned status 200 with auto_patient_message.
 OpenAI auto response: "My heart feels like it is racing. I feel scared."
+```
+
+Verification commands used:
+
+```text
+python3 -m compileall codes/backend/app
+npm run build
+USE_OPENAI_PERSONA=false PYTHONPATH=codes/backend codes/backend/.venv/bin/python -c '...POST /state/reset and POST /state/cues/spo2_dropped...'
+PYTHONPATH=codes/backend codes/backend/.venv/bin/python -c '...POST /state/cues/hr_increased...'
+```
+
+Important security note:
+
+```text
+The OpenAI API key remained only in codes/backend/.env.
+The key was not printed in terminal output.
+The key was not added to Markdown, frontend code, Git, or the progress report.
 ```
 
 What was not changed:
