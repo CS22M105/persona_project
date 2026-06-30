@@ -692,30 +692,46 @@ Verify the patient responds naturally in baseline COPD/SOB state.
 Status:
 
 ```text
-Blocked until a valid OpenAI API key is configured for the main backend.
+Completed after a valid OpenAI API key was configured in the main backend .env file.
 ```
 
-What was attempted:
+Files changed:
 
 ```text
-Ran a baseline COPD/SOB OpenAI persona request with:
+codes/docs/Step6_OpenAI_Text_Persona.md
+Progress_Report.md
+```
+
+What was tested:
+
+```text
 student message: How are you feeling right now?
 state: reset baseline patient state
-USE_OPENAI_PERSONA=true for the test process only
+route: POST /chat
+USE_OPENAI_PERSONA=true
 ```
 
 Result:
 
 ```text
-The request reached OpenAI, but OpenAI rejected the available local key.
-The backend fallback path returned the mock patient response safely.
+POST /chat returned status 200.
+scenario_id was copd-sob.
+speaker was patient.
+Service-level source was openai.
 ```
 
-Why this matters:
+Observed baseline patient reply:
 
-- The Step 6 OpenAI code path is ready to test, but live OpenAI output requires a valid key.
-- The current app remains demo-safe because fallback still works.
-- The key should be configured in `codes/backend/.env`, not frontend files or Markdown.
+```text
+The patient reported shortness of breath, mild chest tightness, and tiredness.
+```
+
+Why:
+
+- This proves the existing `/chat` route can return an OpenAI-generated patient reply.
+- The frontend API stayed unchanged.
+- The backend-only API key stayed in `codes/backend/.env`.
+- No API key was printed, documented, committed, or copied into frontend code.
 
 What was not changed:
 
@@ -723,15 +739,16 @@ What was not changed:
 No frontend code changed.
 No /chat request or response format changed.
 No API key was committed.
-USE_OPENAI_PERSONA remains false in committed/example config.
+No voice_spike code was touched.
 ```
 
-Next action required:
+Verification:
 
 ```text
-Create or update codes/backend/.env with a valid OpenAI API key.
-Set USE_OPENAI_PERSONA=true only when ready to run the live OpenAI text test.
-Then rerun Step 6.8.
+Backend settings loaded a configured key without printing it.
+POST /chat returned an OpenAI-generated baseline patient response.
+Direct service-level check returned source=openai and fallback_reason=None.
+Backend compile check passed.
 ```
 
 ### 6.9 Test state-aware OpenAI chat

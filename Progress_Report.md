@@ -1902,7 +1902,7 @@ With USE_OPENAI_PERSONA=false, /chat used the mock fallback path.
 After spo2_dropped cue, /chat returned: Worse. I cannot catch my breath.
 ```
 
-## 22. Step 6.8 Baseline OpenAI Chat Test Attempted - June 30, 2026
+## 22. Step 6.8 Baseline OpenAI Chat Test Completed - June 30, 2026
 
 Step 6.8 goal:
 
@@ -1910,40 +1910,38 @@ Step 6.8 goal:
 Verify that baseline COPD/SOB chat can return an OpenAI-generated patient reply.
 ```
 
-What was attempted:
+What was tested:
 
 ```text
+codes/backend/.env existed.
+Backend settings loaded a configured OpenAI API key without printing it.
+USE_OPENAI_PERSONA=true.
 Baseline patient state was reset.
-The test message was: How are you feeling right now?
-USE_OPENAI_PERSONA=true was set only inside the test process.
-The existing backend persona service was used.
+POST /chat was called with: How are you feeling right now?
 ```
 
 Result:
 
 ```text
-The request reached OpenAI, but OpenAI rejected the available local API key.
-The backend fallback path returned the mock patient response safely.
+POST /chat returned status 200.
+scenario_id was copd-sob.
+speaker was patient.
+Direct service-level source was openai.
+fallback_reason was None.
 ```
 
-Fallback response:
+Observed patient behavior:
 
 ```text
-I am feeling short of breath and a little scared. Can you help me?
+The patient reported shortness of breath, mild chest tightness, and tiredness in first person.
 ```
 
-Why this is still useful:
+Why this is valuable:
 
-- The app did not break when OpenAI failed.
-- The fallback safety path from Step 6.6 worked.
-- No raw provider error is exposed through `/chat`.
-- No API key was printed into project files or committed.
-
-Current Step 6.8 status:
-
-```text
-Blocked until a valid OpenAI API key is configured in codes/backend/.env.
-```
+- This proves the main `/chat` route can use OpenAI successfully.
+- The frontend API did not need to change.
+- The patient response matched the COPD/SOB baseline condition.
+- The API key stayed backend-only in the ignored `.env` file.
 
 What was not changed:
 
@@ -1951,13 +1949,19 @@ What was not changed:
 No frontend code changed.
 No /chat request or response format changed.
 No API key was committed.
-USE_OPENAI_PERSONA remains false in committed/example config.
+No voice_spike code was touched.
 ```
 
-Next action:
+Verification:
 
 ```text
-Create or update codes/backend/.env with a valid OpenAI API key.
-Set USE_OPENAI_PERSONA=true only when ready for the live OpenAI text test.
-Rerun Step 6.8.
+Backend compile check passed.
+OpenAI source check returned source=openai.
+Fallback reason was None.
+```
+
+Next step:
+
+```text
+Step 6.9: test whether instructor-cued state changes affect OpenAI-generated patient replies.
 ```
