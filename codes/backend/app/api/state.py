@@ -1,6 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.state import PatientStateResponse, StateEventsResponse
+from app.services.auto_patient_message import build_auto_patient_message
+from app.services.scenario_loader import load_copd_sob_scenario
 from app.services.state_manager import (
     apply_instructor_cue,
     get_current_state,
@@ -28,7 +30,13 @@ async def apply_state_cue(cue_id: str) -> PatientStateResponse:
     except ValueError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
 
-    return PatientStateResponse(state=updated_state)
+    scenario = load_copd_sob_scenario()
+    auto_patient_message = build_auto_patient_message(cue_id, scenario, updated_state)
+
+    return PatientStateResponse(
+        state=updated_state,
+        auto_patient_message=auto_patient_message,
+    )
 
 
 @router.get("/events", response_model=StateEventsResponse)

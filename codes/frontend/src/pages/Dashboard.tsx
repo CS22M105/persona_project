@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import {
   applyInstructorCue,
+  AutoPatientMessage,
   getPatientState,
   getStateEvents,
   PatientState,
@@ -25,6 +26,8 @@ export function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [autoPatientMessage, setAutoPatientMessage] =
+    useState<AutoPatientMessage | null>(null);
 
   useEffect(() => {
     async function loadDashboardData() {
@@ -59,6 +62,7 @@ export function Dashboard() {
     try {
       const stateResponse = await resetPatientState();
       setPatientState(stateResponse.state);
+      setAutoPatientMessage(null);
       await refreshEvents();
     } catch {
       setErrorMessage("Patient state failed to reset. Make sure the backend is running.");
@@ -74,6 +78,7 @@ export function Dashboard() {
     try {
       const stateResponse = await applyInstructorCue(cueId);
       setPatientState(stateResponse.state);
+      setAutoPatientMessage(stateResponse.auto_patient_message);
       await refreshEvents();
     } catch {
       setErrorMessage("Instructor cue failed. Make sure the backend is running.");
@@ -193,7 +198,7 @@ export function Dashboard() {
 
             <section className="dashboard-card chat-card" aria-labelledby="dashboard-chat-title">
               <h2 id="dashboard-chat-title">Patient Conversation</h2>
-              <Chat embedded />
+              <Chat embedded autoPatientMessage={autoPatientMessage} />
             </section>
           </div>
         ) : null}

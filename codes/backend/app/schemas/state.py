@@ -66,8 +66,18 @@ class StateEvent(BaseModel):
     label: str | None = None
 
 
+class AutoPatientMessage(BaseModel):
+    message_id: str
+    speaker: Literal["patient"] = "patient"
+    text: str
+    trigger: Literal["instructor_cue"] = "instructor_cue"
+    cue_id: str
+    cue_label: str | None = None
+
+
 class PatientStateResponse(BaseModel):
     state: PatientState
+    auto_patient_message: AutoPatientMessage | None = None
 
 
 class StateEventsResponse(BaseModel):

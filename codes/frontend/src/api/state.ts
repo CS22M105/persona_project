@@ -67,8 +67,18 @@ export type StateEvent = {
   label: string | null;
 };
 
+export type AutoPatientMessage = {
+  message_id: string;
+  speaker: "patient";
+  text: string;
+  trigger: "instructor_cue";
+  cue_id: string;
+  cue_label: string | null;
+};
+
 export type PatientStateResponse = {
   state: PatientState;
+  auto_patient_message: AutoPatientMessage | null;
 };
 
 export type StateEventsResponse = {

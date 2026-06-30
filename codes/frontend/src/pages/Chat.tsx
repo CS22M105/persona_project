@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { sendChatMessage } from "../api/chat";
+import { AutoPatientMessage } from "../api/state";
 
 type ChatMessage = {
   id: string;
@@ -18,13 +19,38 @@ const initialMessages: ChatMessage[] = [
 
 type ChatProps = {
   embedded?: boolean;
+  autoPatientMessage?: AutoPatientMessage | null;
 };
 
-export function Chat({ embedded = false }: ChatProps) {
+export function Chat({ embedded = false, autoPatientMessage = null }: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [messageInput, setMessageInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    if (!autoPatientMessage) {
+      return;
+    }
+
+    const patientMessage: ChatMessage = {
+      id: autoPatientMessage.message_id,
+      speaker: "patient",
+      text: autoPatientMessage.text,
+    };
+
+    setMessages((currentMessages) => {
+      const messageAlreadyExists = currentMessages.some(
+        (message) => message.id === patientMessage.id,
+      );
+
+      if (messageAlreadyExists) {
+        return currentMessages;
+      }
+
+      return [...currentMessages, patientMessage];
+    });
+  }, [autoPatientMessage]);
 
   async function handleSubmit(formData: FormData) {
     const submittedMessage = formData.get("message");

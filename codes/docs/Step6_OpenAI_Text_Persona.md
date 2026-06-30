@@ -837,6 +837,127 @@ No API key was committed.
 No voice_spike code was touched.
 ```
 
+Additional Step 6.9 implementation:
+
+```text
+Auto patient response after instructor-cued state change
+```
+
+Problem found:
+
+```text
+The instructor could change the patient state from the dashboard, but the patient did not speak immediately.
+The student had to ask "How are you feeling?" before the changed condition appeared in conversation.
+```
+
+Why this matters:
+
+- In a simulation lab, a patient should sometimes react when their condition changes.
+- If SpO2 drops, heart rate increases, or breathing worsens, the patient persona should be able to speak spontaneously.
+- This makes the dashboard feel closer to a real simulation control room workflow.
+- It also creates a stronger future transcript/report flow because state changes and patient reactions can be recorded together.
+
+Implementation approach:
+
+```text
+Instructor clicks cue button
+Backend applies patient state update
+Backend generates one spontaneous patient reaction
+Backend returns updated state + auto_patient_message
+Frontend updates Current State panel
+Frontend appends patient reaction into Patient Conversation
+```
+
+Files changed:
+
+```text
+codes/backend/app/schemas/state.py
+codes/backend/app/services/auto_patient_message.py
+codes/backend/app/api/state.py
+codes/frontend/src/api/state.ts
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/pages/Chat.tsx
+codes/docs/Step6_OpenAI_Text_Persona.md
+Progress_Report.md
+```
+
+What changed:
+
+```text
+state.py:
+Added AutoPatientMessage schema.
+Added optional auto_patient_message to PatientStateResponse.
+
+auto_patient_message.py:
+Added a service that builds the spontaneous patient reaction after an instructor cue.
+It reuses the existing persona response service, so OpenAI and mock fallback behavior stay consistent.
+
+api/state.py:
+POST /state/cues/{cue_id} now applies the cue and returns an auto_patient_message.
+GET /state and POST /state/reset still return only state with no auto patient message.
+
+state.ts:
+Added frontend type for AutoPatientMessage.
+Updated PatientStateResponse to include auto_patient_message.
+
+Dashboard.tsx:
+Stores the latest auto patient message returned by the cue endpoint.
+Passes that message into the embedded Chat component.
+
+Chat.tsx:
+Accepts an optional autoPatientMessage prop.
+Appends that patient message once when a new instructor cue response arrives.
+Prevents duplicate insertion using message_id.
+```
+
+Why:
+
+- The backend should own patient reactions to state changes because the backend knows the latest state and prompt rules.
+- The frontend should only display the returned patient message, not invent clinical wording.
+- The existing OpenAI/fallback service is reused so the behavior works even when OpenAI is disabled or unavailable.
+- The `/chat` API remains stable; only the state-cue response gained an optional patient message field.
+
+Example response shape:
+
+```json
+{
+  "state": {
+    "scenario_id": "copd-sob",
+    "stage": "initial_assessment"
+  },
+  "auto_patient_message": {
+    "message_id": "auto-...",
+    "speaker": "patient",
+    "text": "My heart feels like it is racing. I feel scared.",
+    "trigger": "instructor_cue",
+    "cue_id": "hr_increased",
+    "cue_label": "Heart rate increased"
+  }
+}
+```
+
+Verification:
+
+```text
+Backend compile check passed.
+Frontend production build passed.
+POST /state/reset returned status 200 and auto_patient_message=None.
+POST /state/cues/spo2_dropped returned status 200 with auto_patient_message.
+Fallback-mode auto message text: "Worse. I cannot catch my breath."
+Live OpenAI route check for hr_increased returned status 200 with auto_patient_message.
+OpenAI auto message text: "My heart feels like it is racing. I feel scared."
+```
+
+What was not changed by this extension:
+
+```text
+No API key was printed or committed.
+No OpenAI key was moved to the frontend.
+No voice_spike code was touched.
+No WebSocket implementation was added yet.
+No transcript persistence was added yet.
+```
+
 ### 6.10 Update progress report
 
 Append what changed, why, verification results, and remaining risks.
@@ -851,7 +972,9 @@ Step 6 is complete when:
 - `/chat` still works if OpenAI is disabled or unavailable
 - replies follow COPD/SOB scenario rules
 - replies follow current instructor-cued patient state
-- frontend dashboard/chat continues working without API changes
+- instructor cues can return an automatic patient reaction
+- frontend dashboard can append that automatic patient reaction into chat
+- `/chat` request and response format remains unchanged
 - no voice spike code is required for Step 6
 
 ## Manual Test Script
@@ -882,7 +1005,14 @@ Apply cue:
 POST /state/cues/spo2_dropped
 ```
 
-Ask:
+Expected:
+
+```text
+Response includes auto_patient_message.
+Patient sounds more breathless and anxious without waiting for a student question.
+```
+
+Optional follow-up question:
 
 ```text
 Are you feeling worse?
@@ -900,16 +1030,11 @@ Apply cue:
 POST /state/cues/hr_increased
 ```
 
-Ask:
-
-```text
-What do you feel now?
-```
-
 Expected:
 
 ```text
-Patient mentions racing heart or fear.
+Response includes auto_patient_message.
+Patient mentions racing heart or fear without waiting for a student question.
 ```
 
 ## Product Notes

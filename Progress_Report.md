@@ -2051,3 +2051,79 @@ Result:
 Step 6.9 passed.
 OpenAI text persona follows instructor-cued patient state.
 ```
+
+## 24. Step 6.9 Auto Patient Response After State Change - June 30, 2026
+
+Step 6.9 extension goal:
+
+```text
+Make the patient respond automatically after the instructor changes patient state from the dashboard.
+```
+
+Problem found:
+
+```text
+Before this change, instructor cue buttons changed the backend patient state, but the patient did not speak immediately.
+The student had to ask a follow-up question before the changed condition appeared in conversation.
+```
+
+Updated:
+
+```text
+codes/backend/app/schemas/state.py
+codes/backend/app/services/auto_patient_message.py
+codes/backend/app/api/state.py
+codes/frontend/src/api/state.ts
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/pages/Chat.tsx
+codes/docs/Step6_OpenAI_Text_Persona.md
+```
+
+What changed:
+
+```text
+Backend:
+Added AutoPatientMessage response schema.
+Added auto_patient_message.py service for spontaneous patient reactions.
+Updated POST /state/cues/{cue_id} to return updated state plus auto_patient_message.
+
+Frontend:
+Added AutoPatientMessage TypeScript type.
+Dashboard stores the latest auto patient message from a cue response.
+Chat appends that patient message automatically and avoids duplicates by message_id.
+```
+
+Why this was done:
+
+- The patient persona should react when the clinical condition changes.
+- The backend should generate the patient wording because it knows the current state, scenario rules, OpenAI settings, and fallback path.
+- The frontend should display the patient reaction, not create clinical content itself.
+- This supports a better July 25 demo because the instructor can click a cue and students can immediately hear/read the patient change.
+
+Verification:
+
+```text
+Backend compile check passed.
+Frontend production build passed.
+POST /state/reset returned status 200 and no auto patient message.
+POST /state/cues/spo2_dropped returned status 200 with auto_patient_message.
+Fallback-mode auto response: "Worse. I cannot catch my breath."
+Live OpenAI route check for hr_increased returned status 200 with auto_patient_message.
+OpenAI auto response: "My heart feels like it is racing. I feel scared."
+```
+
+What was not changed:
+
+```text
+No API key was printed or committed.
+No OpenAI key was moved to frontend code.
+No /chat request or response format changed.
+No voice_spike code was touched.
+No transcript persistence was added yet.
+```
+
+Result:
+
+```text
+Instructor cue -> patient state update -> automatic patient response now works.
+```
