@@ -133,32 +133,40 @@ flowchart TD
 
 ## Persistence Strategy
 
-For the July demo, use a backend database through a normal database abstraction.
+For the July demo and future product direction, use PostgreSQL through a normal backend database abstraction.
 
 Recommended approach:
 
 ```text
-SQLAlchemy models + existing DATABASE_URL setting
+PostgreSQL + SQLAlchemy models + existing DATABASE_URL setting
 ```
 
 Local development:
 
 ```text
-SQLite is acceptable for quick local demo work.
+Run PostgreSQL locally and connect through DATABASE_URL.
 ```
 
 Production direction:
 
 ```text
-PostgreSQL should be used for deployed or multi-user use.
+Use managed or private-cloud PostgreSQL for deployed or multi-user use.
 ```
 
 Why this approach:
 
 - the existing backend already has `DATABASE_URL`
-- SQLite keeps the internship demo fast to build and easy to run
-- SQLAlchemy keeps the path open for PostgreSQL
+- PostgreSQL keeps the internship demo aligned with the production data model
+- SQLAlchemy keeps database access organized while still using PostgreSQL from the start
 - transcript/report features need structured queries later
+- future multi-session, reporting, audit, and analytics features will fit PostgreSQL better than a local file database
+
+Why not SQLite:
+
+- The project is intended to grow beyond an internship prototype.
+- Transcript and event data are core product records, not temporary demo-only data.
+- PostgreSQL avoids a later database migration from SQLite assumptions.
+- PostgreSQL is better suited for concurrent users, deployed environments, reporting queries, and production backup/retention workflows.
 
 ## Data Entities
 
@@ -598,7 +606,7 @@ Create this planning document.
 
 ### 7.2 Add database dependency and database session foundation
 
-Add SQLAlchemy support and create the backend database session helper.
+Add PostgreSQL driver support, SQLAlchemy support, and create the backend database session helper.
 
 ### 7.3 Define persistence models
 
@@ -854,4 +862,3 @@ Do not add:
 - complex analytics
 
 Those are later steps. Step 7 should make the simulation record reliable first.
-

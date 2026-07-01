@@ -2275,10 +2275,17 @@ risks and mitigations
 Main design decision:
 
 ```text
-Use SQLAlchemy with the existing DATABASE_URL setting.
-SQLite is acceptable for the local July demo.
-PostgreSQL remains the production direction.
+Use PostgreSQL with SQLAlchemy and the existing DATABASE_URL setting.
+PostgreSQL is required even for the local July demo.
+SQLite will not be used for Step 7.
 ```
+
+Why PostgreSQL is required:
+
+- The project is being built with future productization in mind.
+- Transcript and event records are core simulation data, not temporary demo files.
+- PostgreSQL better supports deployed use, concurrent sessions, reporting, backup, and audit needs.
+- Using PostgreSQL now avoids redesigning persistence later.
 
 Planned persisted records:
 
