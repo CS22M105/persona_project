@@ -2228,3 +2228,94 @@ Result:
 ```text
 Instructor cue -> patient state update -> automatic patient response now works.
 ```
+
+## 25. Step 7 Transcript and Event Timeline Persistence Planned - July 1, 2026
+
+Goal:
+
+```text
+Plan transcript and event timeline persistence before implementation.
+```
+
+Created:
+
+```text
+codes/docs/Step7_Transcript_Event_Persistence.md
+```
+
+Why this was done:
+
+- The app can now support student messages, OpenAI patient replies, instructor cues, state changes, and automatic patient reactions.
+- Those interactions need to be saved so instructors can review what happened during and after a session.
+- Persistence is the foundation for the next major product feature: final debrief reports.
+- This step supports both the July 25 internship demo and the future sellable-product direction.
+
+What the Step 7 document defines:
+
+```text
+Step 7 goal
+product value
+scope and non-scope
+important product boundary
+target persistence flow
+database strategy
+data entities
+API design
+backend file plan
+frontend file plan
+chat persistence sequence
+instructor cue persistence sequence
+substeps 7.1 through 7.12
+success criteria
+testing plan
+security/privacy notes
+risks and mitigations
+```
+
+Main design decision:
+
+```text
+Use SQLAlchemy with the existing DATABASE_URL setting.
+SQLite is acceptable for the local July demo.
+PostgreSQL remains the production direction.
+```
+
+Planned persisted records:
+
+```text
+sessions
+transcript_messages
+timeline_events
+```
+
+Planned transcript content:
+
+```text
+student questions
+AI patient responses
+automatic patient reactions
+timestamps
+speaker labels
+message source
+cue references when applicable
+```
+
+Planned event timeline content:
+
+```text
+session started
+student message
+patient response
+instructor cues
+state snapshots after cues
+automatic patient response events
+pause/resume/takeover events later
+session ended
+```
+
+Result:
+
+```text
+Step 7 is planned and ready to implement one substep at a time.
+No Step 7 product code has been implemented yet.
+```
