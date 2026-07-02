@@ -3694,3 +3694,48 @@ The endpoint does not expose API keys.
 The endpoint does not call OpenAI.
 The endpoint does not create grades or pass/fail decisions.
 ```
+
+## 42. Step 8.5 Frontend Final Report API Client Confirmed - July 2, 2026
+
+Goal:
+
+```text
+Give the React frontend a typed function for requesting the final debrief report.
+```
+
+Confirmed:
+
+```text
+codes/frontend/src/api/sessions.ts
+```
+
+What the frontend API client provides:
+
+- TypeScript types for the final report response.
+- `FinalDebriefReport` as the main report type.
+- `getSessionReport(sessionId)` for calling `GET /sessions/{session_id}/report`.
+- Error handling when the backend report request fails.
+
+Why:
+
+- The dashboard needs a clean client function before it can display the final report.
+- The frontend should match the backend report schema from Step 8.2.
+- TypeScript helps catch response-shape mistakes during frontend build.
+- The report should be requested from the backend, not generated inside the browser.
+
+How it works:
+
+```text
+Dashboard calls getSessionReport(sessionId)
+getSessionReport calls the backend report endpoint
+backend returns FinalDebriefReport JSON
+frontend receives typed report data for display
+```
+
+Security note:
+
+```text
+The frontend report client does not call OpenAI.
+The frontend report client does not access the database directly.
+The frontend report client does not receive or expose API keys.
+```

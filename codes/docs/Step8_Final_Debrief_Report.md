@@ -552,6 +552,55 @@ It generates the current report from persisted session records when requested.
 
 Add a function to fetch the final report.
 
+Implemented on July 2, 2026:
+
+```text
+Confirmed and documented the frontend report client in:
+codes/frontend/src/api/sessions.ts
+```
+
+What the frontend API client includes:
+
+- `ReportSessionMetadata`
+- `ReportTranscriptEntry`
+- `ReportTimelineEntry`
+- `ReportChecklistItem`
+- `FinalDebriefReport`
+- `getSessionReport(sessionId)`
+
+Why:
+
+- the dashboard needs one clear function for requesting a final report
+- the frontend should know the expected report response shape before rendering it
+- TypeScript types help catch backend/frontend contract mismatches early
+- the API key must stay on the backend and never be sent to the browser
+
+How:
+
+```typescript
+export async function getSessionReport(
+  sessionId: string,
+): Promise<FinalDebriefReport> {
+  const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/report`);
+
+  if (!response.ok) {
+    throw new Error(`Report request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+```
+
+Important boundary:
+
+```text
+The frontend client only calls the backend report endpoint.
+It does not generate the report.
+It does not read the database.
+It does not call OpenAI.
+It does not receive or expose API keys.
+```
+
 ### 8.6 Add dashboard report view
 
 Show report sections in the dashboard.
