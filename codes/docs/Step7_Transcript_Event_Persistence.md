@@ -1177,6 +1177,102 @@ GET /sessions/{session_id}/transcript
 GET /sessions/{session_id}/events
 ```
 
+Status:
+
+```text
+Completed
+```
+
+File created:
+
+```text
+codes/backend/app/api/sessions.py
+```
+
+File changed:
+
+```text
+codes/backend/app/main.py
+```
+
+What changed:
+
+```text
+api/sessions.py:
+Added sessions router with prefix /sessions.
+Added POST /sessions/start.
+Added GET /sessions/current.
+Added POST /sessions/{session_id}/end.
+Added GET /sessions/{session_id}/transcript.
+Added GET /sessions/{session_id}/events.
+
+main.py:
+Registered the sessions router with the FastAPI app.
+```
+
+Why:
+
+- Step 7 services are now ready, but the frontend cannot use them until backend routes expose them.
+- Session APIs give the frontend a way to start, end, and read the active session.
+- Transcript and event APIs give the frontend a future way to load persisted records.
+- API routes translate service-layer `SessionNotFoundError` into HTTP 404 responses.
+
+How it works:
+
+```text
+POST /sessions/start:
+Starts a session or reuses the existing active session.
+Accepts optional body: {"scenario_id": "copd-sob"}.
+
+GET /sessions/current:
+Returns the current active session or null.
+
+POST /sessions/{session_id}/end:
+Marks a session ended.
+Returns 404 if the session does not exist.
+
+GET /sessions/{session_id}/transcript:
+Returns transcript messages for the session.
+Returns 404 if the session does not exist.
+
+GET /sessions/{session_id}/events:
+Returns timeline events for the session.
+Returns 404 if the session does not exist.
+```
+
+Important boundary:
+
+```text
+Step 7.8 exposes APIs for sessions, transcript reading, and event reading.
+It does not yet connect /chat to transcript saving.
+It does not yet connect /state/cues/{cue_id} to event saving.
+```
+
+Verification:
+
+```text
+Backend compile check passed.
+Health endpoint still returned 200 ok.
+Route-level test used a temporary SQLite database override.
+POST /sessions/start returned 200 and status=active.
+GET /sessions/current returned the active session.
+GET /sessions/{session_id}/transcript returned 200 with an empty messages list.
+GET /sessions/{session_id}/events returned 200 with an empty events list.
+POST /sessions/{session_id}/end returned 200 and status=ended.
+GET /sessions/missing-session/transcript returned 404.
+```
+
+What was not changed:
+
+```text
+No frontend code was changed.
+No /chat behavior was changed yet.
+No /state behavior was changed yet.
+No automatic transcript persistence happens yet.
+No automatic event persistence happens yet.
+No real PostgreSQL rows were created during verification.
+```
+
 ### 7.9 Connect `/chat` to transcript persistence
 
 Save:

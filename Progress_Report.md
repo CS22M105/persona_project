@@ -2912,3 +2912,98 @@ Result:
 Step 7.7 is complete.
 The timeline service is ready for Step 7.10 state cue and event persistence wiring.
 ```
+
+## 32. Step 7.8 Sessions API Route Implemented - July 2, 2026
+
+Goal:
+
+```text
+Expose backend API routes for session lifecycle, transcript reading, and event timeline reading.
+```
+
+Created:
+
+```text
+codes/backend/app/api/sessions.py
+```
+
+Updated:
+
+```text
+codes/backend/app/main.py
+codes/docs/Step7_Transcript_Event_Persistence.md
+```
+
+What changed:
+
+```text
+api/sessions.py:
+Added POST /sessions/start.
+Added GET /sessions/current.
+Added POST /sessions/{session_id}/end.
+Added GET /sessions/{session_id}/transcript.
+Added GET /sessions/{session_id}/events.
+
+main.py:
+Registered the sessions router.
+```
+
+Why this was done:
+
+- Step 7.5, 7.6, and 7.7 created services, but there was no HTTP API for the frontend to use.
+- The dashboard will need to start/end sessions and load persisted transcript and timeline records.
+- API routes keep frontend communication stable and hide database/service details.
+- Missing sessions are converted into HTTP 404 responses.
+
+How it works:
+
+```text
+POST /sessions/start:
+Creates or reuses the active simulation session.
+
+GET /sessions/current:
+Returns the current active session or null.
+
+POST /sessions/{session_id}/end:
+Marks a session as ended.
+
+GET /sessions/{session_id}/transcript:
+Returns persisted transcript messages for a session.
+
+GET /sessions/{session_id}/events:
+Returns persisted timeline events for a session.
+```
+
+Verification:
+
+```text
+Backend compile check passed.
+Health endpoint returned 200 ok.
+Route-level test used a temporary SQLite database override.
+POST /sessions/start returned 200 and status=active.
+GET /sessions/current returned the active session.
+GET /sessions/{session_id}/transcript returned 200 and messages=[].
+GET /sessions/{session_id}/events returned 200 and events=[].
+POST /sessions/{session_id}/end returned 200 and status=ended.
+GET /sessions/missing-session/transcript returned 404.
+```
+
+What was not changed:
+
+```text
+No frontend code was changed.
+No /chat behavior was changed yet.
+No /state behavior was changed yet.
+No automatic transcript persistence happens yet.
+No automatic event persistence happens yet.
+No real PostgreSQL rows were created during verification.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Result:
+
+```text
+Step 7.8 is complete.
+The backend now exposes session, transcript, and timeline read APIs for future frontend integration.
+```
