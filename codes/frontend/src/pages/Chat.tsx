@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { sendChatMessage } from "../api/chat";
 import { AutoPatientMessage } from "../api/state";
 
-type ChatMessage = {
+export type ChatMessage = {
   id: string;
   speaker: "student" | "patient";
   text: string;
@@ -20,16 +20,33 @@ const initialMessages: ChatMessage[] = [
 type ChatProps = {
   embedded?: boolean;
   autoPatientMessage?: AutoPatientMessage | null;
+  persistedMessages?: ChatMessage[];
+  onMessageSent?: () => Promise<void> | void;
+  statusLabel?: string;
 };
 
-export function Chat({ embedded = false, autoPatientMessage = null }: ChatProps) {
+export function Chat({
+  embedded = false,
+  autoPatientMessage = null,
+  persistedMessages,
+  onMessageSent,
+  statusLabel = "Backend mock",
+}: ChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [messageInput, setMessageInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    if (!autoPatientMessage) {
+    if (!persistedMessages) {
+      return;
+    }
+
+    setMessages(persistedMessages.length > 0 ? persistedMessages : initialMessages);
+  }, [persistedMessages]);
+
+  useEffect(() => {
+    if (!autoPatientMessage || persistedMessages) {
       return;
     }
 
@@ -82,6 +99,7 @@ export function Chat({ embedded = false, autoPatientMessage = null }: ChatProps)
       };
 
       setMessages((currentMessages) => [...currentMessages, patientMessage]);
+      await onMessageSent?.();
     } catch {
       setErrorMessage("Patient response failed. Make sure the backend is running.");
     } finally {
@@ -96,7 +114,7 @@ export function Chat({ embedded = false, autoPatientMessage = null }: ChatProps)
             <p className="eyebrow">COPD/SOB scenario</p>
             <h1 id="chat-title">Text Patient Persona</h1>
           </div>
-          <span className="scenario-badge">Backend mock</span>
+          <span className="scenario-badge">{statusLabel}</span>
         </header>
 
         <div className="conversation" aria-live="polite">

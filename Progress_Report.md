@@ -3197,3 +3197,105 @@ Result:
 Step 7.10 is complete.
 Instructor cues and automatic patient reactions are now persisted through timeline and transcript services.
 ```
+
+## 35. Step 7.11 Frontend Connected to Persisted Transcript and Events - July 2, 2026
+
+Goal:
+
+```text
+Connect the dashboard frontend to persisted session, transcript, and timeline APIs.
+```
+
+Created:
+
+```text
+codes/frontend/src/api/sessions.ts
+```
+
+Updated:
+
+```text
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/pages/Chat.tsx
+codes/docs/Step7_Transcript_Event_Persistence.md
+```
+
+What changed:
+
+```text
+sessions.ts:
+Added frontend types for SessionResponse, TranscriptMessageResponse, and TimelineEventResponse.
+Added startSession().
+Added getCurrentSession().
+Added getSessionTranscript().
+Added getSessionEvents().
+
+Dashboard.tsx:
+Starts or reuses a persisted session on dashboard load.
+Loads persisted transcript messages from /sessions/{session_id}/transcript.
+Loads persisted timeline events from /sessions/{session_id}/events.
+Refreshes persisted records after chat messages and instructor cues.
+Displays persisted timeline events instead of the old in-memory /state/events list.
+Shows persisted session record status in the header.
+
+Chat.tsx:
+Accepts persistedMessages from Dashboard.
+Displays persisted transcript messages when provided.
+Notifies Dashboard after a message is successfully sent.
+Keeps standalone chat behavior when persistedMessages is not provided.
+Avoids duplicate auto-patient messages when persisted transcript is active.
+```
+
+Why this was done:
+
+- Backend persistence was already implemented for chat messages, instructor cues, and automatic patient reactions.
+- The dashboard needed to read those persisted records from backend APIs.
+- Persisted transcript and timeline views are required before final debrief reports can be generated.
+- This lets the UI move away from purely local component state.
+
+How it works:
+
+```text
+Dashboard loads patient state.
+Dashboard starts or reuses an active session.
+Dashboard fetches transcript and timeline records for that session.
+Chat displays the persisted transcript.
+After a student sends a chat message, Dashboard refetches the persisted transcript.
+After an instructor cue, Dashboard refetches the persisted transcript and timeline.
+Timeline displays persisted events and key vitals from state_snapshot_json when available.
+```
+
+Verification:
+
+```text
+Frontend production build passed.
+Backend compile check passed.
+Health endpoint returned 200 ok.
+TypeScript confirmed the chat receives only student/patient messages from persisted transcript data.
+```
+
+Runtime note:
+
+```text
+The configured backend database must have the Step 7 tables before the live dashboard can use these endpoints.
+Temporary database verification already proved the backend API flow.
+Real local database setup/table creation should be checked during Step 7.12 end-to-end verification.
+```
+
+What was not changed:
+
+```text
+No final report generation was added.
+No authentication was added.
+No voice transcript persistence was added.
+No database migration tooling was added.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Result:
+
+```text
+Step 7.11 is complete.
+The dashboard now reads persisted transcript and timeline records from the backend session APIs.
+```

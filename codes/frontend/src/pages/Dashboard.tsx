@@ -2,14 +2,20 @@ import { useEffect, useState } from "react";
 
 import {
   applyInstructorCue,
-  AutoPatientMessage,
   getPatientState,
-  getStateEvents,
   PatientState,
   resetPatientState,
-  StateEvent,
 } from "../api/state";
-import { Chat } from "./Chat";
+import {
+  getSessionEvents,
+  getSessionTranscript,
+  SessionResponse,
+  startSession,
+  TimelineEventResponse,
+  TranscriptMessageResponse,
+  TranscriptSpeaker,
+} from "../api/sessions";
+import { Chat, ChatMessage } from "./Chat";
 
 const cueButtons = [
   { cueId: "spo2_dropped", label: "SpO2 dropped" },
@@ -22,23 +28,24 @@ const cueButtons = [
 
 export function Dashboard() {
   const [patientState, setPatientState] = useState<PatientState | null>(null);
-  const [events, setEvents] = useState<StateEvent[]>([]);
+  const [session, setSession] = useState<SessionResponse | null>(null);
+  const [transcriptMessages, setTranscriptMessages] = useState<
+    TranscriptMessageResponse[]
+  >([]);
+  const [events, setEvents] = useState<TimelineEventResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const [autoPatientMessage, setAutoPatientMessage] =
-    useState<AutoPatientMessage | null>(null);
 
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        const [stateResponse, eventsResponse] = await Promise.all([
-          getPatientState(),
-          getStateEvents(),
-        ]);
+        const stateResponse = await getPatientState();
+        const sessionResponse = await startSession(stateResponse.state.scenario_id);
 
         setPatientState(stateResponse.state);
-        setEvents(eventsResponse.events);
+        setSession(sessionResponse);
+        await refreshPersistedSessionData(sessionResponse.session_id);
         setErrorMessage("");
       } catch {
         setErrorMessage("Dashboard data failed to load. Make sure the backend is running.");
@@ -50,8 +57,17 @@ export function Dashboard() {
     loadDashboardData();
   }, []);
 
-  async function refreshEvents() {
-    const eventsResponse = await getStateEvents();
+  async function refreshPersistedSessionData(sessionId = session?.session_id) {
+    if (!sessionId) {
+      return;
+    }
+
+    const [transcriptResponse, eventsResponse] = await Promise.all([
+      getSessionTranscript(sessionId),
+      getSessionEvents(sessionId),
+    ]);
+
+    setTranscriptMessages(transcriptResponse.messages);
     setEvents(eventsResponse.events);
   }
 
@@ -62,8 +78,7 @@ export function Dashboard() {
     try {
       const stateResponse = await resetPatientState();
       setPatientState(stateResponse.state);
-      setAutoPatientMessage(null);
-      await refreshEvents();
+      await refreshPersistedSessionData();
     } catch {
       setErrorMessage("Patient state failed to reset. Make sure the backend is running.");
     } finally {
@@ -78,8 +93,7 @@ export function Dashboard() {
     try {
       const stateResponse = await applyInstructorCue(cueId);
       setPatientState(stateResponse.state);
-      setAutoPatientMessage(stateResponse.auto_patient_message);
-      await refreshEvents();
+      await refreshPersistedSessionData();
     } catch {
       setErrorMessage("Instructor cue failed. Make sure the backend is running.");
     } finally {
@@ -99,6 +113,9 @@ export function Dashboard() {
           </div>
           {patientState ? (
             <span className="scenario-badge">Session: {patientState.status}</span>
+          ) : null}
+          {session ? (
+            <span className="scenario-badge">Record: {session.status}</span>
           ) : null}
         </header>
 
@@ -183,11 +200,7 @@ export function Dashboard() {
                   {events.map((event) => (
                     <li key={event.event_id}>
                       <strong>{event.label ?? event.event_type}</strong>
-                      <span>
-                        {" "}
-                        - HR {event.state_after.vitals.heart_rate}, SpO2{" "}
-                        {event.state_after.vitals.spo2}
-                      </span>
+                      {formatTimelineDetails(event)}
                     </li>
                   ))}
                 </ol>
@@ -198,7 +211,12 @@ export function Dashboard() {
 
             <section className="dashboard-card chat-card" aria-labelledby="dashboard-chat-title">
               <h2 id="dashboard-chat-title">Patient Conversation</h2>
-              <Chat embedded autoPatientMessage={autoPatientMessage} />
+              <Chat
+                embedded
+                onMessageSent={() => refreshPersistedSessionData()}
+                persistedMessages={toChatMessages(transcriptMessages)}
+                statusLabel="Persisted"
+              />
             </section>
           </div>
         ) : null}
@@ -223,4 +241,53 @@ function StateRow({ label, value }: StateRowProps) {
 
 function formatBoolean(value: boolean): string {
   return value ? "Yes" : "No";
+}
+
+function toChatMessages(messages: TranscriptMessageResponse[]): ChatMessage[] {
+  return messages
+    .filter(
+      (
+        message,
+      ): message is TranscriptMessageResponse & { speaker: "student" | "patient" } =>
+        isChatSpeaker(message.speaker),
+    )
+    .map((message) => ({
+      id: message.message_id,
+      speaker: message.speaker,
+      text: message.text,
+    }));
+}
+
+function isChatSpeaker(
+  speaker: TranscriptSpeaker,
+): speaker is "student" | "patient" {
+  return speaker === "student" || speaker === "patient";
+}
+
+function formatTimelineDetails(event: TimelineEventResponse) {
+  const stateSnapshot = event.state_snapshot_json;
+
+  if (!stateSnapshot || typeof stateSnapshot !== "object") {
+    return null;
+  }
+
+  const vitals = stateSnapshot["vitals"];
+
+  if (!vitals || typeof vitals !== "object") {
+    return null;
+  }
+
+  const heartRate = "heart_rate" in vitals ? vitals.heart_rate : null;
+  const spo2 = "spo2" in vitals ? vitals.spo2 : null;
+
+  if (heartRate === null && spo2 === null) {
+    return null;
+  }
+
+  return (
+    <span>
+      {" "}
+      - HR {String(heartRate ?? "n/a")}, SpO2 {String(spo2 ?? "n/a")}
+    </span>
+  );
 }
