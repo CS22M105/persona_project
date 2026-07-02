@@ -41,6 +41,8 @@ def get_engine(database_url: str) -> Engine:
 
 
 def create_database_tables() -> None:
+    import app.models  # noqa: F401
+
     Base.metadata.create_all(bind=get_engine(get_settings().database_url))
 
 

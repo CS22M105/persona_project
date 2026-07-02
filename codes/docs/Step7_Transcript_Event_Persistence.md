@@ -705,6 +705,104 @@ Create database models for:
 - transcript message
 - timeline event
 
+Status:
+
+```text
+Completed
+```
+
+Files created:
+
+```text
+codes/backend/app/models/__init__.py
+codes/backend/app/models/session.py
+codes/backend/app/models/transcript.py
+codes/backend/app/models/timeline.py
+```
+
+File changed:
+
+```text
+codes/backend/app/db/session.py
+```
+
+What changed:
+
+```text
+models/__init__.py:
+Created the app.models package and imported all persistence models so SQLAlchemy metadata can register them.
+
+models/session.py:
+Created SimulationSession model for the sessions table.
+Fields: session_id, scenario_id, status, started_at, ended_at, created_at, updated_at.
+Added relationships to transcript_messages and timeline_events.
+
+models/transcript.py:
+Created TranscriptMessage model for the transcript_messages table.
+Fields: message_id, session_id, timestamp, speaker, message_type, text, source, cue_id, state_event_id.
+Added relationship back to SimulationSession.
+Added optional relationship to TimelineEvent through state_event_id.
+
+models/timeline.py:
+Created TimelineEvent model for the timeline_events table.
+Fields: event_id, session_id, timestamp, event_type, label, cue_id, state_snapshot_json, metadata_json.
+Added relationship back to SimulationSession.
+Added relationship to transcript messages that are connected to a timeline event.
+
+db/session.py:
+Updated create_database_tables() so it imports app.models before calling Base.metadata.create_all().
+```
+
+Why:
+
+- Step 7 needs database table definitions before services and APIs can save records.
+- The session table represents one simulation run.
+- The transcript table stores what was said during the simulation.
+- The timeline table stores instructor cues, lifecycle events, and state snapshots.
+- Relationships make it possible to retrieve all messages and events for one session later.
+- Importing `app.models` before table creation ensures SQLAlchemy metadata knows about all model classes.
+
+How it works:
+
+```text
+SimulationSession is the parent record.
+TranscriptMessage rows belong to one SimulationSession.
+TimelineEvent rows belong to one SimulationSession.
+TranscriptMessage can optionally point to a TimelineEvent when a patient message was caused by an instructor cue.
+```
+
+Important implementation note:
+
+```text
+Nullable database columns are marked with nullable=True in mapped_column().
+The model annotations avoid Python 3.14 nullable union syntax because SQLAlchemy 2.0.36 had trouble parsing it during mapper registration.
+```
+
+Verification:
+
+```text
+Backend compile check passed.
+SQLAlchemy metadata registered these tables:
+sessions
+timeline_events
+transcript_messages
+
+In-memory SQLite smoke test created all three tables.
+Health endpoint still returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No session service was created yet.
+No transcript service was created yet.
+No timeline service was created yet.
+No API route was changed.
+No chat messages are being saved yet.
+No instructor cues are being saved yet.
+No real PostgreSQL tables were created yet.
+```
+
 ### 7.4 Define session/transcript/timeline schemas
 
 Create Pydantic schemas for API responses.

@@ -2420,3 +2420,110 @@ Result:
 Step 7.2 is complete.
 The backend now has the database foundation needed for Step 7.3 persistence models.
 ```
+
+## 27. Step 7.3 Persistence Models Implemented - July 1, 2026
+
+Goal:
+
+```text
+Create SQLAlchemy models for sessions, transcript messages, and timeline events.
+```
+
+Created:
+
+```text
+codes/backend/app/models/__init__.py
+codes/backend/app/models/session.py
+codes/backend/app/models/transcript.py
+codes/backend/app/models/timeline.py
+```
+
+Updated:
+
+```text
+codes/backend/app/db/session.py
+codes/docs/Step7_Transcript_Event_Persistence.md
+```
+
+What changed:
+
+```text
+models/session.py:
+Added SimulationSession model.
+Table name: sessions.
+Fields: session_id, scenario_id, status, started_at, ended_at, created_at, updated_at.
+
+models/transcript.py:
+Added TranscriptMessage model.
+Table name: transcript_messages.
+Fields: message_id, session_id, timestamp, speaker, message_type, text, source, cue_id, state_event_id.
+
+models/timeline.py:
+Added TimelineEvent model.
+Table name: timeline_events.
+Fields: event_id, session_id, timestamp, event_type, label, cue_id, state_snapshot_json, metadata_json.
+
+models/__init__.py:
+Imports all models so SQLAlchemy metadata can register them.
+
+db/session.py:
+create_database_tables() now imports app.models before creating tables.
+```
+
+Why this was done:
+
+- Step 7.2 created the database foundation, but no tables existed yet.
+- Step 7.3 defines the database structure needed for transcript and event persistence.
+- SimulationSession represents one simulation run.
+- TranscriptMessage stores what students and the AI patient say.
+- TimelineEvent stores important simulation events such as instructor cues and state snapshots.
+- Relationships allow the app to retrieve all transcript and timeline records for a session later.
+
+How it works:
+
+```text
+SimulationSession is the parent table.
+Each TranscriptMessage belongs to one SimulationSession.
+Each TimelineEvent belongs to one SimulationSession.
+A TranscriptMessage can optionally point to a TimelineEvent through state_event_id.
+```
+
+Important implementation note:
+
+```text
+Nullable database fields use nullable=True in mapped_column().
+The Python annotations intentionally avoid nullable union syntax because SQLAlchemy 2.0.36 had trouble parsing those annotations under Python 3.14.
+```
+
+Verification:
+
+```text
+Backend compile check passed.
+SQLAlchemy metadata registered:
+sessions
+timeline_events
+transcript_messages
+
+In-memory SQLite smoke test created all three tables successfully.
+Health endpoint returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No session API was added yet.
+No services were added yet.
+No /chat behavior was changed.
+No /state behavior was changed.
+No messages or events are being saved yet.
+No real PostgreSQL tables were created yet.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Result:
+
+```text
+Step 7.3 is complete.
+The database model layer is ready for Step 7.4 schemas and Step 7.5 services.
+```
