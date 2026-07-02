@@ -2619,3 +2619,106 @@ Result:
 Step 7.4 is complete.
 The API schema layer is ready for Step 7.5 session service.
 ```
+
+## 29. Step 7.5 Session Service Implemented - July 2, 2026
+
+Goal:
+
+```text
+Create the backend service that manages simulation session lifecycle.
+```
+
+Created:
+
+```text
+codes/backend/app/services/session_service.py
+```
+
+Updated:
+
+```text
+codes/docs/Step7_Transcript_Event_Persistence.md
+```
+
+What changed:
+
+```text
+Added ACTIVE_SESSION_STATUSES.
+Added SessionNotFoundError.
+Added start_session().
+Added get_active_session().
+Added get_session_by_id().
+Added end_session().
+```
+
+Why this was done:
+
+- Step 7.4 created API schemas, but the backend still needed service logic for session lifecycle.
+- Session creation and ending should live in a service layer, not directly inside future API routes.
+- The July demo needs one clear active session so transcript and event records do not get mixed.
+- The service prepares the backend for the upcoming sessions API route.
+
+How it works:
+
+```text
+start_session(db, scenario_id):
+Returns the current active session if one exists.
+Otherwise creates a new active SimulationSession.
+
+get_active_session(db):
+Returns the newest session with status active, paused, or takeover.
+
+get_session_by_id(db, session_id):
+Returns a session by ID or None.
+
+end_session(db, session_id):
+Marks a session ended and sets ended_at.
+Raises SessionNotFoundError if the session does not exist.
+Returns unchanged if the session is already ended.
+```
+
+Design decision:
+
+```text
+Support one active local session at a time for the July demo.
+```
+
+Reason:
+
+- This keeps the instructor workflow simple.
+- This prevents transcript and timeline records from being attached to the wrong session.
+- The database model still supports many historical sessions after they are ended.
+
+Verification:
+
+```text
+Backend compile check passed.
+In-memory database smoke test passed.
+start_session() created an active session.
+Calling start_session() again reused the same active session.
+get_active_session() returned the active session.
+end_session() marked the session ended and set ended_at.
+Calling start_session() after ending created a new active session.
+Health endpoint returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No sessions API route was added yet.
+No frontend code was changed.
+No transcript service was added yet.
+No timeline service was added yet.
+No /chat behavior was changed.
+No /state behavior was changed.
+No database records are saved from user actions yet.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Result:
+
+```text
+Step 7.5 is complete.
+The backend session lifecycle service is ready for transcript/timeline services and the future sessions API.
+```

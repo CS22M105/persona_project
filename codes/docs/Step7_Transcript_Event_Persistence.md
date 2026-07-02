@@ -902,6 +902,95 @@ Add functions to:
 - get active session
 - end session
 
+Status:
+
+```text
+Completed
+```
+
+File created:
+
+```text
+codes/backend/app/services/session_service.py
+```
+
+What changed:
+
+```text
+Added ACTIVE_SESSION_STATUSES.
+Added SessionNotFoundError.
+Added start_session().
+Added get_active_session().
+Added get_session_by_id().
+Added end_session().
+```
+
+Why:
+
+- Step 7 needs a single backend service responsible for session lifecycle rules.
+- API routes should not directly decide how sessions are created, reused, or ended.
+- Services make the next API step cleaner and easier to test.
+- The July demo should use one active session at a time to avoid confusing transcript and timeline data.
+
+How it works:
+
+```text
+start_session(db, scenario_id):
+Checks whether an active session already exists.
+If yes, returns that active session.
+If no, creates a new SimulationSession with status=active.
+
+get_active_session(db):
+Finds the newest session whose status is active, paused, or takeover.
+
+get_session_by_id(db, session_id):
+Looks up one session by primary key.
+
+end_session(db, session_id):
+Finds the session.
+If missing, raises SessionNotFoundError.
+If already ended, returns it unchanged.
+Otherwise sets status=ended and ended_at=current UTC time.
+```
+
+Design decision:
+
+```text
+Only one active local session is supported for the July demo.
+```
+
+Reason:
+
+- It keeps the instructor workflow simple.
+- It avoids mixing transcript data across multiple sessions.
+- It is enough for the current single-scenario COPD/SOB demo.
+- The model structure still supports multiple sessions later.
+
+Verification:
+
+```text
+Backend compile check passed.
+In-memory database smoke test passed.
+start_session() created an active session.
+Calling start_session() again reused the same active session.
+get_active_session() returned the active session.
+end_session() marked the session ended and added ended_at.
+Calling start_session() after ending created a new active session.
+Health endpoint still returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No sessions API route was added yet.
+No frontend code was changed.
+No transcript records are saved yet.
+No timeline records are saved yet.
+No /chat behavior was changed.
+No /state behavior was changed.
+No real PostgreSQL tables were created yet.
+```
+
 ### 7.6 Create transcript service
 
 Add functions to:
