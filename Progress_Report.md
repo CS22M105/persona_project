@@ -2527,3 +2527,95 @@ Result:
 Step 7.3 is complete.
 The database model layer is ready for Step 7.4 schemas and Step 7.5 services.
 ```
+
+## 28. Step 7.4 Session Transcript Timeline Schemas Implemented - July 2, 2026
+
+Goal:
+
+```text
+Create Pydantic schemas for future session, transcript, and event timeline APIs.
+```
+
+Created:
+
+```text
+codes/backend/app/schemas/session.py
+```
+
+Updated:
+
+```text
+codes/docs/Step7_Transcript_Event_Persistence.md
+```
+
+What changed:
+
+```text
+Added Literal types:
+PersistedSessionStatus
+TranscriptSpeaker
+TranscriptMessageType
+TranscriptSource
+TimelineEventType
+
+Added session schemas:
+SessionStartRequest
+SessionResponse
+CurrentSessionResponse
+
+Added transcript schemas:
+TranscriptMessageCreate
+TranscriptMessageResponse
+TranscriptResponse
+
+Added timeline schemas:
+TimelineEventCreate
+TimelineEventResponse
+TimelineResponse
+```
+
+Why this was done:
+
+- Step 7.3 created database models, but API endpoints need clean request and response contracts.
+- Pydantic schemas protect the API layer from exposing raw SQLAlchemy model objects.
+- Literal types keep session statuses, speaker labels, message types, sources, and event types consistent.
+- `ConfigDict(from_attributes=True)` prepares response schemas to read from SQLAlchemy model objects later.
+
+How it works:
+
+```text
+Future services will read or create SQLAlchemy models.
+Future API routes will return Pydantic schemas.
+The frontend will receive predictable JSON fields for session, transcript, and timeline data.
+```
+
+Verification:
+
+```text
+Backend compile check passed.
+Sample SessionResponse validation passed.
+Sample TranscriptMessageResponse validation passed.
+Sample TimelineEventResponse validation passed.
+Health endpoint returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No session service was added yet.
+No transcript service was added yet.
+No timeline service was added yet.
+No API route was added yet.
+No /chat behavior was changed.
+No /state behavior was changed.
+No database records are being saved yet.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Result:
+
+```text
+Step 7.4 is complete.
+The API schema layer is ready for Step 7.5 session service.
+```

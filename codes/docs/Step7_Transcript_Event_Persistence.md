@@ -807,6 +807,93 @@ No real PostgreSQL tables were created yet.
 
 Create Pydantic schemas for API responses.
 
+Status:
+
+```text
+Completed
+```
+
+File created:
+
+```text
+codes/backend/app/schemas/session.py
+```
+
+What changed:
+
+```text
+Added Literal types for persisted session status, transcript speaker, transcript message type, transcript source, and timeline event type.
+
+Added session schemas:
+SessionStartRequest
+SessionResponse
+CurrentSessionResponse
+
+Added transcript schemas:
+TranscriptMessageCreate
+TranscriptMessageResponse
+TranscriptResponse
+
+Added timeline schemas:
+TimelineEventCreate
+TimelineEventResponse
+TimelineResponse
+```
+
+Why:
+
+- Step 7.3 created database models, but API routes should not expose raw SQLAlchemy models directly.
+- Pydantic schemas define the clean request and response contracts for future session, transcript, and event endpoints.
+- Literal types prevent invalid speaker labels, message types, sources, event types, and session statuses from silently entering the API layer.
+- `ConfigDict(from_attributes=True)` allows response schemas to be built from SQLAlchemy model objects in later service/API steps.
+
+How it works:
+
+```text
+Services will create or read SQLAlchemy model objects.
+API routes will convert those objects into Pydantic response schemas.
+Frontend code will receive predictable JSON fields.
+```
+
+Important schema groups:
+
+```text
+SessionResponse:
+Represents one simulation session.
+
+TranscriptMessageResponse:
+Represents one persisted chat/transcript message.
+
+TimelineEventResponse:
+Represents one persisted simulation event.
+
+TranscriptResponse:
+Wraps all transcript messages for one session.
+
+TimelineResponse:
+Wraps all timeline events for one session.
+```
+
+Verification:
+
+```text
+Backend compile check passed.
+Sample SessionResponse validation passed.
+Sample TranscriptMessageResponse validation passed.
+Sample TimelineEventResponse validation passed.
+Health endpoint still returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No database service was created yet.
+No session API route was created yet.
+No /chat behavior was changed.
+No /state behavior was changed.
+No transcript or timeline records are saved yet.
+```
+
 ### 7.5 Create session service
 
 Add functions to:
