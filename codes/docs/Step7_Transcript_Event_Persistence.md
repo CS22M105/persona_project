@@ -1280,6 +1280,89 @@ Save:
 - student message before AI response
 - patient reply after AI response
 
+Status:
+
+```text
+Completed
+```
+
+File changed:
+
+```text
+codes/backend/app/api/chat.py
+```
+
+What changed:
+
+```text
+Added database dependency to POST /chat.
+Started or reused the active simulation session before generating the patient reply.
+Saved the student message as a transcript message before generating the patient reply.
+Saved the patient reply as a transcript message after generation.
+Kept the existing /chat request and response shape unchanged.
+```
+
+Why:
+
+- Transcript persistence is only useful if normal chat messages are saved automatically.
+- Saving the student message before the AI response preserves what the learner asked, even if patient generation later fails in a future version.
+- Saving the patient response after generation preserves what the AI patient said for debrief and reporting.
+- Keeping the response shape unchanged avoids frontend churn.
+
+How it works:
+
+```text
+POST /chat receives student message.
+Backend loads COPD/SOB scenario.
+Backend starts or reuses the active session.
+Backend saves student transcript message:
+  speaker=student
+  message_type=student_question
+  source=manual
+Backend reads current patient state.
+Backend generates patient persona response.
+Backend saves patient transcript message:
+  speaker=patient
+  message_type=patient_reply
+  source=openai or mock_fallback
+Backend returns the existing ChatResponse.
+```
+
+Important boundary:
+
+```text
+Step 7.9 only persists chat transcript messages.
+It does not persist instructor cues yet.
+It does not persist automatic patient reactions after state cues yet.
+That comes in Step 7.10.
+```
+
+Verification:
+
+```text
+Backend compile check passed.
+Health endpoint still returned 200 ok.
+Route-level test used a temporary SQLite database override.
+POST /chat returned status 200.
+POST /chat response still contained reply, scenario_id, and speaker.
+GET /sessions/current returned an active session.
+GET /sessions/{session_id}/transcript returned two messages.
+Transcript message speakers were student then patient.
+Transcript message types were student_question then patient_reply.
+Transcript message sources were manual then mock_fallback in fallback-mode verification.
+```
+
+What was not changed:
+
+```text
+No frontend code was changed.
+No /chat response shape was changed.
+No /state behavior was changed yet.
+No timeline events are saved from /chat yet.
+No instructor cue persistence was added yet.
+No real PostgreSQL rows were created during verification.
+```
+
 ### 7.10 Connect state cues to timeline and transcript persistence
 
 Save:

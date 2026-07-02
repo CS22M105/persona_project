@@ -3007,3 +3007,89 @@ Result:
 Step 7.8 is complete.
 The backend now exposes session, transcript, and timeline read APIs for future frontend integration.
 ```
+
+## 33. Step 7.9 Chat Transcript Persistence Implemented - July 2, 2026
+
+Goal:
+
+```text
+Connect POST /chat to transcript persistence.
+```
+
+Updated:
+
+```text
+codes/backend/app/api/chat.py
+codes/docs/Step7_Transcript_Event_Persistence.md
+```
+
+What changed:
+
+```text
+POST /chat now receives a database session through get_db.
+POST /chat starts or reuses the active simulation session.
+POST /chat saves the student message before generating the patient reply.
+POST /chat saves the patient reply after generation.
+The existing /chat response shape remains unchanged.
+```
+
+Why this was done:
+
+- Step 7.6 created the transcript service, but chat messages were not using it yet.
+- A session transcript should preserve both learner questions and AI patient responses.
+- Saving transcript messages automatically prepares the app for debrief review and final report generation.
+- Keeping the existing `/chat` response shape avoids frontend changes at this substep.
+
+How it works:
+
+```text
+Student sends POST /chat.
+Backend loads the COPD/SOB scenario.
+Backend starts or reuses the active session.
+Backend saves the student message:
+  speaker=student
+  message_type=student_question
+  source=manual
+Backend reads current patient state.
+Backend generates the patient reply using OpenAI or mock fallback.
+Backend saves the patient reply:
+  speaker=patient
+  message_type=patient_reply
+  source=openai or mock_fallback
+Backend returns ChatResponse as before.
+```
+
+Verification:
+
+```text
+Backend compile check passed.
+Health endpoint returned 200 ok.
+Route-level test used a temporary SQLite database override.
+POST /chat returned 200.
+POST /chat still returned reply, scenario_id, and speaker.
+GET /sessions/current returned an active session.
+GET /sessions/{session_id}/transcript returned two messages.
+Transcript speakers were student then patient.
+Transcript message types were student_question then patient_reply.
+Transcript sources were manual then mock_fallback in fallback-mode verification.
+```
+
+What was not changed:
+
+```text
+No frontend code was changed.
+No /chat request or response shape was changed.
+No /state behavior was changed yet.
+No instructor cue events are saved yet.
+No automatic patient reactions after cue are saved yet.
+No real PostgreSQL rows were created during verification.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Result:
+
+```text
+Step 7.9 is complete.
+Student chat messages and patient replies are now persisted through the transcript service when /chat is used with a configured database.
+```
