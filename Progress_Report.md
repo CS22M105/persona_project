@@ -3739,3 +3739,56 @@ The frontend report client does not call OpenAI.
 The frontend report client does not access the database directly.
 The frontend report client does not receive or expose API keys.
 ```
+
+## 43. Step 8.6 Dashboard Final Report View Refined - July 2, 2026
+
+Goal:
+
+```text
+Display the final debrief report inside the instructor dashboard.
+```
+
+Changed:
+
+```text
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/styles.css
+codes/docs/Step8_Final_Debrief_Report.md
+Progress_Report.md
+```
+
+What changed:
+
+- Refined the existing `ReportView` in the dashboard.
+- Added started and ended timestamps to report metadata.
+- Added transcript metadata under each transcript excerpt item.
+- Added message type, source, and cue details to transcript display.
+- Added timeline metadata under each timeline excerpt item.
+- Added anxiety, oxygen status, and bronchodilator status to timeline vitals display.
+- Added checklist review status under each checklist item.
+- Added `.report-entry-meta` styling for compact report details.
+
+Why:
+
+- Faculty need enough context to use the report during debriefing.
+- The dashboard should show the richer report fields created in Step 8.2.
+- Source and cue details help explain how patient responses and state changes happened.
+- The report should remain concise instead of becoming a full transcript dump.
+
+How it works:
+
+```text
+Dashboard stores FinalDebriefReport in React state
+ReportView receives the report
+ReportView renders metadata, transcript excerpt, timeline excerpt, checklist, observations, prompts, and notes placeholder
+helper functions format timestamps, labels, booleans, and patient-state details
+```
+
+Security note:
+
+```text
+The dashboard report view only displays backend report data.
+It does not generate report content.
+It does not call OpenAI.
+It does not expose API keys.
+```

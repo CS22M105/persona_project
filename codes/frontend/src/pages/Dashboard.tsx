@@ -329,6 +329,11 @@ function ReportView({ report }: { report: FinalDebriefReport }) {
           label="Timeline"
           value={`${report.session.timeline_event_count} events`}
         />
+        <ReportMeta label="Started" value={formatDateTime(report.session.started_at)} />
+        <ReportMeta
+          label="Ended"
+          value={report.session.ended_at ? formatDateTime(report.session.ended_at) : "Not ended"}
+        />
         <ReportMeta label="Session ID" value={report.session.session_id} />
       </dl>
 
@@ -339,6 +344,11 @@ function ReportView({ report }: { report: FinalDebriefReport }) {
             {report.transcript_excerpt.map((message) => (
               <li key={`${message.timestamp}-${message.speaker}-${message.text}`}>
                 <strong>{formatLabel(message.speaker)}:</strong> {message.text}
+                <span className="report-entry-meta">
+                  {formatDateTime(message.timestamp)} | {formatLabel(message.message_type)} |
+                  Source: {formatLabel(message.source)}
+                  {message.cue_id ? ` | Cue: ${formatLabel(message.cue_id)}` : ""}
+                </span>
               </li>
             ))}
           </ol>
@@ -357,6 +367,10 @@ function ReportView({ report }: { report: FinalDebriefReport }) {
               <li key={`${event.timestamp}-${event.event_type}-${event.label}`}>
                 <strong>{event.label}</strong>
                 {formatReportVitals(event)}
+                <span className="report-entry-meta">
+                  {formatDateTime(event.timestamp)} | {formatLabel(event.event_type)}
+                  {event.cue_id ? ` | Cue: ${formatLabel(event.cue_id)}` : ""}
+                </span>
               </li>
             ))}
           </ol>
@@ -372,7 +386,10 @@ function ReportView({ report }: { report: FinalDebriefReport }) {
           <h4>Faculty Review Checklist</h4>
           <ul className="compact-list">
             {report.assessment_checklist.map((item) => (
-              <li key={item.item_id}>{item.label}</li>
+              <li key={item.item_id}>
+                {item.label}
+                <span className="report-entry-meta">{item.review_status}</span>
+              </li>
             ))}
           </ul>
         </section>
@@ -426,6 +443,13 @@ function formatBoolean(value: boolean): string {
   return value ? "Yes" : "No";
 }
 
+function formatDateTime(value: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
 function formatLabel(value: string): string {
   return value
     .split("_")
@@ -438,12 +462,20 @@ function formatReportVitals(event: {
   spo2: number | null;
   respiratory_rate: number | null;
   breathing_effort: string | null;
+  anxiety: string | null;
+  oxygen_applied: boolean | null;
+  bronchodilator_given: boolean | null;
 }) {
   const details = [
     event.heart_rate !== null ? `HR ${event.heart_rate}` : null,
     event.spo2 !== null ? `SpO2 ${event.spo2}%` : null,
     event.respiratory_rate !== null ? `RR ${event.respiratory_rate}` : null,
     event.breathing_effort ? `effort ${event.breathing_effort}` : null,
+    event.anxiety ? `anxiety ${event.anxiety}` : null,
+    event.oxygen_applied !== null ? `oxygen ${formatBoolean(event.oxygen_applied)}` : null,
+    event.bronchodilator_given !== null
+      ? `bronchodilator ${formatBoolean(event.bronchodilator_given)}`
+      : null,
   ].filter(Boolean);
 
   if (details.length === 0) {

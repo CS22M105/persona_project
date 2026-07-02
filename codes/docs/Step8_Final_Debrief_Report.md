@@ -605,6 +605,58 @@ It does not receive or expose API keys.
 
 Show report sections in the dashboard.
 
+Implemented on July 2, 2026:
+
+```text
+Created and refined the dashboard report display in:
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/styles.css
+```
+
+What the dashboard report view shows:
+
+- report title
+- report length target
+- session status
+- faculty-judgment disclaimer
+- deterministic summary
+- scenario name
+- transcript message count
+- timeline event count
+- started and ended timestamps
+- session ID
+- transcript excerpt with speaker, text, timestamp, message type, source, and cue link
+- event timeline excerpt with timestamp, event type, cue link, vitals, anxiety, oxygen status, and bronchodilator status
+- faculty review checklist
+- communication observations
+- suggested debrief prompts
+- instructor notes placeholder
+
+Why:
+
+- faculty need a readable debrief artifact inside the dashboard
+- the report should show enough clinical and communication context without becoming a full transcript dump
+- the dashboard should display the richer Step 8.2 schema fields instead of ignoring them
+- source and cue metadata help faculty understand whether a response came from student input, AI, mock fallback, or an instructor-cued state change
+
+How:
+
+- `ReportView` receives a `FinalDebriefReport`
+- report metadata is rendered in a compact definition list
+- transcript and timeline sections render concise excerpts
+- `formatDateTime()` converts stored timestamps into readable local date/time text
+- `formatReportVitals()` displays heart rate, SpO2, respiratory rate, breathing effort, anxiety, oxygen status, and bronchodilator status when present
+- `.report-entry-meta` styles timestamp/source/cue metadata under each report item
+
+Important boundary:
+
+```text
+The dashboard only displays the report returned by the backend.
+It does not generate report content.
+It does not call OpenAI.
+It does not expose API keys.
+```
+
 ### 8.7 Add generate report workflow
 
 Add a dashboard button or panel action so the instructor can generate the report after ending the session.

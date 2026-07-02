@@ -456,6 +456,14 @@ h1 {
   overflow-wrap: anywhere;
 }
 
+.report-entry-meta {
+  color: #667085;
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-top: 3px;
+}
+
 .report-small {
   color: #667085;
   font-size: 0.84rem;
