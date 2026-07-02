@@ -998,6 +998,86 @@ Add functions to:
 - save transcript message
 - list transcript messages
 
+Status:
+
+```text
+Completed
+```
+
+File created:
+
+```text
+codes/backend/app/services/transcript_service.py
+```
+
+What changed:
+
+```text
+Added save_transcript_message().
+Added list_transcript_messages().
+Added _ensure_session_exists().
+```
+
+Why:
+
+- Step 7 needs a service dedicated to saving and reading transcript messages.
+- The `/chat` route should later call this service instead of writing database logic directly.
+- Transcript records must belong to a valid session so future reports do not contain orphaned messages.
+- Keeping transcript persistence in one service makes later testing and API routing simpler.
+
+How it works:
+
+```text
+save_transcript_message(db, message):
+Checks that message.session_id exists.
+Creates a TranscriptMessage row with a msg-* ID.
+Saves speaker, message_type, text, source, cue_id, and state_event_id.
+Commits and refreshes the row.
+Returns the saved TranscriptMessage model.
+
+list_transcript_messages(db, session_id):
+Checks that the session exists.
+Returns transcript messages for that session ordered by timestamp and message_id.
+
+_ensure_session_exists(db, session_id):
+Raises SessionNotFoundError if the session does not exist.
+```
+
+Design decision:
+
+```text
+The transcript service validates the session before saving or listing messages.
+```
+
+Reason:
+
+- Prevents transcript messages from being stored without a session.
+- Makes future API error handling clear.
+- Protects final report generation from incomplete or disconnected records.
+
+Verification:
+
+```text
+Backend compile check passed.
+In-memory database smoke test passed.
+Created a session.
+Saved one student transcript message.
+Saved one patient transcript message.
+Listed two transcript messages in student -> patient order.
+Missing session lookup raised SessionNotFoundError.
+Health endpoint still returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No transcript API route was added yet.
+No /chat behavior was changed yet.
+No frontend code was changed.
+No automatic transcript persistence happens from user actions yet.
+No real PostgreSQL rows were created.
+```
+
 ### 7.7 Create timeline service
 
 Add functions to:

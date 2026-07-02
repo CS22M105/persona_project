@@ -2722,3 +2722,98 @@ Result:
 Step 7.5 is complete.
 The backend session lifecycle service is ready for transcript/timeline services and the future sessions API.
 ```
+
+## 30. Step 7.6 Transcript Service Implemented - July 2, 2026
+
+Goal:
+
+```text
+Create the backend service for saving and listing transcript messages.
+```
+
+Created:
+
+```text
+codes/backend/app/services/transcript_service.py
+```
+
+Updated:
+
+```text
+codes/docs/Step7_Transcript_Event_Persistence.md
+```
+
+What changed:
+
+```text
+Added save_transcript_message().
+Added list_transcript_messages().
+Added _ensure_session_exists().
+```
+
+Why this was done:
+
+- Step 7 needs a reusable service for transcript persistence before `/chat` is connected to storage.
+- Transcript records should belong to a real simulation session.
+- Keeping transcript logic in a service prevents database write logic from being scattered across API routes.
+- This prepares the backend for Step 7.9, where student and patient chat messages will be saved automatically.
+
+How it works:
+
+```text
+save_transcript_message(db, message):
+Validates that the session exists.
+Creates a TranscriptMessage row.
+Generates a msg-* message_id.
+Stores speaker, message_type, text, source, cue_id, and state_event_id.
+Commits and refreshes the row.
+Returns the saved model.
+
+list_transcript_messages(db, session_id):
+Validates that the session exists.
+Returns all transcript messages for that session ordered by timestamp and message_id.
+```
+
+Design decision:
+
+```text
+The service raises SessionNotFoundError when the session does not exist.
+```
+
+Reason:
+
+- This prevents orphan transcript messages.
+- This will let the future sessions API return a clear 404 response.
+- This protects future debrief reports from incomplete records.
+
+Verification:
+
+```text
+Backend compile check passed.
+In-memory database smoke test passed.
+Created a session.
+Saved a student question transcript message.
+Saved a patient reply transcript message.
+Listed two transcript messages in the expected order.
+Missing session lookup raised SessionNotFoundError.
+Health endpoint returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No transcript API route was added yet.
+No /chat behavior was changed yet.
+No frontend code was changed.
+No automatic transcript persistence happens from user actions yet.
+No real PostgreSQL rows were created.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Result:
+
+```text
+Step 7.6 is complete.
+The transcript service is ready for Step 7.9 chat persistence wiring.
+```
