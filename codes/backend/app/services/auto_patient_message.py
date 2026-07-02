@@ -1,8 +1,18 @@
+from dataclasses import dataclass
 from typing import Any
 from uuid import uuid4
 
 from app.schemas.state import AutoPatientMessage, PatientState
-from app.services.persona_response_service import build_persona_response
+from app.services.persona_response_service import (
+    PersonaResponseSource,
+    build_persona_response,
+)
+
+
+@dataclass(frozen=True)
+class AutoPatientMessageResult:
+    message: AutoPatientMessage
+    source: PersonaResponseSource
 
 
 def build_auto_patient_message(
@@ -10,15 +20,26 @@ def build_auto_patient_message(
     scenario: dict[str, Any],
     patient_state: PatientState,
 ) -> AutoPatientMessage:
+    return build_auto_patient_message_result(cue_id, scenario, patient_state).message
+
+
+def build_auto_patient_message_result(
+    cue_id: str,
+    scenario: dict[str, Any],
+    patient_state: PatientState,
+) -> AutoPatientMessageResult:
     cue_label = _find_cue_label(cue_id, scenario)
     prompt = _build_auto_response_prompt(cue_label)
     persona_response = build_persona_response(prompt, scenario, patient_state)
 
-    return AutoPatientMessage(
-        message_id=f"auto-{uuid4()}",
-        text=persona_response.reply,
-        cue_id=cue_id,
-        cue_label=cue_label,
+    return AutoPatientMessageResult(
+        message=AutoPatientMessage(
+            message_id=f"auto-{uuid4()}",
+            text=persona_response.reply,
+            cue_id=cue_id,
+            cue_label=cue_label,
+        ),
+        source=persona_response.source,
     )
 
 

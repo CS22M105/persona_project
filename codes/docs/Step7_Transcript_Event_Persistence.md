@@ -1371,6 +1371,108 @@ Save:
 - state snapshot
 - automatic patient response
 
+Status:
+
+```text
+Completed
+```
+
+Files changed:
+
+```text
+codes/backend/app/api/state.py
+codes/backend/app/services/auto_patient_message.py
+```
+
+What changed:
+
+```text
+state.py:
+Added database dependency to POST /state/cues/{cue_id}.
+Started or reused the active simulation session.
+Saved an instructor_cue timeline event after the patient state changed.
+Saved the updated patient state as state_snapshot_json.
+Generated the automatic patient response.
+Saved the automatic patient response as a transcript message.
+Saved an auto_patient_response timeline event.
+Kept the existing PatientStateResponse shape usable by the frontend.
+
+auto_patient_message.py:
+Added AutoPatientMessageResult.
+Added build_auto_patient_message_result().
+Kept build_auto_patient_message() available for compatibility.
+The route can now persist the internal response source while returning the same auto patient message object to the frontend.
+```
+
+Why:
+
+- Instructor cues are important simulation events and must appear in the persisted timeline.
+- Updated patient state should be saved with the cue so debrief reports can show what changed.
+- Automatic patient reactions after cues should be saved in the transcript because they are part of what learners experienced.
+- The backend needs the internal response source (`openai` or `mock_fallback`) for transcript accuracy.
+
+How it works:
+
+```text
+Instructor clicks a cue button.
+POST /state/cues/{cue_id} applies the patient state update.
+Backend starts or reuses the active session.
+Backend saves timeline event:
+  event_type=instructor_cue
+  cue_id={cue_id}
+  state_snapshot_json={updated patient state}
+Backend generates automatic patient message.
+Backend saves transcript message:
+  speaker=patient
+  message_type=auto_patient_reaction
+  source=openai or mock_fallback
+  cue_id={cue_id}
+  state_event_id={instructor cue event id}
+Backend saves second timeline event:
+  event_type=auto_patient_response
+  cue_id={cue_id}
+  metadata_json includes message_id and source
+Backend returns the existing state + auto_patient_message response.
+```
+
+Important boundary:
+
+```text
+Step 7.10 persists instructor cues and automatic patient reactions.
+It does not persist state reset yet.
+It does not change frontend behavior yet.
+It does not add report generation yet.
+```
+
+Verification:
+
+```text
+Backend compile check passed.
+Health endpoint still returned 200 ok.
+Route-level test used a temporary SQLite database override.
+POST /state/cues/spo2_dropped returned 200.
+Response still included updated state and auto_patient_message.
+GET /sessions/current returned an active session.
+GET /sessions/{session_id}/transcript returned one auto_patient_reaction message.
+Saved transcript cue_id was spo2_dropped.
+Saved transcript source was mock_fallback in fallback-mode verification.
+GET /sessions/{session_id}/events returned two events:
+instructor_cue
+auto_patient_response
+Transcript state_event_id matched the instructor_cue event_id.
+Saved state snapshot included SpO2=88.
+```
+
+What was not changed:
+
+```text
+No frontend code was changed.
+No /state response shape was intentionally changed.
+No state reset persistence was added yet.
+No report generation was added yet.
+No real PostgreSQL rows were created during verification.
+```
+
 ### 7.11 Connect frontend to persisted transcript and events
 
 Load transcript and events from backend instead of relying only on local component state.
