@@ -2326,3 +2326,97 @@ Result:
 Step 7 is planned and ready to implement one substep at a time.
 No Step 7 product code has been implemented yet.
 ```
+
+## 26. Step 7.2 Database Foundation Implemented - July 1, 2026
+
+Goal:
+
+```text
+Add the backend database dependency and session foundation for transcript and event persistence.
+```
+
+Created:
+
+```text
+codes/backend/app/db/__init__.py
+codes/backend/app/db/session.py
+```
+
+Updated:
+
+```text
+codes/backend/requirements.txt
+codes/backend/app/core/config.py
+codes/backend/.env.example
+codes/docs/Step7_Transcript_Event_Persistence.md
+```
+
+What changed:
+
+```text
+requirements.txt:
+Added SQLAlchemy==2.0.36.
+Added psycopg[binary]==3.3.4.
+
+config.py:
+Set the default DATABASE_URL to postgresql+psycopg://persona:persona@localhost:5432/persona_project.
+
+.env.example:
+Updated DATABASE_URL example to match the PostgreSQL psycopg driver format.
+
+db/session.py:
+Added SQLAlchemy Base.
+Added lazy get_engine(database_url).
+Added lazy get_session_factory(database_url).
+Added FastAPI-compatible get_db dependency.
+Added create_database_tables() helper for later model table creation.
+Added automatic conversion from postgresql:// to postgresql+psycopg://.
+```
+
+Why this was done:
+
+- Step 7 needs database access before sessions, transcript messages, and timeline events can be persisted.
+- SQLAlchemy gives a clean structure for future database models.
+- PostgreSQL keeps the project aligned with the production/sellable-product direction.
+- `psycopg` is the PostgreSQL driver used by SQLAlchemy.
+- Lazy engine creation avoids connecting to the database during ordinary app import.
+- URL normalization protects older `.env` values that may still use `postgresql://`.
+
+How it works:
+
+```text
+Future API route/service calls get_db.
+get_db reads DATABASE_URL from backend settings.
+get_db creates or reuses a session factory.
+The route/service receives a SQLAlchemy Session.
+The session closes automatically after the request finishes.
+```
+
+Verification:
+
+```text
+Installed SQLAlchemy 2.0.36 in the backend virtual environment.
+Installed psycopg 3.3.4 and psycopg-binary 3.3.4 in the backend virtual environment.
+Backend compile check passed.
+SQLite in-memory smoke test confirmed engine/session factory behavior.
+PostgreSQL URL normalization test confirmed driver=psycopg.
+```
+
+What was not changed:
+
+```text
+No session table was created yet.
+No transcript table was created yet.
+No timeline event table was created yet.
+No /chat behavior was changed.
+No /state behavior was changed.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Result:
+
+```text
+Step 7.2 is complete.
+The backend now has the database foundation needed for Step 7.3 persistence models.
+```

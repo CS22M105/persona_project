@@ -407,6 +407,8 @@ codes/backend/app/api/sessions.py
 Modified files:
 
 ```text
+codes/backend/app/core/config.py
+codes/backend/.env.example
 codes/backend/app/api/chat.py
 codes/backend/app/api/state.py
 codes/backend/app/main.py
@@ -607,6 +609,93 @@ Create this planning document.
 ### 7.2 Add database dependency and database session foundation
 
 Add PostgreSQL driver support, SQLAlchemy support, and create the backend database session helper.
+
+Status:
+
+```text
+Completed
+```
+
+Files created:
+
+```text
+codes/backend/app/db/__init__.py
+codes/backend/app/db/session.py
+```
+
+Files changed:
+
+```text
+codes/backend/requirements.txt
+codes/backend/app/core/config.py
+codes/backend/.env.example
+codes/docs/Step7_Transcript_Event_Persistence.md
+Progress_Report.md
+```
+
+What changed:
+
+```text
+requirements.txt:
+Added SQLAlchemy==2.0.36.
+Added psycopg[binary]==3.3.4.
+
+config.py:
+Confirmed DATABASE_URL is part of backend settings.
+Set the default local database URL to PostgreSQL through the psycopg SQLAlchemy driver.
+
+.env.example:
+Updated DATABASE_URL example to use postgresql+psycopg.
+
+db/__init__.py:
+Created a database package for Step 7 persistence code.
+
+db/session.py:
+Created SQLAlchemy Base.
+Created lazy engine factory.
+Created lazy session factory.
+Created FastAPI-compatible get_db dependency.
+Created create_database_tables helper for future model table creation.
+Added URL normalization so older postgresql:// URLs are converted to postgresql+psycopg://.
+```
+
+Why:
+
+- Step 7 needs a real persistence foundation before session, transcript, and timeline tables can be added.
+- SQLAlchemy gives a clean ORM layer and keeps the project ready for PostgreSQL.
+- `psycopg` is the PostgreSQL driver used by SQLAlchemy.
+- A shared `Base` lets future model files register tables consistently.
+- A shared `get_db` dependency gives future API routes a safe way to open and close database sessions.
+- Lazy engine/session creation prevents app import from immediately connecting to the database.
+- URL normalization protects older local `.env` values that may still use `postgresql://`.
+
+How it works:
+
+```text
+Future route or service asks FastAPI for get_db.
+get_db reads DATABASE_URL from backend settings.
+get_db gets a SQLAlchemy session factory for that URL.
+The session is yielded to the route/service.
+When the request finishes, the session closes automatically.
+```
+
+Important boundary:
+
+```text
+Step 7.2 does not create transcript tables yet.
+Step 7.2 does not save chat messages yet.
+Step 7.2 does not change /chat or /state behavior yet.
+```
+
+Verification:
+
+```text
+Installed SQLAlchemy 2.0.36 in codes/backend/.venv.
+Installed psycopg 3.3.4 and psycopg-binary 3.3.4 in codes/backend/.venv.
+Backend compile check passed.
+SQLAlchemy SQLite smoke test passed for isolated engine/session behavior.
+PostgreSQL URL normalization test passed and selected driver=psycopg.
+```
 
 ### 7.3 Define persistence models
 
