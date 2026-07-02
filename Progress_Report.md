@@ -3639,3 +3639,58 @@ This step did not modify the database schema.
 This step did not call OpenAI.
 This step did not expose or modify API keys.
 ```
+
+## 41. Step 8.4 Final Report Endpoint Confirmed and Documented - July 2, 2026
+
+Goal:
+
+```text
+Expose the final debrief report through a backend API endpoint.
+```
+
+Confirmed:
+
+```text
+GET /sessions/{session_id}/report
+```
+
+Files reviewed or updated:
+
+```text
+codes/backend/app/api/sessions.py
+codes/backend/app/main.py
+codes/docs/Step8_Final_Debrief_Report.md
+Progress_Report.md
+```
+
+What the endpoint does:
+
+- accepts a session ID from the URL
+- uses the backend database dependency
+- calls the deterministic report service
+- returns `FinalDebriefReport`
+- returns `404 Not Found` when the session does not exist
+
+Why:
+
+- the frontend needs a stable backend route to request the final debrief report
+- the report must come from persisted session data
+- the response should use the Step 8.2 schema contract
+- invalid sessions should fail clearly
+
+How it is connected:
+
+```text
+app.main registers sessions_router
+sessions_router contains GET /sessions/{session_id}/report
+the route calls build_final_debrief_report(db, session_id)
+the service returns the structured final report
+```
+
+Security note:
+
+```text
+The endpoint does not expose API keys.
+The endpoint does not call OpenAI.
+The endpoint does not create grades or pass/fail decisions.
+```
