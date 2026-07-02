@@ -1085,6 +1085,86 @@ Add functions to:
 - save timeline event
 - list timeline events
 
+Status:
+
+```text
+Completed
+```
+
+File created:
+
+```text
+codes/backend/app/services/timeline_service.py
+```
+
+What changed:
+
+```text
+Added save_timeline_event().
+Added list_timeline_events().
+Added _ensure_session_exists().
+```
+
+Why:
+
+- Step 7 needs a service dedicated to saving and reading timeline events.
+- The future `/state/cues/{cue_id}` persistence work should call this service instead of writing database logic directly.
+- Timeline records must belong to a valid session so the event history can be reviewed and reported correctly.
+- Keeping timeline persistence in one service makes later API routing and testing simpler.
+
+How it works:
+
+```text
+save_timeline_event(db, event):
+Checks that event.session_id exists.
+Creates a TimelineEvent row with an event-* ID.
+Saves event_type, label, cue_id, state_snapshot_json, and metadata_json.
+Commits and refreshes the row.
+Returns the saved TimelineEvent model.
+
+list_timeline_events(db, session_id):
+Checks that the session exists.
+Returns timeline events for that session ordered by timestamp and event_id.
+
+_ensure_session_exists(db, session_id):
+Raises SessionNotFoundError if the session does not exist.
+```
+
+Design decision:
+
+```text
+The timeline service validates the session before saving or listing events.
+```
+
+Reason:
+
+- Prevents orphan timeline events.
+- Makes future API error handling clear.
+- Protects final debrief reports from disconnected event records.
+
+Verification:
+
+```text
+Backend compile check passed.
+In-memory database smoke test passed.
+Created a session.
+Saved one session_started timeline event.
+Saved one instructor_cue timeline event with cue_id and state snapshot.
+Listed two timeline events in expected order.
+Missing session lookup raised SessionNotFoundError.
+Health endpoint still returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No timeline API route was added yet.
+No /state behavior was changed yet.
+No frontend code was changed.
+No automatic event persistence happens from user actions yet.
+No real PostgreSQL rows were created.
+```
+
 ### 7.8 Add sessions API route
 
 Expose:

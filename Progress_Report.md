@@ -2817,3 +2817,98 @@ Result:
 Step 7.6 is complete.
 The transcript service is ready for Step 7.9 chat persistence wiring.
 ```
+
+## 31. Step 7.7 Timeline Service Implemented - July 2, 2026
+
+Goal:
+
+```text
+Create the backend service for saving and listing simulation timeline events.
+```
+
+Created:
+
+```text
+codes/backend/app/services/timeline_service.py
+```
+
+Updated:
+
+```text
+codes/docs/Step7_Transcript_Event_Persistence.md
+```
+
+What changed:
+
+```text
+Added save_timeline_event().
+Added list_timeline_events().
+Added _ensure_session_exists().
+```
+
+Why this was done:
+
+- Step 7 needs a reusable service for event timeline persistence before `/state/cues/{cue_id}` is connected to storage.
+- Timeline events should belong to a real simulation session.
+- Keeping timeline logic in a service prevents database write logic from being scattered across API routes.
+- This prepares the backend for Step 7.10, where instructor cues and automatic patient responses will be saved.
+
+How it works:
+
+```text
+save_timeline_event(db, event):
+Validates that the session exists.
+Creates a TimelineEvent row.
+Generates an event-* event_id.
+Stores event_type, label, cue_id, state_snapshot_json, and metadata_json.
+Commits and refreshes the row.
+Returns the saved model.
+
+list_timeline_events(db, session_id):
+Validates that the session exists.
+Returns all timeline events for that session ordered by timestamp and event_id.
+```
+
+Design decision:
+
+```text
+The service raises SessionNotFoundError when the session does not exist.
+```
+
+Reason:
+
+- This prevents orphan timeline events.
+- This will let the future sessions API return a clear 404 response.
+- This protects future debrief reports from incomplete event histories.
+
+Verification:
+
+```text
+Backend compile check passed.
+In-memory database smoke test passed.
+Created a session.
+Saved a session_started timeline event.
+Saved an instructor_cue timeline event with cue_id and state snapshot.
+Listed two timeline events in the expected order.
+Missing session lookup raised SessionNotFoundError.
+Health endpoint returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No timeline API route was added yet.
+No /state behavior was changed yet.
+No frontend code was changed.
+No automatic event persistence happens from user actions yet.
+No real PostgreSQL rows were created.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Result:
+
+```text
+Step 7.7 is complete.
+The timeline service is ready for Step 7.10 state cue and event persistence wiring.
+```
