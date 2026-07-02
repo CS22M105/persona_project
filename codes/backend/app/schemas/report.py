@@ -1,13 +1,25 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
+
+from app.schemas.session import (
+    PersistedSessionStatus,
+    TimelineEventType,
+    TranscriptMessageType,
+    TranscriptSource,
+    TranscriptSpeaker,
+)
+
+
+ReportReviewStatus = Literal["Faculty review"]
 
 
 class ReportSessionMetadata(BaseModel):
     session_id: str
     scenario_id: str
     scenario_name: str
-    status: str
+    status: PersistedSessionStatus
     started_at: datetime
     ended_at: datetime | None = None
     transcript_message_count: int
@@ -16,26 +28,32 @@ class ReportSessionMetadata(BaseModel):
 
 class ReportTranscriptEntry(BaseModel):
     timestamp: datetime
-    speaker: str
-    message_type: str
+    speaker: TranscriptSpeaker
+    message_type: TranscriptMessageType
     text: str
+    source: TranscriptSource
+    cue_id: str | None = None
+    state_event_id: str | None = None
 
 
 class ReportTimelineEntry(BaseModel):
     timestamp: datetime
-    event_type: str
+    event_type: TimelineEventType
     label: str
     cue_id: str | None = None
     heart_rate: int | None = None
     spo2: int | None = None
     respiratory_rate: int | None = None
     breathing_effort: str | None = None
+    anxiety: str | None = None
+    oxygen_applied: bool | None = None
+    bronchodilator_given: bool | None = None
 
 
 class ReportChecklistItem(BaseModel):
     item_id: str
     label: str
-    review_status: str = "Faculty review"
+    review_status: ReportReviewStatus = "Faculty review"
 
 
 class FinalDebriefReport(BaseModel):

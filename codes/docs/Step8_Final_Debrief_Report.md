@@ -271,9 +271,33 @@ Response shape:
     "timeline_event_count": 2
   },
   "summary": "...",
-  "transcript_excerpt": [],
+  "transcript_excerpt": [
+    {
+      "timestamp": "2026-07-02T...",
+      "speaker": "student",
+      "message_type": "student_question",
+      "text": "How are you feeling right now?",
+      "source": "manual",
+      "cue_id": null,
+      "state_event_id": null
+    }
+  ],
   "transcript_omitted_count": 0,
-  "timeline_excerpt": [],
+  "timeline_excerpt": [
+    {
+      "timestamp": "2026-07-02T...",
+      "event_type": "instructor_cue",
+      "label": "SpO2 dropped",
+      "cue_id": "spo2_dropped",
+      "heart_rate": 92,
+      "spo2": 88,
+      "respiratory_rate": 24,
+      "breathing_effort": "severe",
+      "anxiety": "high",
+      "oxygen_applied": false,
+      "bronchodilator_given": false
+    }
+  ],
   "timeline_omitted_count": 0,
   "assessment_checklist": [],
   "communication_observations": [],
@@ -376,6 +400,46 @@ Create this planning document.
 ### 8.2 Define report schemas
 
 Create backend Pydantic schemas for the report response.
+
+Implemented on July 2, 2026:
+
+```text
+Created and refined the structured report schema in:
+codes/backend/app/schemas/report.py
+```
+
+What the schema defines:
+
+```text
+ReportSessionMetadata
+ReportTranscriptEntry
+ReportTimelineEntry
+ReportChecklistItem
+FinalDebriefReport
+```
+
+Why:
+
+- the report needs a predictable response shape before the service and UI depend on it
+- the final report must be generated from persisted Step 7 session records
+- transcript entries need speaker, message type, source, cue, and state-event links
+- timeline entries need important patient-state values for faculty debriefing
+- checklist items must stay as faculty-review prompts, not automatic scores
+
+How:
+
+- `ReportSessionMetadata` stores session identity, scenario name, timing, status, and record counts
+- `ReportTranscriptEntry` stores each displayed message with speaker, message type, source, cue ID, and state event ID
+- `ReportTimelineEntry` stores each displayed event plus heart rate, SpO2, respiratory rate, breathing effort, anxiety, oxygen status, and bronchodilator status when available
+- `ReportChecklistItem` marks each checklist item as `Faculty review`
+- `FinalDebriefReport` groups the complete report response, including disclaimer, summary, excerpts, checklist, observations, prompts, and instructor notes placeholder
+
+Important product decision:
+
+```text
+The schema supports debriefing and review.
+It does not contain pass/fail, grade, or competency fields.
+```
 
 ### 8.3 Create deterministic report service
 

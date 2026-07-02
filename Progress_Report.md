@@ -3546,3 +3546,42 @@ Result:
 ```text
 The dashboard now has a Generate report button and can display a concise final debrief report for the current session.
 ```
+
+## 39. Step 8.2 Report Schema Contract Refined - July 2, 2026
+
+Goal:
+
+```text
+Define a precise backend response shape for the final debrief report.
+```
+
+Changed:
+
+```text
+codes/backend/app/schemas/report.py
+codes/backend/app/services/report_service.py
+codes/frontend/src/api/sessions.ts
+codes/docs/Step8_Final_Debrief_Report.md
+```
+
+What changed:
+
+- Strengthened report schema types by reusing the existing session, transcript, and timeline literal types.
+- Added transcript report fields for `source`, `cue_id`, and `state_event_id`.
+- Added timeline report fields for `anxiety`, `oxygen_applied`, and `bronchodilator_given`.
+- Updated the report service so it fills the new report fields from persisted transcript and timeline records.
+- Updated frontend TypeScript report types so the dashboard contract matches the backend response.
+- Updated the Step 8 document with what was changed, why it was changed, and how the schema works.
+
+Why:
+
+- The final report should be based on saved session records, not frontend-only state.
+- Faculty need to see which patient responses came from manual student input, OpenAI, mock fallback, or automatic cue reactions.
+- Faculty need patient-state context during debrief, especially vital signs, breathing effort, anxiety, and interventions.
+- The schema must support debrief review without creating grading or pass/fail fields.
+
+Security note:
+
+```text
+No API keys, environment values, or secret files were opened, printed, or modified.
+```

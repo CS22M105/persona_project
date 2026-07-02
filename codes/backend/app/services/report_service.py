@@ -43,6 +43,9 @@ def build_final_debrief_report(
             speaker=message.speaker,
             message_type=message.message_type,
             text=_compact_text(message.text),
+            source=message.source,
+            cue_id=message.cue_id,
+            state_event_id=message.state_event_id,
         )
         for message in transcript_messages[:MAX_TRANSCRIPT_ENTRIES]
     ]
@@ -112,6 +115,8 @@ def _build_timeline_entry(event: Any) -> ReportTimelineEntry:
     state_snapshot = event.state_snapshot_json or {}
     vitals = state_snapshot.get("vitals") or {}
     symptoms = state_snapshot.get("symptoms") or {}
+    emotion = state_snapshot.get("emotion") or {}
+    interventions = state_snapshot.get("interventions") or {}
 
     return ReportTimelineEntry(
         timestamp=event.timestamp,
@@ -122,6 +127,9 @@ def _build_timeline_entry(event: Any) -> ReportTimelineEntry:
         spo2=vitals.get("spo2"),
         respiratory_rate=vitals.get("respiratory_rate"),
         breathing_effort=symptoms.get("breathing_effort"),
+        anxiety=emotion.get("anxiety"),
+        oxygen_applied=interventions.get("oxygen_applied"),
+        bronchodilator_given=interventions.get("bronchodilator_given"),
     )
 
 

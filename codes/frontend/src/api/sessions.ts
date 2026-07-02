@@ -88,6 +88,9 @@ export type ReportTranscriptEntry = {
   speaker: TranscriptSpeaker;
   message_type: TranscriptMessageType;
   text: string;
+  source: TranscriptSource;
+  cue_id: string | null;
+  state_event_id: string | null;
 };
 
 export type ReportTimelineEntry = {
@@ -99,6 +102,9 @@ export type ReportTimelineEntry = {
   spo2: number | null;
   respiratory_rate: number | null;
   breathing_effort: string | null;
+  anxiety: string | null;
+  oxygen_applied: boolean | null;
+  bronchodilator_given: boolean | null;
 };
 
 export type ReportChecklistItem = {
