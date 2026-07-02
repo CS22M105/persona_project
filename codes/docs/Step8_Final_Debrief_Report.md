@@ -445,6 +445,53 @@ It does not contain pass/fail, grade, or competency fields.
 
 Build the report using persisted session, transcript, timeline, and scenario checklist data.
 
+Implemented on July 2, 2026:
+
+```text
+Created and refined the deterministic report builder in:
+codes/backend/app/services/report_service.py
+```
+
+What the service does:
+
+- loads the saved simulation session
+- loads ordered transcript messages from Step 7 persistence
+- loads ordered timeline events from Step 7 persistence
+- loads the COPD/SOB scenario checklist from scenario JSON
+- builds a concise transcript excerpt
+- builds a concise event timeline excerpt
+- extracts important patient-state values from timeline snapshots
+- creates faculty-review checklist items
+- creates non-grading communication observations
+- creates suggested debrief prompts
+- returns a structured `FinalDebriefReport`
+
+Why:
+
+- the final report must come from persisted backend records
+- the report should be reliable for the July 25 demo
+- deterministic logic avoids hallucinated summaries or accidental grading
+- faculty need organized debrief support, not an independent evaluator
+
+How:
+
+- `build_final_debrief_report(db, session_id)` is the main entry point
+- `_build_transcript_excerpt()` converts saved transcript messages into report entries
+- `_build_timeline_excerpt()` converts saved timeline events into report entries
+- `_build_timeline_entry()` extracts heart rate, SpO2, respiratory rate, breathing effort, anxiety, oxygen status, and bronchodilator status from state snapshots
+- `_build_assessment_checklist()` converts scenario checklist items into `Faculty review` prompts
+- `_build_communication_observations()` uses simple deterministic rules based on transcript text and instructor cues
+- `_build_debrief_prompts()` returns fixed faculty-facing prompts for the COPD/SOB scenario
+
+Important implementation rule:
+
+```text
+The service does not call OpenAI.
+The service does not generate grades.
+The service does not write new database rows.
+The service only reads existing session records and formats them for faculty debriefing.
+```
+
 ### 8.4 Add report endpoint
 
 Expose:

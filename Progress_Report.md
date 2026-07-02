@@ -3585,3 +3585,57 @@ Security note:
 ```text
 No API keys, environment values, or secret files were opened, printed, or modified.
 ```
+
+## 40. Step 8.3 Deterministic Report Service Refined - July 2, 2026
+
+Goal:
+
+```text
+Build the backend service that turns persisted session data into a final debrief-support report.
+```
+
+Changed:
+
+```text
+codes/backend/app/services/report_service.py
+codes/docs/Step8_Final_Debrief_Report.md
+```
+
+What changed:
+
+- Refined the report service around clear section-builder helper functions.
+- Added constants for report title, report length target, disclaimer, and instructor-notes placeholder.
+- Added `_build_transcript_excerpt()` for concise transcript report entries.
+- Added `_build_timeline_excerpt()` for concise event timeline report entries.
+- Added `_build_assessment_checklist()` for scenario checklist conversion.
+- Kept `_build_summary()`, `_build_communication_observations()`, and `_build_debrief_prompts()` deterministic.
+- Made scenario field access safer with fallback text if a scenario value is missing.
+- Added bronchodilator-related communication observation support.
+
+Why:
+
+- The final report must be reliable and explainable for faculty debriefing.
+- The service should use saved Step 7 records instead of frontend-only state.
+- The report should avoid hallucination, grading, and pass/fail claims.
+- Smaller helper functions make it easier to test and improve the report later.
+
+How it works:
+
+```text
+build_final_debrief_report(db, session_id)
+loads session
+loads transcript messages
+loads timeline events
+loads scenario checklist
+builds report sections
+returns FinalDebriefReport
+```
+
+Boundary:
+
+```text
+This step did not add a new API route.
+This step did not modify the database schema.
+This step did not call OpenAI.
+This step did not expose or modify API keys.
+```
