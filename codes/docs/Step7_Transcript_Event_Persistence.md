@@ -1588,6 +1588,111 @@ end session
 confirm transcript/events remain available
 ```
 
+Status:
+
+```text
+Completed
+```
+
+Date completed:
+
+```text
+July 2, 2026
+```
+
+What was done:
+
+```text
+Verified the complete Step 7 persistence flow using the real local PostgreSQL database configured by DATABASE_URL.
+```
+
+Local PostgreSQL setup completed:
+
+```text
+Created PostgreSQL role:
+persona
+
+Created PostgreSQL database:
+persona_project
+
+Created Step 7 tables through backend helper:
+sessions
+transcript_messages
+timeline_events
+```
+
+Why:
+
+- Step 7.11 connected the frontend to persisted records, but the real configured database needed to be verified.
+- The backend `DATABASE_URL` expects the local `persona` role and `persona_project` database.
+- End-to-end verification proves that session, transcript, and event persistence work outside temporary test databases.
+
+Verification flow:
+
+```text
+1. Create database tables using create_database_tables().
+2. POST /sessions/start.
+3. POST /chat with a student question.
+4. POST /state/cues/spo2_dropped.
+5. GET /sessions/{session_id}/transcript.
+6. GET /sessions/{session_id}/events.
+7. POST /sessions/{session_id}/end.
+8. GET transcript again after session end.
+9. GET events again after session end.
+```
+
+Verification results:
+
+```text
+POST /sessions/start returned 200 and status=active.
+POST /chat returned 200 with reply, scenario_id, and speaker.
+POST /state/cues/spo2_dropped returned 200 with auto_patient_message.
+Transcript returned 3 messages:
+student_question
+patient_reply
+auto_patient_reaction
+
+Timeline returned 2 events:
+instructor_cue
+auto_patient_response
+
+POST /sessions/{session_id}/end returned 200 and status=ended.
+Transcript remained available after session end.
+Events remained available after session end.
+```
+
+Additional verification:
+
+```text
+Backend compile check passed.
+Frontend production build passed.
+Health endpoint returned 200 ok.
+```
+
+Important runtime note:
+
+```text
+The local PostgreSQL database now contains test records from Step 7.12 verification.
+This is acceptable for local demo development.
+Future production work should add migration tooling and admin-safe cleanup/retention policies.
+```
+
+What was not changed:
+
+```text
+No product code changed during Step 7.12.
+No frontend behavior changed during Step 7.12.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Step 7 final result:
+
+```text
+Step 7 is complete.
+The app can persist and retrieve session transcript and event timeline records.
+```
+
 ## Mermaid Sequence: Chat Persistence
 
 ```mermaid

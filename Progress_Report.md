@@ -3299,3 +3299,107 @@ Result:
 Step 7.11 is complete.
 The dashboard now reads persisted transcript and timeline records from the backend session APIs.
 ```
+
+## 36. Step 7.12 End-to-End Persistence Verification Completed - July 2, 2026
+
+Goal:
+
+```text
+Verify the complete Step 7 transcript and event timeline persistence flow end to end.
+```
+
+Updated:
+
+```text
+codes/docs/Step7_Transcript_Event_Persistence.md
+Progress_Report.md
+```
+
+What was done:
+
+```text
+Created local PostgreSQL role:
+persona
+
+Created local PostgreSQL database:
+persona_project
+
+Created Step 7 tables through the backend helper:
+sessions
+transcript_messages
+timeline_events
+```
+
+Why this was done:
+
+- The backend was configured to use PostgreSQL through DATABASE_URL.
+- The local PostgreSQL server existed, but the role `persona` did not exist yet.
+- Step 7 needed a real configured database verification, not only temporary SQLite route tests.
+- This proves the persistence path works in the local demo environment.
+
+End-to-end test flow:
+
+```text
+1. Create database tables.
+2. Start a session.
+3. Send a chat message.
+4. Apply instructor cue spo2_dropped.
+5. Read persisted transcript.
+6. Read persisted event timeline.
+7. End the session.
+8. Read transcript again after session end.
+9. Read events again after session end.
+```
+
+Verification results:
+
+```text
+POST /sessions/start returned 200 active.
+POST /chat returned 200 with reply, scenario_id, and speaker.
+POST /state/cues/spo2_dropped returned 200 with auto_patient_message.
+
+Transcript contained 3 messages:
+student_question
+patient_reply
+auto_patient_reaction
+
+Timeline contained 2 events:
+instructor_cue
+auto_patient_response
+
+POST /sessions/{session_id}/end returned 200 ended.
+Transcript remained available after session end.
+Events remained available after session end.
+```
+
+Additional checks:
+
+```text
+Backend compile check passed.
+Frontend production build passed.
+Health endpoint returned 200 ok.
+```
+
+What was not changed:
+
+```text
+No product code changed in Step 7.12.
+No frontend behavior changed in Step 7.12.
+No API key was printed or moved.
+No voice_spike code was touched.
+```
+
+Runtime note:
+
+```text
+The local PostgreSQL database now contains test records from this verification.
+That is acceptable for local demo development.
+Future production work should add migration tooling and data cleanup/retention policies.
+```
+
+Result:
+
+```text
+Step 7 is complete.
+The project now supports persisted simulation sessions, transcript messages, instructor cue events, state snapshots, and automatic patient reaction records.
+```
