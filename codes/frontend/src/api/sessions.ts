@@ -72,6 +72,57 @@ export type TimelineResponse = {
   events: TimelineEventResponse[];
 };
 
+export type ReportSessionMetadata = {
+  session_id: string;
+  scenario_id: string;
+  scenario_name: string;
+  status: PersistedSessionStatus;
+  started_at: string;
+  ended_at: string | null;
+  transcript_message_count: number;
+  timeline_event_count: number;
+};
+
+export type ReportTranscriptEntry = {
+  timestamp: string;
+  speaker: TranscriptSpeaker;
+  message_type: TranscriptMessageType;
+  text: string;
+};
+
+export type ReportTimelineEntry = {
+  timestamp: string;
+  event_type: TimelineEventType;
+  label: string;
+  cue_id: string | null;
+  heart_rate: number | null;
+  spo2: number | null;
+  respiratory_rate: number | null;
+  breathing_effort: string | null;
+};
+
+export type ReportChecklistItem = {
+  item_id: string;
+  label: string;
+  review_status: string;
+};
+
+export type FinalDebriefReport = {
+  report_title: string;
+  report_length_target: string;
+  disclaimer: string;
+  session: ReportSessionMetadata;
+  summary: string;
+  transcript_excerpt: ReportTranscriptEntry[];
+  transcript_omitted_count: number;
+  timeline_excerpt: ReportTimelineEntry[];
+  timeline_omitted_count: number;
+  assessment_checklist: ReportChecklistItem[];
+  communication_observations: string[];
+  suggested_debrief_prompts: string[];
+  instructor_notes_placeholder: string;
+};
+
 export async function startSession(
   scenarioId = "copd-sob",
 ): Promise<SessionResponse> {
@@ -90,11 +141,35 @@ export async function startSession(
   return response.json();
 }
 
+export async function endSession(sessionId: string): Promise<SessionResponse> {
+  const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/end`, {
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Session end failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export async function getCurrentSession(): Promise<CurrentSessionResponse> {
   const response = await fetch(`${API_BASE_URL}/sessions/current`);
 
   if (!response.ok) {
     throw new Error(`Current session request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function getSessionReport(
+  sessionId: string,
+): Promise<FinalDebriefReport> {
+  const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/report`);
+
+  if (!response.ok) {
+    throw new Error(`Report request failed with status ${response.status}`);
   }
 
   return response.json();

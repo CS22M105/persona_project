@@ -7,7 +7,10 @@ import {
   resetPatientState,
 } from "../api/state";
 import {
+  endSession,
+  FinalDebriefReport,
   getSessionEvents,
+  getSessionReport,
   getSessionTranscript,
   SessionResponse,
   startSession,
@@ -33,6 +36,7 @@ export function Dashboard() {
     TranscriptMessageResponse[]
   >([]);
   const [events, setEvents] = useState<TimelineEventResponse[]>([]);
+  const [report, setReport] = useState<FinalDebriefReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -78,6 +82,7 @@ export function Dashboard() {
     try {
       const stateResponse = await resetPatientState();
       setPatientState(stateResponse.state);
+      setReport(null);
       await refreshPersistedSessionData();
     } catch {
       setErrorMessage("Patient state failed to reset. Make sure the backend is running.");
@@ -93,6 +98,7 @@ export function Dashboard() {
     try {
       const stateResponse = await applyInstructorCue(cueId);
       setPatientState(stateResponse.state);
+      setReport(null);
       await refreshPersistedSessionData();
     } catch {
       setErrorMessage("Instructor cue failed. Make sure the backend is running.");
@@ -101,7 +107,47 @@ export function Dashboard() {
     }
   }
 
+  async function handleEndSession() {
+    if (!session) {
+      return;
+    }
+
+    setActiveAction("end-session");
+    setErrorMessage("");
+
+    try {
+      const endedSession = await endSession(session.session_id);
+      setSession(endedSession);
+      await refreshPersistedSessionData(endedSession.session_id);
+    } catch {
+      setErrorMessage("Session failed to end. Make sure the backend is running.");
+    } finally {
+      setActiveAction(null);
+    }
+  }
+
+  async function handleGenerateReport() {
+    if (!session) {
+      return;
+    }
+
+    setActiveAction("generate-report");
+    setErrorMessage("");
+
+    try {
+      const reportResponse = await getSessionReport(session.session_id);
+      setReport(reportResponse);
+    } catch {
+      setErrorMessage("Report failed to generate. Make sure the backend is running.");
+    } finally {
+      setActiveAction(null);
+    }
+  }
+
   const isActionRunning = activeAction !== null;
+  const isSessionEnded = session?.status === "ended";
+  const canEndSession = Boolean(session && session.status !== "ended");
+  const canGenerateReport = Boolean(session);
 
   return (
     <main className="app-shell dashboard-shell">
@@ -175,11 +221,31 @@ export function Dashboard() {
               >
                 {activeAction === "reset" ? "Resetting..." : "Reset patient state"}
               </button>
+              <div className="session-action-grid">
+                <button
+                  className="control-button"
+                  disabled={isActionRunning || !canEndSession}
+                  onClick={handleEndSession}
+                  type="button"
+                >
+                  {activeAction === "end-session" ? "Ending..." : "End session"}
+                </button>
+                <button
+                  className="control-button"
+                  disabled={isActionRunning || !canGenerateReport}
+                  onClick={handleGenerateReport}
+                  type="button"
+                >
+                  {activeAction === "generate-report"
+                    ? "Generating..."
+                    : "Generate report"}
+                </button>
+              </div>
               <div className="cue-grid">
                 {cueButtons.map((cue) => (
                   <button
                     className="control-button"
-                    disabled={isActionRunning}
+                    disabled={isActionRunning || isSessionEnded}
                     key={cue.cueId}
                     onClick={() => handleCueClick(cue.cueId)}
                     type="button"
@@ -218,6 +284,11 @@ export function Dashboard() {
                 statusLabel="Persisted"
               />
             </section>
+
+            <section className="dashboard-card report-card" aria-labelledby="report-title">
+              <h2 id="report-title">Final Debrief Report</h2>
+              {report ? <ReportView report={report} /> : <ReportEmptyState />}
+            </section>
           </div>
         ) : null}
       </section>
@@ -225,10 +296,122 @@ export function Dashboard() {
   );
 }
 
+function ReportEmptyState() {
+  return (
+    <p className="dashboard-note">
+      Generate a concise two-page debrief report after the scenario. The report uses
+      persisted transcript and timeline records.
+    </p>
+  );
+}
+
+function ReportView({ report }: { report: FinalDebriefReport }) {
+  return (
+    <article className="report-document" aria-label={report.report_title}>
+      <header className="report-header">
+        <div>
+          <p className="eyebrow">{report.report_length_target}</p>
+          <h3>{report.report_title}</h3>
+        </div>
+        <span className="scenario-badge">{report.session.status}</span>
+      </header>
+
+      <p className="report-disclaimer">{report.disclaimer}</p>
+      <p className="report-summary">{report.summary}</p>
+
+      <dl className="report-meta">
+        <ReportMeta label="Scenario" value={report.session.scenario_name} />
+        <ReportMeta
+          label="Transcript"
+          value={`${report.session.transcript_message_count} messages`}
+        />
+        <ReportMeta
+          label="Timeline"
+          value={`${report.session.timeline_event_count} events`}
+        />
+        <ReportMeta label="Session ID" value={report.session.session_id} />
+      </dl>
+
+      <div className="report-section-grid">
+        <section>
+          <h4>Transcript Excerpt</h4>
+          <ol className="compact-list">
+            {report.transcript_excerpt.map((message) => (
+              <li key={`${message.timestamp}-${message.speaker}-${message.text}`}>
+                <strong>{formatLabel(message.speaker)}:</strong> {message.text}
+              </li>
+            ))}
+          </ol>
+          {report.transcript_omitted_count > 0 ? (
+            <p className="report-small">
+              {report.transcript_omitted_count} additional transcript message(s)
+              omitted for report length.
+            </p>
+          ) : null}
+        </section>
+
+        <section>
+          <h4>Event Timeline</h4>
+          <ol className="compact-list">
+            {report.timeline_excerpt.map((event) => (
+              <li key={`${event.timestamp}-${event.event_type}-${event.label}`}>
+                <strong>{event.label}</strong>
+                {formatReportVitals(event)}
+              </li>
+            ))}
+          </ol>
+          {report.timeline_omitted_count > 0 ? (
+            <p className="report-small">
+              {report.timeline_omitted_count} additional event(s) omitted for report
+              length.
+            </p>
+          ) : null}
+        </section>
+
+        <section>
+          <h4>Faculty Review Checklist</h4>
+          <ul className="compact-list">
+            {report.assessment_checklist.map((item) => (
+              <li key={item.item_id}>{item.label}</li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
+          <h4>Debrief Focus</h4>
+          <ul className="compact-list">
+            {report.communication_observations.map((observation) => (
+              <li key={observation}>{observation}</li>
+            ))}
+          </ul>
+
+          <h4>Prompts</h4>
+          <ul className="compact-list">
+            {report.suggested_debrief_prompts.map((prompt) => (
+              <li key={prompt}>{prompt}</li>
+            ))}
+          </ul>
+        </section>
+      </div>
+
+      <p className="report-small">{report.instructor_notes_placeholder}</p>
+    </article>
+  );
+}
+
 type StateRowProps = {
   label: string;
   value: string;
 };
+
+function ReportMeta({ label, value }: StateRowProps) {
+  return (
+    <>
+      <dt>{label}</dt>
+      <dd>{value}</dd>
+    </>
+  );
+}
 
 function StateRow({ label, value }: StateRowProps) {
   return (
@@ -241,6 +424,33 @@ function StateRow({ label, value }: StateRowProps) {
 
 function formatBoolean(value: boolean): string {
   return value ? "Yes" : "No";
+}
+
+function formatLabel(value: string): string {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function formatReportVitals(event: {
+  heart_rate: number | null;
+  spo2: number | null;
+  respiratory_rate: number | null;
+  breathing_effort: string | null;
+}) {
+  const details = [
+    event.heart_rate !== null ? `HR ${event.heart_rate}` : null,
+    event.spo2 !== null ? `SpO2 ${event.spo2}%` : null,
+    event.respiratory_rate !== null ? `RR ${event.respiratory_rate}` : null,
+    event.breathing_effort ? `effort ${event.breathing_effort}` : null,
+  ].filter(Boolean);
+
+  if (details.length === 0) {
+    return null;
+  }
+
+  return <span> - {details.join(", ")}</span>;
 }
 
 function toChatMessages(messages: TranscriptMessageResponse[]): ChatMessage[] {

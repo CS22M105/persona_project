@@ -3403,3 +3403,146 @@ Result:
 Step 7 is complete.
 The project now supports persisted simulation sessions, transcript messages, instructor cue events, state snapshots, and automatic patient reaction records.
 ```
+
+## 37. Step 8 Final Debrief Report Planned - July 2, 2026
+
+Goal:
+
+```text
+Plan the final debrief-support report feature before implementation.
+```
+
+Created:
+
+```text
+codes/docs/Step8_Final_Debrief_Report.md
+```
+
+Why this was done:
+
+- Step 7 completed persisted session, transcript, and event timeline records.
+- Step 8 should use those records to generate a faculty-facing final report.
+- A final report is valuable for the July 25 demo because it completes the workflow from simulation interaction to debrief review.
+- This feature also supports the future sellable-product direction.
+
+What the Step 8 document defines:
+
+```text
+Step 8 goal
+product value
+scope and non-scope
+safety rule
+report source data
+report sections
+target flow
+API design
+backend file plan
+frontend file plan
+file responsibilities
+substeps 8.1 through 8.8
+success criteria
+testing plan
+security/privacy notes
+risks and mitigations
+```
+
+Main design decision:
+
+```text
+Build a deterministic debrief-support report first.
+Avoid AI-generated scoring or independent grading.
+```
+
+Reason:
+
+- The report must support faculty judgment, not replace it.
+- Deterministic report generation is easier to validate before the July demo.
+- It avoids hallucinated assessment language.
+- It uses the reliable persisted data from Step 7.
+
+Planned report sections:
+
+```text
+session metadata
+short summary
+transcript
+event timeline
+assessment checklist
+communication observations
+suggested debrief prompts
+instructor notes placeholder
+faculty-judgment disclaimer
+```
+
+Result:
+
+```text
+Step 8 is planned and ready to implement one substep at a time.
+No Step 8 product code has been implemented yet.
+```
+
+## 38. Step 8 Final Debrief Report Button and Compact Report Implemented - July 2, 2026
+
+Goal:
+
+```text
+Add a Generate report button that creates a concise faculty-facing debrief report.
+```
+
+Implemented:
+
+```text
+codes/backend/app/schemas/report.py
+codes/backend/app/services/report_service.py
+codes/backend/app/api/sessions.py
+codes/frontend/src/api/sessions.ts
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/styles.css
+codes/docs/Step8_Final_Debrief_Report.md
+```
+
+What changed:
+
+- Added backend report response schemas.
+- Added deterministic report generation from persisted session, transcript, timeline, and scenario checklist records.
+- Added `GET /sessions/{session_id}/report`.
+- Added frontend report types and `getSessionReport`.
+- Added frontend `endSession` support.
+- Added an End session button to the instructor dashboard.
+- Added a Generate report button to the instructor dashboard.
+- Added a compact Final Debrief Report section to the dashboard.
+- Disabled instructor cue buttons after the session is ended so the generated report reflects a stable final record.
+- Added print-friendly styling that hides live dashboard controls and focuses on the report.
+
+Why this was done:
+
+- The instructor needs a visible workflow from simulation to debrief.
+- The report makes the July 25 demo feel complete and product-like.
+- The report should support faculty review without replacing faculty judgment.
+- The report should stay short, close to a two-page debrief artifact, instead of becoming a long transcript dump.
+
+How the report stays concise:
+
+```text
+Transcript excerpt is limited to 12 messages.
+Timeline excerpt is limited to 8 events.
+Communication observations are limited to 4.
+Suggested debrief prompts are limited to 4.
+Long transcript text is shortened.
+Omitted counts are displayed when there is more data.
+```
+
+Safety decision:
+
+```text
+The report is deterministic.
+It does not use OpenAI.
+It does not grade, pass, fail, or claim clinical competence.
+It clearly states that the report is debrief support only and does not replace faculty judgment.
+```
+
+Result:
+
+```text
+The dashboard now has a Generate report button and can display a concise final debrief report for the current session.
+```

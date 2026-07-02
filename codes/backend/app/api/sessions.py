@@ -11,6 +11,8 @@ from app.schemas.session import (
     TimelineResponse,
     TranscriptResponse,
 )
+from app.schemas.report import FinalDebriefReport
+from app.services.report_service import build_final_debrief_report
 from app.services.session_service import (
     SessionNotFoundError,
     end_session,
@@ -74,3 +76,14 @@ async def read_session_events(
         raise HTTPException(status_code=404, detail=str(error)) from error
 
     return TimelineResponse(session_id=session_id, events=events)
+
+
+@router.get("/{session_id}/report", response_model=FinalDebriefReport)
+async def read_session_report(
+    session_id: str,
+    db: Annotated[Session, Depends(get_db)],
+) -> FinalDebriefReport:
+    try:
+        return build_final_debrief_report(db, session_id)
+    except SessionNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
