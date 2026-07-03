@@ -573,10 +573,24 @@ h1 {
 
 .voice-state-card {
   grid-area: state;
+  padding: 12px 14px;
+}
+
+.voice-state-card h2 {
+  margin-bottom: 10px;
 }
 
 .voice-state-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px 10px;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+.voice-state-grid dt {
+  font-size: 0.76rem;
+}
+
+.voice-state-grid dd {
+  font-size: 0.9rem;
 }
 
 .voice-transcript-card {
