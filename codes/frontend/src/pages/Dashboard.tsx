@@ -159,12 +159,17 @@ export function Dashboard() {
             <p className="eyebrow">Instructor dashboard</p>
             <h1 id="dashboard-title">COPD/SOB Control View</h1>
           </div>
-          {patientState ? (
-            <span className="scenario-badge">Session: {patientState.status}</span>
-          ) : null}
-          {session ? (
-            <span className="scenario-badge">Record: {session.status}</span>
-          ) : null}
+          <div className="header-actions">
+            <a className="header-link" href="/voice">
+              Open voice room
+            </a>
+            {patientState ? (
+              <span className="scenario-badge">Session: {patientState.status}</span>
+            ) : null}
+            {session ? (
+              <span className="scenario-badge">Record: {session.status}</span>
+            ) : null}
+          </div>
         </header>
 
         {isLoading ? <p>Loading patient state...</p> : null}

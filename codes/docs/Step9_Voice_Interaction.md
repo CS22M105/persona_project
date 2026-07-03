@@ -953,6 +953,77 @@ Create a browser page for:
 - show current patient state summary
 - show voice transcript when available
 
+Implemented on July 3, 2026:
+
+```text
+Added the first integrated Voice Room page at /voice.
+```
+
+Files changed for 9.5:
+
+```text
+codes/frontend/src/App.tsx
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/pages/VoiceRoom.tsx
+codes/frontend/src/styles.css
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- added `VoiceRoom` page
+- added `/voice` route selection in `App.tsx`
+- added an `Open voice room` link in the instructor dashboard header
+- added an `Instructor dashboard` link in the voice room header
+- added voice connection status display
+- added Connect voice, Disconnect, Mute mic, and Refresh state controls
+- added current patient state summary for the voice room
+- added voice transcript placeholder section
+- added responsive CSS for the voice room layout
+
+Why:
+
+- the product needs a separate sim-room screen for students
+- the instructor dashboard and student voice room should remain separate experiences
+- the voice room UI should exist before WebRTC microphone/speaker code is added
+- the page needs a clear place to show connection state, patient state, and future transcript data
+- the browser should not display the short-lived client secret returned by the backend
+
+How:
+
+- `App.tsx` renders `VoiceRoom` when the browser path is `/voice`
+- `VoiceRoom` loads the current patient state from the backend
+- Connect voice calls `createRealtimeVoiceSession()`
+- the returned client secret is stripped before storing display metadata
+- the page displays model, voice, session ID, and connection status
+- Disconnect clears local voice session metadata
+- Mute toggles frontend UI state only for now
+- microphone and speaker streaming are intentionally left for Step 9.6
+
+Security boundary:
+
+```text
+The Voice Room does not display the short-lived client secret.
+The Voice Room does not contain the permanent OpenAI API key.
+The Voice Room does not start microphone capture yet.
+The Voice Room does not call OpenAI directly.
+```
+
+Verification:
+
+```text
+npm run build
+python -m compileall app
+```
+
+Verification result:
+
+```text
+Frontend TypeScript production build passed.
+Backend compile check passed.
+```
+
 ### 9.6 Connect browser microphone and speaker
 
 Use browser WebRTC to:

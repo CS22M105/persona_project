@@ -4180,3 +4180,85 @@ Result:
 Frontend TypeScript production build passed.
 Backend compile check passed.
 ```
+
+## 50. Step 9.5 Voice Room UI Implemented - July 3, 2026
+
+Goal:
+
+```text
+Add the first integrated browser Voice Room page for the sim-room student/patient interaction screen.
+```
+
+Changed:
+
+```text
+codes/frontend/src/App.tsx
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/pages/VoiceRoom.tsx
+codes/frontend/src/styles.css
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- Added a new `VoiceRoom` page.
+- Added `/voice` path selection in `App.tsx`.
+- Added an `Open voice room` link to the instructor dashboard.
+- Added an `Instructor dashboard` link to the voice room.
+- Added voice connection status display.
+- Added Connect voice, Disconnect, Mute mic, and Refresh state controls.
+- Added current patient state summary for the voice screen.
+- Added a placeholder voice transcript section.
+- Added responsive CSS for the voice room layout.
+
+Why:
+
+- The students need a separate sim-room interface from the instructor dashboard.
+- Voice UI should be created before WebRTC microphone and speaker code is added.
+- The interface needs visible status and safety controls for demo clarity.
+- The page needs a place to show patient state and future voice transcript data.
+
+How it works:
+
+```text
+open /voice
+VoiceRoom loads current patient state
+Connect voice calls createRealtimeVoiceSession()
+backend returns short-lived Realtime session data
+VoiceRoom stores display metadata without displaying the client secret
+Disconnect clears the local voice session display state
+Mute currently changes UI state only
+```
+
+Boundary:
+
+```text
+Microphone capture is not implemented yet.
+Speaker playback is not implemented yet.
+WebRTC connection is not implemented yet.
+Those are intentionally left for Step 9.6.
+```
+
+Security note:
+
+```text
+The Voice Room does not display the short-lived client secret.
+The Voice Room does not contain the permanent OpenAI API key.
+No .env file was opened.
+No API key was printed.
+```
+
+Verification:
+
+```text
+npm run build
+python -m compileall app
+```
+
+Result:
+
+```text
+Frontend TypeScript production build passed.
+Backend compile check passed.
+```
