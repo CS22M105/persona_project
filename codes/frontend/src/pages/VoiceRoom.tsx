@@ -512,12 +512,10 @@ export function VoiceRoom() {
     <main className="app-shell voice-shell">
       <section className="voice-page" aria-labelledby="voice-title">
         <nav className="voice-nav" aria-label="Voice room navigation">
-          <div className="voice-nav-heading">
+          <div className="voice-nav-brand">
             <p className="eyebrow">Student voice room</p>
-            <h1 id="voice-title">AI Patient Voice</h1>
-            <p className="lede">
-              Sim-room interface for speaking with the COPD/SOB AI patient.
-            </p>
+            <h1 id="voice-title">AI Patient Voice: COPD/SOB</h1>
+            <p>Sim-room interface for speaking</p>
           </div>
           <div className="voice-nav-actions">
             <a className="header-link" href="/">
@@ -532,7 +530,11 @@ export function VoiceRoom() {
         {errorMessage ? <p className="chat-error">{errorMessage}</p> : null}
 
         <div className="voice-grid">
-          <section className="dashboard-card voice-state-card" aria-labelledby="voice-state-title">
+          <section
+            className="dashboard-card voice-state-card"
+            id="voice-state-section"
+            aria-labelledby="voice-state-title"
+          >
             <h2 id="voice-state-title">Current Patient State</h2>
             {patientState ? (
               <div className="voice-state-grid">
@@ -616,7 +618,11 @@ export function VoiceRoom() {
             )}
           </section>
 
-          <section className="dashboard-card voice-instructor-card" aria-labelledby="voice-instructor-title">
+          <section
+            className="dashboard-card voice-instructor-card"
+            id="voice-instructor-section"
+            aria-labelledby="voice-instructor-title"
+          >
             <h2 id="voice-instructor-title">Instructor Controls</h2>
             <button
               className="control-button control-button-secondary"
@@ -653,7 +659,11 @@ export function VoiceRoom() {
             </div>
           </section>
 
-          <section className="dashboard-card voice-control-card" aria-labelledby="voice-controls-title">
+          <section
+            className="dashboard-card voice-control-card"
+            id="voice-controls-section"
+            aria-labelledby="voice-controls-title"
+          >
             <h2 id="voice-controls-title">Voice Controls</h2>
             <div className="voice-control-grid">
               <button

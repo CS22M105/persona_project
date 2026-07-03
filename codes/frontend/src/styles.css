@@ -521,16 +521,38 @@ h1 {
 }
 
 .voice-nav {
-  align-items: flex-start;
-  background: #ffffff;
-  border: 1px solid #dbe2ea;
-  border-radius: 8px;
+  align-items: center;
+  background: linear-gradient(90deg, #ffffff 0%, #f3f8f6 54%, #eef5ff 100%);
+  border-bottom: 1px solid #cfdbe7;
+  border-top: 4px solid #2f6f63;
   box-sizing: border-box;
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: space-between;
-  margin: 0 0 16px;
-  padding: 16px 18px;
+  margin: -4px 0 16px;
+  padding: 14px 18px;
+}
+
+.voice-nav-brand {
+  min-width: 0;
+}
+
+.voice-nav-brand .eyebrow {
+  margin-bottom: 4px;
+}
+
+.voice-nav-brand h1 {
+  color: #18212f;
+  font-size: 1.5rem;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.voice-nav-brand p:not(.eyebrow) {
+  color: #4b5563;
+  font-size: 0.94rem;
+  font-weight: 700;
+  margin: 5px 0 0;
 }
 
 .voice-nav-actions {
@@ -538,18 +560,11 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  justify-content: flex-end;
 }
 
-.voice-nav-heading {
-  min-width: 0;
-}
-
-.voice-nav-heading h1 {
-  margin-bottom: 8px;
-}
-
-.voice-nav-heading .lede {
-  margin-bottom: 0;
+.voice-nav .header-link {
+  box-shadow: 0 2px 6px rgb(39 58 86 / 8%);
 }
 
 .voice-grid {
@@ -866,6 +881,7 @@ h1 {
   .voice-nav {
     align-items: stretch;
     flex-direction: column;
+    margin-top: 0;
   }
 
   .voice-nav-actions {
