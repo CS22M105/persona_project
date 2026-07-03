@@ -256,6 +256,11 @@ h1 {
   background: #eef2f7;
 }
 
+.dashboard-nav {
+  background: linear-gradient(90deg, #ffffff 0%, #f4f7fb 52%, #edf7f3 100%);
+  border-top-color: #273a56;
+}
+
 .dashboard-grid {
   align-items: start;
   display: grid;

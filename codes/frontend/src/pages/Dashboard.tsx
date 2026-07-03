@@ -96,12 +96,12 @@ export function Dashboard() {
   return (
     <main className="app-shell dashboard-shell">
       <section className="dashboard-page" aria-labelledby="dashboard-title">
-        <header className="dashboard-header">
-          <div>
-            <p className="eyebrow">Instructor dashboard</p>
-            <h1 id="dashboard-title">COPD/SOB Control View</h1>
+        <nav className="voice-nav dashboard-nav" aria-label="Instructor dashboard navigation">
+          <div className="voice-nav-brand">
+            <h1 id="dashboard-title">Dashboard</h1>
+            <p>Persona selection and debrief review</p>
           </div>
-          <div className="header-actions">
+          <div className="voice-nav-actions">
             <a className="header-link" href="/voice">
               Open voice room
             </a>
@@ -112,7 +112,7 @@ export function Dashboard() {
               <span className="scenario-badge">Record: {session.status}</span>
             ) : null}
           </div>
-        </header>
+        </nav>
 
         {isLoading ? <p>Loading dashboard...</p> : null}
         {errorMessage ? <p className="chat-error">{errorMessage}</p> : null}
