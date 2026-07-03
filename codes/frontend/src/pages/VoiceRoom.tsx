@@ -1,11 +1,13 @@
 import { RefObject, useEffect, useRef, useState } from "react";
 
 import {
+  applyInstructorCue,
   endInstructorTakeover,
   getPatientState,
   PatientState,
   pauseAiPatient,
   resumeAiPatient,
+  resetPatientState,
   startInstructorTakeover,
 } from "../api/state";
 import { TranscriptMessageResponse } from "../api/sessions";
@@ -36,12 +38,24 @@ type RealtimeTranscriptEvent = {
   text?: string;
 };
 
+const cueButtons = [
+  { cueId: "spo2_dropped", label: "SpO2 dropped" },
+  { cueId: "hr_increased", label: "HR increased" },
+  { cueId: "breathing_worsened", label: "Breathing worsened" },
+  { cueId: "oxygen_applied", label: "Oxygen applied" },
+  { cueId: "bronchodilator_given", label: "Bronchodilator given" },
+  { cueId: "patient_improving", label: "Patient improving" },
+];
+
 
 export function VoiceRoom() {
   const [patientState, setPatientState] = useState<PatientState | null>(null);
   const [voiceSession, setVoiceSession] = useState<PublicRealtimeSession | null>(null);
   const [status, setStatus] = useState<VoiceConnectionStatus>("loading_state");
   const [isMuted, setIsMuted] = useState(false);
+  const [activeInstructorAction, setActiveInstructorAction] = useState<string | null>(
+    null,
+  );
   const [lastInstructionSyncAt, setLastInstructionSyncAt] = useState<string | null>(null);
   const [voiceTranscriptMessages, setVoiceTranscriptMessages] = useState<
     TranscriptMessageResponse[]
@@ -150,6 +164,36 @@ export function VoiceRoom() {
       nextMuted ? "voice_muted" : "voice_unmuted",
       nextMuted ? "Voice microphone muted" : "Voice microphone unmuted",
     );
+  }
+
+  async function handleResetState() {
+    setActiveInstructorAction("reset");
+    setErrorMessage("");
+
+    try {
+      const response = await resetPatientState();
+      setPatientState(response.state);
+      await syncVoiceInstructions({ force: true });
+    } catch {
+      setErrorMessage("Patient state failed to reset. Make sure the backend is running.");
+    } finally {
+      setActiveInstructorAction(null);
+    }
+  }
+
+  async function handleCueClick(cueId: string) {
+    setActiveInstructorAction(cueId);
+    setErrorMessage("");
+
+    try {
+      const response = await applyInstructorCue(cueId);
+      setPatientState(response.state);
+      await syncVoiceInstructions({ force: true });
+    } catch {
+      setErrorMessage("Instructor cue failed. Make sure the backend is running.");
+    } finally {
+      setActiveInstructorAction(null);
+    }
   }
 
   async function handlePauseAi() {
@@ -429,6 +473,7 @@ export function VoiceRoom() {
   const aiIsPaused = Boolean(patientState?.safety.ai_paused);
   const takeoverIsActive = Boolean(patientState?.safety.instructor_takeover);
   const statusLabel = formatStatus(status);
+  const isInstructorActionRunning = activeInstructorAction !== null;
 
   return (
     <main className="app-shell voice-shell">
@@ -454,6 +499,76 @@ export function VoiceRoom() {
         {errorMessage ? <p className="chat-error">{errorMessage}</p> : null}
 
         <div className="voice-grid">
+          <section className="dashboard-card voice-state-card" aria-labelledby="voice-state-title">
+            <h2 id="voice-state-title">Current Patient State</h2>
+            {patientState ? (
+              <dl className="state-grid voice-state-grid">
+                <VoiceDetail label="Status" value={patientState.status} />
+                <VoiceDetail label="Stage" value={patientState.stage} />
+                <VoiceDetail label="HR" value={`${patientState.vitals.heart_rate} bpm`} />
+                <VoiceDetail label="SpO2" value={`${patientState.vitals.spo2}%`} />
+                <VoiceDetail
+                  label="RR"
+                  value={`${patientState.vitals.respiratory_rate}/min`}
+                />
+                <VoiceDetail label="BP" value={patientState.vitals.blood_pressure} />
+                <VoiceDetail
+                  label="Breathing effort"
+                  value={patientState.symptoms.breathing_effort}
+                />
+                <VoiceDetail
+                  label="Chest tightness"
+                  value={patientState.symptoms.chest_tightness}
+                />
+                <VoiceDetail label="Anxiety" value={patientState.emotion.anxiety} />
+                <VoiceDetail label="Fatigue" value={patientState.emotion.fatigue} />
+                <VoiceDetail
+                  label="Speech"
+                  value={patientState.voice_behavior.speech_pattern}
+                />
+                <VoiceDetail label="Tone" value={patientState.voice_behavior.tone} />
+                <VoiceDetail
+                  label="Oxygen"
+                  value={formatBoolean(patientState.interventions.oxygen_applied)}
+                />
+                <VoiceDetail
+                  label="Bronchodilator"
+                  value={formatBoolean(patientState.interventions.bronchodilator_given)}
+                />
+              </dl>
+            ) : (
+              <p className="dashboard-note">Patient state has not loaded yet.</p>
+            )}
+          </section>
+
+          <section className="dashboard-card voice-instructor-card" aria-labelledby="voice-instructor-title">
+            <h2 id="voice-instructor-title">Instructor Controls</h2>
+            <button
+              className="control-button control-button-secondary"
+              disabled={isInstructorActionRunning}
+              onClick={handleResetState}
+              type="button"
+            >
+              {activeInstructorAction === "reset" ? "Resetting..." : "Reset patient state"}
+            </button>
+            <div className="cue-grid">
+              {cueButtons.map((cue) => (
+                <button
+                  className="control-button"
+                  disabled={isInstructorActionRunning}
+                  key={cue.cueId}
+                  onClick={() => handleCueClick(cue.cueId)}
+                  type="button"
+                >
+                  {activeInstructorAction === cue.cueId ? "Updating..." : cue.label}
+                </button>
+              ))}
+            </div>
+            {activeInstructorAction ? (
+              <p className="dashboard-note">Updating patient state...</p>
+            ) : null}
+          </section>
+
           <section className="dashboard-card voice-control-card" aria-labelledby="voice-controls-title">
             <h2 id="voice-controls-title">Voice Controls</h2>
             <div className="voice-control-grid">
@@ -567,41 +682,6 @@ export function VoiceRoom() {
               autoPlay
               className="voice-remote-audio"
             />
-          </section>
-
-          <section className="dashboard-card voice-state-card" aria-labelledby="voice-state-title">
-            <h2 id="voice-state-title">Current Patient State</h2>
-            {patientState ? (
-              <dl className="state-grid">
-                <VoiceDetail label="Stage" value={patientState.stage} />
-                <VoiceDetail label="HR" value={`${patientState.vitals.heart_rate} bpm`} />
-                <VoiceDetail label="SpO2" value={`${patientState.vitals.spo2}%`} />
-                <VoiceDetail
-                  label="RR"
-                  value={`${patientState.vitals.respiratory_rate}/min`}
-                />
-                <VoiceDetail
-                  label="Breathing effort"
-                  value={patientState.symptoms.breathing_effort}
-                />
-                <VoiceDetail label="Anxiety" value={patientState.emotion.anxiety} />
-                <VoiceDetail
-                  label="Speech"
-                  value={patientState.voice_behavior.speech_pattern}
-                />
-                <VoiceDetail label="Tone" value={patientState.voice_behavior.tone} />
-                <VoiceDetail
-                  label="Oxygen"
-                  value={formatBoolean(patientState.interventions.oxygen_applied)}
-                />
-                <VoiceDetail
-                  label="Bronchodilator"
-                  value={formatBoolean(patientState.interventions.bronchodilator_given)}
-                />
-              </dl>
-            ) : (
-              <p className="dashboard-note">Patient state has not loaded yet.</p>
-            )}
           </section>
 
           <section className="dashboard-card voice-transcript-card" aria-labelledby="voice-transcript-title">

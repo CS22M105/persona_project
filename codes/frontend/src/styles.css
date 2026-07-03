@@ -262,7 +262,7 @@ h1 {
   gap: 16px;
   grid-template-columns: minmax(320px, 0.85fr) minmax(420px, 1.15fr);
   grid-template-areas:
-    "controls chat"
+    "persona chat"
     "timeline chat"
     "report report";
 }
@@ -281,6 +281,10 @@ h1 {
   margin: 0 0 14px;
 }
 
+.persona-card {
+  grid-area: persona;
+}
+
 .controls-card {
   grid-area: controls;
 }
@@ -291,6 +295,22 @@ h1 {
 
 .report-card {
   grid-area: report;
+}
+
+.report-card-header {
+  align-items: start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.report-card-header h2 {
+  margin-bottom: 0;
+}
+
+.report-action-grid {
+  margin-top: 0;
+  min-width: 280px;
 }
 
 .chat-card {
@@ -505,10 +525,15 @@ h1 {
   align-items: start;
   display: grid;
   gap: 16px;
-  grid-template-columns: minmax(300px, 0.8fr) minmax(420px, 1.2fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-areas:
-    "controls state"
+    "state state"
+    "instructor controls"
     "transcript transcript";
+}
+
+.voice-instructor-card {
+  grid-area: instructor;
 }
 
 .voice-control-card {
@@ -517,6 +542,10 @@ h1 {
 
 .voice-state-card {
   grid-area: state;
+}
+
+.voice-state-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .voice-transcript-card {
@@ -649,7 +678,7 @@ h1 {
   .dashboard-grid {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "controls"
+      "persona"
       "timeline"
       "chat"
       "report";
@@ -667,6 +696,15 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .report-card-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .report-action-grid {
+    min-width: 0;
+  }
+
   .session-action-grid,
   .voice-control-grid,
   .voice-grid,
@@ -676,8 +714,9 @@ h1 {
 
   .voice-grid {
     grid-template-areas:
-      "controls"
       "state"
+      "instructor"
+      "controls"
       "transcript";
   }
 
@@ -695,6 +734,7 @@ h1 {
     background: #ffffff;
   }
 
+  .persona-card,
   .controls-card,
   .timeline-card,
   .chat-card,

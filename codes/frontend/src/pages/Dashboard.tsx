@@ -1,11 +1,6 @@
 import { useEffect, useState } from "react";
 
-import {
-  applyInstructorCue,
-  getPatientState,
-  PatientState,
-  resetPatientState,
-} from "../api/state";
+import { getPatientState, PatientState } from "../api/state";
 import {
   endSession,
   FinalDebriefReport,
@@ -19,15 +14,6 @@ import {
   TranscriptSpeaker,
 } from "../api/sessions";
 import { Chat, ChatMessage } from "./Chat";
-
-const cueButtons = [
-  { cueId: "spo2_dropped", label: "SpO2 dropped" },
-  { cueId: "hr_increased", label: "HR increased" },
-  { cueId: "breathing_worsened", label: "Breathing worsened" },
-  { cueId: "oxygen_applied", label: "Oxygen applied" },
-  { cueId: "bronchodilator_given", label: "Bronchodilator given" },
-  { cueId: "patient_improving", label: "Patient improving" },
-];
 
 export function Dashboard() {
   const [patientState, setPatientState] = useState<PatientState | null>(null);
@@ -73,38 +59,6 @@ export function Dashboard() {
 
     setTranscriptMessages(transcriptResponse.messages);
     setEvents(eventsResponse.events);
-  }
-
-  async function handleResetState() {
-    setActiveAction("reset");
-    setErrorMessage("");
-
-    try {
-      const stateResponse = await resetPatientState();
-      setPatientState(stateResponse.state);
-      setReport(null);
-      await refreshPersistedSessionData();
-    } catch {
-      setErrorMessage("Patient state failed to reset. Make sure the backend is running.");
-    } finally {
-      setActiveAction(null);
-    }
-  }
-
-  async function handleCueClick(cueId: string) {
-    setActiveAction(cueId);
-    setErrorMessage("");
-
-    try {
-      const stateResponse = await applyInstructorCue(cueId);
-      setPatientState(stateResponse.state);
-      setReport(null);
-      await refreshPersistedSessionData();
-    } catch {
-      setErrorMessage("Instructor cue failed. Make sure the backend is running.");
-    } finally {
-      setActiveAction(null);
-    }
   }
 
   async function handleEndSession() {
@@ -177,57 +131,21 @@ export function Dashboard() {
 
         {patientState ? (
           <div className="dashboard-grid">
-            <section className="dashboard-card controls-card" aria-labelledby="controls-title">
-              <h2 id="controls-title">Instructor Controls</h2>
-              <button
-                className="control-button control-button-secondary"
-                disabled={isActionRunning}
-                onClick={handleResetState}
-                type="button"
-              >
-                {activeAction === "reset" ? "Resetting..." : "Reset patient state"}
-              </button>
-              <div className="session-action-grid">
-                <button
-                  className="control-button"
-                  disabled={isActionRunning || !canEndSession}
-                  onClick={handleEndSession}
-                  type="button"
-                >
-                  {activeAction === "end-session" ? "Ending..." : "End session"}
-                </button>
-                <button
-                  className="control-button"
-                  disabled={isActionRunning || !canGenerateReport}
-                  onClick={handleGenerateReport}
-                  type="button"
-                >
-                  {activeAction === "generate-report"
-                    ? "Generating..."
-                    : "Generate report"}
-                </button>
-              </div>
-              {session && !isSessionEnded ? (
-                <p className="dashboard-note">
-                  End the session before generating the final report.
-                </p>
-              ) : null}
-              <div className="cue-grid">
-                {cueButtons.map((cue) => (
-                  <button
-                    className="control-button"
-                    disabled={isActionRunning || isSessionEnded}
-                    key={cue.cueId}
-                    onClick={() => handleCueClick(cue.cueId)}
-                    type="button"
-                  >
-                    {activeAction === cue.cueId ? "Updating..." : cue.label}
-                  </button>
-                ))}
-              </div>
-              {activeAction ? (
-                <p className="dashboard-note">Updating patient state...</p>
-              ) : null}
+            <section className="dashboard-card persona-card" aria-labelledby="persona-title">
+              <h2 id="persona-title">Persona Selection</h2>
+              <dl className="state-grid">
+                <ReportMeta label="Active persona" value="COPD/SOB Patient" />
+                <ReportMeta label="Scenario ID" value={patientState.scenario_id} />
+                <ReportMeta label="Patient session" value={patientState.status} />
+                <ReportMeta
+                  label="Session record"
+                  value={session?.status ?? "Not started"}
+                />
+              </dl>
+              <p className="dashboard-note">
+                Additional patient personas can be selected from this dashboard in a
+                future build. Use the voice room for live instructor controls.
+              </p>
             </section>
 
             <section className="dashboard-card timeline-card" aria-labelledby="events-title">
@@ -257,7 +175,34 @@ export function Dashboard() {
             </section>
 
             <section className="dashboard-card report-card" aria-labelledby="report-title">
-              <h2 id="report-title">Final Debrief Report</h2>
+              <div className="report-card-header">
+                <h2 id="report-title">Final Debrief Report</h2>
+                <div className="session-action-grid report-action-grid">
+                  <button
+                    className="control-button"
+                    disabled={isActionRunning || !canEndSession}
+                    onClick={handleEndSession}
+                    type="button"
+                  >
+                    {activeAction === "end-session" ? "Ending..." : "End session"}
+                  </button>
+                  <button
+                    className="control-button"
+                    disabled={isActionRunning || !canGenerateReport}
+                    onClick={handleGenerateReport}
+                    type="button"
+                  >
+                    {activeAction === "generate-report"
+                      ? "Generating..."
+                      : "Generate report"}
+                  </button>
+                </div>
+              </div>
+              {session && !isSessionEnded ? (
+                <p className="dashboard-note">
+                  End the session before generating the final report.
+                </p>
+              ) : null}
               {report ? <ReportView report={report} /> : <ReportEmptyState />}
             </section>
           </div>
