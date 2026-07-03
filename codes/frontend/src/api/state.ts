@@ -7,7 +7,13 @@ export type SessionStatus =
   | "takeover"
   | "ended";
 
-export type StateEventType = "state_reset" | "instructor_cue";
+export type StateEventType =
+  | "state_reset"
+  | "instructor_cue"
+  | "pause"
+  | "resume"
+  | "takeover_started"
+  | "takeover_ended";
 
 export type Vitals = {
   heart_rate: number;
@@ -126,6 +132,43 @@ export async function getStateEvents(): Promise<StateEventsResponse> {
 
   if (!response.ok) {
     throw new Error(`State events request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function pauseAiPatient(): Promise<PatientStateResponse> {
+  return postStateSafetyControl("/state/safety/pause", "AI pause");
+}
+
+export async function resumeAiPatient(): Promise<PatientStateResponse> {
+  return postStateSafetyControl("/state/safety/resume", "AI resume");
+}
+
+export async function startInstructorTakeover(): Promise<PatientStateResponse> {
+  return postStateSafetyControl(
+    "/state/safety/takeover/start",
+    "Instructor takeover start",
+  );
+}
+
+export async function endInstructorTakeover(): Promise<PatientStateResponse> {
+  return postStateSafetyControl(
+    "/state/safety/takeover/end",
+    "Instructor takeover end",
+  );
+}
+
+async function postStateSafetyControl(
+  path: string,
+  label: string,
+): Promise<PatientStateResponse> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error(`${label} request failed with status ${response.status}`);
   }
 
   return response.json();

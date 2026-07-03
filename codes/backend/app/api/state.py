@@ -4,16 +4,24 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.schemas.session import TimelineEventCreate, TranscriptMessageCreate
+from app.schemas.session import (
+    TimelineEventCreate,
+    TimelineEventType,
+    TranscriptMessageCreate,
+)
 from app.schemas.state import PatientStateResponse, StateEventsResponse
 from app.services.auto_patient_message import build_auto_patient_message_result
 from app.services.scenario_loader import load_copd_sob_scenario
 from app.services.session_service import start_session
 from app.services.state_manager import (
     apply_instructor_cue,
+    end_instructor_takeover,
     get_current_state,
     get_state_events,
+    pause_ai_patient,
     reset_state,
+    resume_ai_patient,
+    start_instructor_takeover,
 )
 from app.services.timeline_service import save_timeline_event
 from app.services.transcript_service import save_transcript_message
@@ -94,6 +102,56 @@ async def apply_state_cue(
     )
 
 
+@router.post("/safety/pause", response_model=PatientStateResponse)
+async def pause_current_ai_patient(
+    db: Annotated[Session, Depends(get_db)],
+) -> PatientStateResponse:
+    updated_state = pause_ai_patient()
+    _save_safety_timeline_event(db, "pause", "AI patient paused", updated_state)
+
+    return PatientStateResponse(state=updated_state)
+
+
+@router.post("/safety/resume", response_model=PatientStateResponse)
+async def resume_current_ai_patient(
+    db: Annotated[Session, Depends(get_db)],
+) -> PatientStateResponse:
+    updated_state = resume_ai_patient()
+    _save_safety_timeline_event(db, "resume", "AI patient resumed", updated_state)
+
+    return PatientStateResponse(state=updated_state)
+
+
+@router.post("/safety/takeover/start", response_model=PatientStateResponse)
+async def start_current_instructor_takeover(
+    db: Annotated[Session, Depends(get_db)],
+) -> PatientStateResponse:
+    updated_state = start_instructor_takeover()
+    _save_safety_timeline_event(
+        db,
+        "takeover_started",
+        "Instructor takeover started",
+        updated_state,
+    )
+
+    return PatientStateResponse(state=updated_state)
+
+
+@router.post("/safety/takeover/end", response_model=PatientStateResponse)
+async def end_current_instructor_takeover(
+    db: Annotated[Session, Depends(get_db)],
+) -> PatientStateResponse:
+    updated_state = end_instructor_takeover()
+    _save_safety_timeline_event(
+        db,
+        "takeover_ended",
+        "Instructor takeover ended",
+        updated_state,
+    )
+
+    return PatientStateResponse(state=updated_state)
+
+
 @router.get("/events", response_model=StateEventsResponse)
 async def read_state_events() -> StateEventsResponse:
     return StateEventsResponse(events=get_state_events())
@@ -105,3 +163,24 @@ def _find_cue_label(cue_id: str, scenario: dict) -> str | None:
             return cue.get("label")
 
     return None
+
+
+def _save_safety_timeline_event(
+    db: Session,
+    event_type: TimelineEventType,
+    label: str,
+    updated_state,
+) -> None:
+    scenario = load_copd_sob_scenario()
+    session = start_session(db, scenario_id=scenario["scenario_id"])
+
+    save_timeline_event(
+        db,
+        TimelineEventCreate(
+            session_id=session.session_id,
+            event_type=event_type,
+            label=label,
+            state_snapshot_json=updated_state.model_dump(mode="json"),
+            metadata_json={"source": "voice_safety_control"},
+        ),
+    )

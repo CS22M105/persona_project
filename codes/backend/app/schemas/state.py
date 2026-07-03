@@ -5,7 +5,14 @@ from pydantic import BaseModel, Field
 
 
 SessionStatus = Literal["not_started", "active", "paused", "takeover", "ended"]
-StateEventType = Literal["state_reset", "instructor_cue"]
+StateEventType = Literal[
+    "state_reset",
+    "instructor_cue",
+    "pause",
+    "resume",
+    "takeover_started",
+    "takeover_ended",
+]
 
 
 class Vitals(BaseModel):

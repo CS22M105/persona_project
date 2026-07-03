@@ -52,6 +52,46 @@ def apply_instructor_cue(cue_id: str) -> PatientState:
     return _current_state
 
 
+def pause_ai_patient() -> PatientState:
+    return _apply_safety_update(
+        status="paused",
+        ai_paused=True,
+        instructor_takeover=False,
+        event_type="pause",
+        label="AI patient paused",
+    )
+
+
+def resume_ai_patient() -> PatientState:
+    return _apply_safety_update(
+        status="active",
+        ai_paused=False,
+        instructor_takeover=False,
+        event_type="resume",
+        label="AI patient resumed",
+    )
+
+
+def start_instructor_takeover() -> PatientState:
+    return _apply_safety_update(
+        status="takeover",
+        ai_paused=True,
+        instructor_takeover=True,
+        event_type="takeover_started",
+        label="Instructor takeover started",
+    )
+
+
+def end_instructor_takeover() -> PatientState:
+    return _apply_safety_update(
+        status="active",
+        ai_paused=False,
+        instructor_takeover=False,
+        event_type="takeover_ended",
+        label="Instructor takeover ended",
+    )
+
+
 def get_state_events() -> list[StateEvent]:
     return list(_state_events)
 
@@ -81,6 +121,28 @@ def _deep_merge(target: dict[str, Any], updates: dict[str, Any]) -> None:
             _deep_merge(target[key], value)
         else:
             target[key] = value
+
+
+def _apply_safety_update(
+    status: str,
+    ai_paused: bool,
+    instructor_takeover: bool,
+    event_type: StateEventType,
+    label: str,
+) -> PatientState:
+    global _current_state
+
+    current_state = get_current_state()
+    updated_state_data = current_state.model_dump(mode="python")
+    updated_state_data["status"] = status
+    updated_state_data["safety"]["ai_paused"] = ai_paused
+    updated_state_data["safety"]["instructor_takeover"] = instructor_takeover
+    updated_state_data["last_updated_at"] = _utc_now()
+
+    _current_state = PatientState(**updated_state_data)
+    _log_state_event(event_type, _current_state, label=label)
+
+    return _current_state
 
 
 def _log_state_event(

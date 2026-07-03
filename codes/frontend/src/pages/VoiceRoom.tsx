@@ -1,6 +1,13 @@
 import { RefObject, useEffect, useRef, useState } from "react";
 
-import { getPatientState, PatientState } from "../api/state";
+import {
+  endInstructorTakeover,
+  getPatientState,
+  PatientState,
+  pauseAiPatient,
+  resumeAiPatient,
+  startInstructorTakeover,
+} from "../api/state";
 import { TranscriptMessageResponse } from "../api/sessions";
 import {
   createRealtimeVoiceSession,
@@ -145,6 +152,78 @@ export function VoiceRoom() {
     );
   }
 
+  async function handlePauseAi() {
+    await applySafetyControl("pause");
+  }
+
+  async function handleResumeAi() {
+    await applySafetyControl("resume");
+  }
+
+  async function handleStartTakeover() {
+    await applySafetyControl("takeover_start");
+  }
+
+  async function handleEndTakeover() {
+    await applySafetyControl("takeover_end");
+  }
+
+  async function applySafetyControl(
+    action: "pause" | "resume" | "takeover_start" | "takeover_end",
+  ) {
+    setErrorMessage("");
+
+    try {
+      const response = await runSafetyControl(action);
+      setPatientState(response.state);
+
+      if (action === "pause" || action === "takeover_start") {
+        cancelCurrentRealtimeResponse();
+        setMicrophoneEnabled(false);
+        setIsMuted(true);
+      }
+
+      if (action === "resume" || action === "takeover_end") {
+        setMicrophoneEnabled(true);
+        setIsMuted(false);
+      }
+
+      await syncVoiceInstructions({ force: true });
+    } catch {
+      setErrorMessage("Safety control failed. Make sure the backend is running.");
+    }
+  }
+
+  async function runSafetyControl(
+    action: "pause" | "resume" | "takeover_start" | "takeover_end",
+  ) {
+    if (action === "pause") {
+      return pauseAiPatient();
+    }
+
+    if (action === "resume") {
+      return resumeAiPatient();
+    }
+
+    if (action === "takeover_start") {
+      return startInstructorTakeover();
+    }
+
+    return endInstructorTakeover();
+  }
+
+  function setMicrophoneEnabled(isEnabled: boolean) {
+    localStreamRef.current
+      ?.getAudioTracks()
+      .forEach((track) => {
+        track.enabled = isEnabled;
+      });
+  }
+
+  function cancelCurrentRealtimeResponse() {
+    sendRealtimeEvent({ type: "response.cancel" });
+  }
+
   function cleanupVoiceConnection() {
     dataChannelRef.current?.close();
     dataChannelRef.current = null;
@@ -256,20 +335,22 @@ export function VoiceRoom() {
   function sendSessionUpdate(
     instructionsResponse: VoiceInstructionsResponse,
   ): boolean {
+    return sendRealtimeEvent({
+      type: "session.update",
+      session: {
+        instructions: instructionsResponse.instructions,
+      },
+    });
+  }
+
+  function sendRealtimeEvent(event: unknown): boolean {
     const dataChannel = dataChannelRef.current;
 
     if (!dataChannel || dataChannel.readyState !== "open") {
       return false;
     }
 
-    dataChannel.send(
-      JSON.stringify({
-        type: "session.update",
-        session: {
-          instructions: instructionsResponse.instructions,
-        },
-      }),
-    );
+    dataChannel.send(JSON.stringify(event));
 
     return true;
   }
@@ -344,6 +425,9 @@ export function VoiceRoom() {
     status !== "requesting_microphone" &&
     status !== "ready";
   const canDisconnect = status === "ready";
+  const canUseSafetyControls = status === "ready";
+  const aiIsPaused = Boolean(patientState?.safety.ai_paused);
+  const takeoverIsActive = Boolean(patientState?.safety.instructor_takeover);
   const statusLabel = formatStatus(status);
 
   return (
@@ -407,6 +491,38 @@ export function VoiceRoom() {
               >
                 Refresh state
               </button>
+              <button
+                className="control-button"
+                disabled={!canUseSafetyControls || aiIsPaused}
+                onClick={handlePauseAi}
+                type="button"
+              >
+                Pause AI
+              </button>
+              <button
+                className="control-button"
+                disabled={!canUseSafetyControls || !aiIsPaused || takeoverIsActive}
+                onClick={handleResumeAi}
+                type="button"
+              >
+                Resume AI
+              </button>
+              <button
+                className="control-button"
+                disabled={!canUseSafetyControls || takeoverIsActive}
+                onClick={handleStartTakeover}
+                type="button"
+              >
+                Start takeover
+              </button>
+              <button
+                className="control-button"
+                disabled={!canUseSafetyControls || !takeoverIsActive}
+                onClick={handleEndTakeover}
+                type="button"
+              >
+                End takeover
+              </button>
             </div>
 
             <dl className="voice-session-grid">
@@ -415,6 +531,18 @@ export function VoiceRoom() {
               <VoiceDetail
                 label="State sync"
                 value={lastInstructionSyncAt ?? "Waiting"}
+              />
+              <VoiceDetail
+                label="AI paused"
+                value={patientState ? formatBoolean(patientState.safety.ai_paused) : "Unknown"}
+              />
+              <VoiceDetail
+                label="Takeover"
+                value={
+                  patientState
+                    ? formatBoolean(patientState.safety.instructor_takeover)
+                    : "Unknown"
+                }
               />
               <VoiceDetail
                 label="Realtime model"

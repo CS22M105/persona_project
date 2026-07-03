@@ -4491,6 +4491,87 @@ Pause and instructor takeover events are planned for Step 9.10.
 This step persists transcript text when Realtime transcript events are emitted.
 ```
 
+## 55. Step 9.10 Voice Safety Controls Implemented - July 3, 2026
+
+Goal:
+
+```text
+Add safety controls so the AI patient can be paused, resumed, muted, disconnected, or placed under instructor takeover during voice simulation.
+```
+
+Changed:
+
+```text
+codes/backend/app/schemas/state.py
+codes/backend/app/services/state_manager.py
+codes/backend/app/api/state.py
+codes/frontend/src/api/state.ts
+codes/frontend/src/pages/VoiceRoom.tsx
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- Added backend state event types for pause, resume, takeover started, and takeover ended.
+- Added backend state manager functions for AI pause/resume and instructor takeover.
+- Added backend safety endpoints:
+  - `POST /state/safety/pause`
+  - `POST /state/safety/resume`
+  - `POST /state/safety/takeover/start`
+  - `POST /state/safety/takeover/end`
+- Added timeline persistence for each safety action.
+- Added frontend state API functions for safety controls.
+- Added Voice Room buttons for Pause AI, Resume AI, Start takeover, and End takeover.
+- Pause and takeover send Realtime `response.cancel`.
+- Pause and takeover disable the microphone track.
+- Resume and end takeover re-enable the microphone track.
+- Safety changes sync updated voice instructions to the active Realtime session.
+- Voice Room now displays AI paused and takeover status.
+
+Why:
+
+- Instructors need immediate control if the AI patient should stop responding.
+- Instructor takeover should let the instructor speak manually without AI interruption.
+- Safety actions should update the same patient state used by the voice persona.
+- Safety actions should be saved in the timeline for later debriefing.
+
+How it works:
+
+```text
+Pause AI / Start takeover
+backend updates patient state safety flags
+backend saves timeline event
+frontend sends response.cancel to Realtime
+frontend disables microphone track
+frontend syncs updated instructions
+
+Resume AI / End takeover
+backend clears safety flags
+backend saves timeline event
+frontend enables microphone track
+frontend syncs updated instructions
+```
+
+Verification:
+
+```text
+python -m compileall app
+npm run build
+safety control endpoint verification passed
+events=pause,takeover_started,takeover_ended,resume
+```
+
+Security note:
+
+```text
+No API key is exposed.
+No raw audio is sent to the backend.
+No .env file was opened.
+No API key was printed.
+The controls affect only this app's AI patient state and browser voice session.
+```
+
 ## 50. Step 9.5 Voice Room UI Implemented - July 3, 2026
 
 Goal:

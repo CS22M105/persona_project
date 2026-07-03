@@ -1459,6 +1459,101 @@ Implement:
 - instructor takeover
 - disconnect session
 
+Implemented on July 3, 2026:
+
+```text
+Added backend and frontend safety controls for pause, resume, mute, instructor takeover, and disconnect behavior.
+```
+
+Files changed for 9.10:
+
+```text
+codes/backend/app/schemas/state.py
+codes/backend/app/services/state_manager.py
+codes/backend/app/api/state.py
+codes/frontend/src/api/state.ts
+codes/frontend/src/pages/VoiceRoom.tsx
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- added state event types:
+  - `pause`
+  - `resume`
+  - `takeover_started`
+  - `takeover_ended`
+- added backend state manager functions:
+  - `pause_ai_patient()`
+  - `resume_ai_patient()`
+  - `start_instructor_takeover()`
+  - `end_instructor_takeover()`
+- added backend state safety endpoints:
+  - `POST /state/safety/pause`
+  - `POST /state/safety/resume`
+  - `POST /state/safety/takeover/start`
+  - `POST /state/safety/takeover/end`
+- added timeline persistence for safety actions
+- added frontend state API functions for safety controls
+- added Voice Room buttons for Pause AI, Resume AI, Start takeover, and End takeover
+- added Realtime `response.cancel` event when pausing AI or starting instructor takeover
+- disabled microphone audio track during pause/takeover
+- re-enabled microphone audio track after resume/end takeover
+- synced updated safety-state instructions into the active Realtime session
+- displayed AI paused and takeover status in the Voice Room
+
+Why:
+
+- instructors need immediate safety control during a voice simulation
+- if the AI patient says something inappropriate or the instructor needs to speak manually, the AI should stop responding
+- pause and takeover should update the same patient state used by voice instructions
+- safety actions should be saved in the timeline for debriefing
+- mute/disconnect controls should remain available for sim-room audio management
+
+How:
+
+```text
+Instructor clicks Pause AI or Start takeover in Voice Room
+frontend calls backend safety endpoint
+backend updates patient state safety flags
+backend saves timeline event
+frontend sends response.cancel over Realtime data channel
+frontend disables microphone track
+frontend syncs updated voice instructions
+AI patient stops responding until resumed
+```
+
+Resume flow:
+
+```text
+Instructor clicks Resume AI or End takeover
+frontend calls backend safety endpoint
+backend clears safety flags
+backend saves timeline event
+frontend enables microphone track
+frontend syncs updated voice instructions
+AI patient can respond again
+```
+
+Security boundary:
+
+```text
+Safety controls do not expose API keys.
+Safety controls do not send raw audio to the backend.
+Safety controls do not integrate with Laerdal/manikin software.
+They control only this app's AI patient state and browser voice session.
+```
+
+Verification:
+
+```text
+python -m compileall app
+npm run build
+safety control endpoint verification passed
+events=pause,takeover_started,takeover_ended,resume
+```
+
 ### 9.11 Verify voice end to end
 
 Test:
