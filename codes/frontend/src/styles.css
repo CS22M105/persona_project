@@ -262,8 +262,7 @@ h1 {
   gap: 16px;
   grid-template-columns: minmax(320px, 0.85fr) minmax(420px, 1.15fr);
   grid-template-areas:
-    "persona chat"
-    "timeline chat"
+    "persona timeline"
     "report report";
 }
 
@@ -536,6 +535,38 @@ h1 {
   grid-area: instructor;
 }
 
+.voice-instructor-chat {
+  border-top: 1px solid #dbe2ea;
+  margin-top: 16px;
+  padding-top: 16px;
+}
+
+.voice-instructor-chat h3 {
+  font-size: 0.95rem;
+  margin: 0 0 12px;
+}
+
+.voice-instructor-chat .chat-panel {
+  border-radius: 6px;
+  min-height: 460px;
+}
+
+.voice-instructor-chat .chat-header {
+  padding: 14px;
+}
+
+.voice-instructor-chat .chat-header h1 {
+  font-size: 1.05rem;
+}
+
+.voice-instructor-chat .conversation {
+  padding: 14px;
+}
+
+.voice-instructor-chat .chat-form {
+  padding: 14px;
+}
+
 .voice-control-card {
   grid-area: controls;
 }
@@ -680,7 +711,6 @@ h1 {
     grid-template-areas:
       "persona"
       "timeline"
-      "chat"
       "report";
   }
 

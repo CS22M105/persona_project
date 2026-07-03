@@ -6,21 +6,14 @@ import {
   FinalDebriefReport,
   getSessionEvents,
   getSessionReport,
-  getSessionTranscript,
   SessionResponse,
   startSession,
   TimelineEventResponse,
-  TranscriptMessageResponse,
-  TranscriptSpeaker,
 } from "../api/sessions";
-import { Chat, ChatMessage } from "./Chat";
 
 export function Dashboard() {
   const [patientState, setPatientState] = useState<PatientState | null>(null);
   const [session, setSession] = useState<SessionResponse | null>(null);
-  const [transcriptMessages, setTranscriptMessages] = useState<
-    TranscriptMessageResponse[]
-  >([]);
   const [events, setEvents] = useState<TimelineEventResponse[]>([]);
   const [report, setReport] = useState<FinalDebriefReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,12 +45,7 @@ export function Dashboard() {
       return;
     }
 
-    const [transcriptResponse, eventsResponse] = await Promise.all([
-      getSessionTranscript(sessionId),
-      getSessionEvents(sessionId),
-    ]);
-
-    setTranscriptMessages(transcriptResponse.messages);
+    const eventsResponse = await getSessionEvents(sessionId);
     setEvents(eventsResponse.events);
   }
 
@@ -162,16 +150,6 @@ export function Dashboard() {
               ) : (
                 <p>No state events yet.</p>
               )}
-            </section>
-
-            <section className="dashboard-card chat-card" aria-labelledby="dashboard-chat-title">
-              <h2 id="dashboard-chat-title">Patient Conversation</h2>
-              <Chat
-                embedded
-                onMessageSent={() => refreshPersistedSessionData()}
-                persistedMessages={toChatMessages(transcriptMessages)}
-                statusLabel="Persisted"
-              />
             </section>
 
             <section className="dashboard-card report-card" aria-labelledby="report-title">
@@ -390,27 +368,6 @@ function formatReportVitals(event: {
   }
 
   return <span> - {details.join(", ")}</span>;
-}
-
-function toChatMessages(messages: TranscriptMessageResponse[]): ChatMessage[] {
-  return messages
-    .filter(
-      (
-        message,
-      ): message is TranscriptMessageResponse & { speaker: "student" | "patient" } =>
-        isChatSpeaker(message.speaker),
-    )
-    .map((message) => ({
-      id: message.message_id,
-      speaker: message.speaker,
-      text: message.text,
-    }));
-}
-
-function isChatSpeaker(
-  speaker: TranscriptSpeaker,
-): speaker is "student" | "patient" {
-  return speaker === "student" || speaker === "patient";
 }
 
 function formatTimelineDetails(event: TimelineEventResponse) {

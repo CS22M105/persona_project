@@ -10,7 +10,12 @@ import {
   resetPatientState,
   startInstructorTakeover,
 } from "../api/state";
-import { TranscriptMessageResponse } from "../api/sessions";
+import {
+  getCurrentSession,
+  getSessionTranscript,
+  TranscriptMessageResponse,
+  TranscriptSpeaker,
+} from "../api/sessions";
 import {
   createRealtimeVoiceSession,
   getCurrentVoiceInstructions,
@@ -19,6 +24,7 @@ import {
   saveVoiceTranscriptMessage,
   VoiceInstructionsResponse,
 } from "../api/voice";
+import { Chat, ChatMessage } from "./Chat";
 
 
 type VoiceConnectionStatus =
@@ -57,6 +63,9 @@ export function VoiceRoom() {
     null,
   );
   const [lastInstructionSyncAt, setLastInstructionSyncAt] = useState<string | null>(null);
+  const [textConversationMessages, setTextConversationMessages] = useState<
+    ChatMessage[]
+  >([]);
   const [voiceTranscriptMessages, setVoiceTranscriptMessages] = useState<
     TranscriptMessageResponse[]
   >([]);
@@ -69,6 +78,7 @@ export function VoiceRoom() {
 
   useEffect(() => {
     refreshPatientState();
+    refreshTextConversation();
 
     return () => {
       cleanupVoiceConnection();
@@ -107,6 +117,25 @@ export function VoiceRoom() {
     } catch {
       setStatus("error");
       setErrorMessage("Patient state failed to load. Make sure the backend is running.");
+    }
+  }
+
+  async function refreshTextConversation() {
+    try {
+      const currentSessionResponse = await getCurrentSession();
+
+      if (!currentSessionResponse.session) {
+        setTextConversationMessages([]);
+        return;
+      }
+
+      const transcriptResponse = await getSessionTranscript(
+        currentSessionResponse.session.session_id,
+      );
+
+      setTextConversationMessages(toChatMessages(transcriptResponse.messages));
+    } catch {
+      setTextConversationMessages([]);
     }
   }
 
@@ -174,6 +203,7 @@ export function VoiceRoom() {
       const response = await resetPatientState();
       setPatientState(response.state);
       await syncVoiceInstructions({ force: true });
+      await refreshTextConversation();
     } catch {
       setErrorMessage("Patient state failed to reset. Make sure the backend is running.");
     } finally {
@@ -189,6 +219,7 @@ export function VoiceRoom() {
       const response = await applyInstructorCue(cueId);
       setPatientState(response.state);
       await syncVoiceInstructions({ force: true });
+      await refreshTextConversation();
     } catch {
       setErrorMessage("Instructor cue failed. Make sure the backend is running.");
     } finally {
@@ -567,6 +598,15 @@ export function VoiceRoom() {
             {activeInstructorAction ? (
               <p className="dashboard-note">Updating patient state...</p>
             ) : null}
+            <div className="voice-instructor-chat" aria-labelledby="voice-chat-title">
+              <h3 id="voice-chat-title">Patient Conversation</h3>
+              <Chat
+                embedded
+                onMessageSent={refreshTextConversation}
+                persistedMessages={textConversationMessages}
+                statusLabel="Persisted"
+              />
+            </div>
           </section>
 
           <section className="dashboard-card voice-control-card" aria-labelledby="voice-controls-title">
@@ -765,6 +805,29 @@ function formatLabel(value: string): string {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+
+function toChatMessages(messages: TranscriptMessageResponse[]): ChatMessage[] {
+  return messages
+    .filter(
+      (
+        message,
+      ): message is TranscriptMessageResponse & { speaker: "student" | "patient" } =>
+        isChatSpeaker(message.speaker),
+    )
+    .map((message) => ({
+      id: message.message_id,
+      speaker: message.speaker,
+      text: message.text,
+    }));
+}
+
+
+function isChatSpeaker(
+  speaker: TranscriptSpeaker,
+): speaker is "student" | "patient" {
+  return speaker === "student" || speaker === "patient";
 }
 
 
