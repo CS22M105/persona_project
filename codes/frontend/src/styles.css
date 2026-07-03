@@ -533,6 +533,7 @@ h1 {
 
 .voice-instructor-card {
   grid-area: instructor;
+  padding: 14px;
 }
 
 .voice-instructor-chat {
@@ -569,6 +570,23 @@ h1 {
 
 .voice-control-card {
   grid-area: controls;
+  padding: 14px;
+}
+
+.voice-instructor-card .cue-grid,
+.voice-control-grid {
+  gap: 8px;
+}
+
+.voice-instructor-card .cue-grid {
+  margin-top: 10px;
+}
+
+.voice-instructor-card .control-button,
+.voice-control-card .control-button {
+  font-size: 0.86rem;
+  min-height: 34px;
+  padding: 6px 9px;
 }
 
 .voice-state-card {
