@@ -1032,6 +1032,101 @@ Use browser WebRTC to:
 - send microphone audio to Realtime session
 - play patient voice audio through speaker
 
+Implemented on July 3, 2026:
+
+```text
+Connected the Voice Room UI to browser microphone capture, WebRTC, and remote patient audio playback.
+```
+
+Files changed for 9.6:
+
+```text
+codes/frontend/src/pages/VoiceRoom.tsx
+codes/frontend/src/styles.css
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- added browser microphone permission request through `navigator.mediaDevices.getUserMedia`
+- enabled echo cancellation, noise suppression, and auto gain control for microphone capture
+- added `RTCPeerConnection` setup
+- added a Realtime data channel named `oai-events`
+- added local microphone audio track to the peer connection
+- created a WebRTC SDP offer
+- sent the SDP offer to the Realtime `connect_url` using the short-lived client secret
+- received the SDP answer and set the remote description
+- attached remote patient audio to an `<audio>` element for speaker playback
+- added mute/unmute behavior by enabling and disabling microphone audio tracks
+- added disconnect cleanup for peer connection, data channel, microphone tracks, and remote audio
+- added connection failure/disconnection handling
+- added `requesting_microphone` status
+
+Why:
+
+- students need to speak naturally through the sim-room microphone
+- the AI patient response needs to play through the sim-room speaker
+- WebRTC is the browser-native path for low-latency microphone and speaker audio
+- the permanent OpenAI API key must stay on the backend
+- the browser should connect to OpenAI Realtime only with the short-lived client secret from the backend
+
+How:
+
+```text
+Connect voice clicked
+VoiceRoom calls backend through createRealtimeVoiceSession()
+backend returns short-lived Realtime session data
+VoiceRoom requests microphone permission
+VoiceRoom creates RTCPeerConnection
+VoiceRoom adds microphone track to peer connection
+VoiceRoom creates SDP offer
+VoiceRoom POSTs offer.sdp to connect_url using short-lived client_secret
+OpenAI Realtime returns SDP answer
+VoiceRoom sets remote description
+remote patient audio plays through hidden audio element
+Mute disables local microphone track
+Disconnect closes peer connection and stops microphone track
+```
+
+Security boundary:
+
+```text
+The permanent OpenAI API key is still not in frontend code.
+The frontend uses only the short-lived client secret returned by the backend.
+The client secret is used in memory for the WebRTC connection and is not displayed in the UI.
+No .env file was opened.
+No API key was printed.
+```
+
+Verification:
+
+```text
+npm run build
+python -m compileall app
+```
+
+Verification result:
+
+```text
+Frontend TypeScript production build passed.
+Backend compile check passed.
+```
+
+Manual test still needed:
+
+```text
+start backend
+start frontend
+open /voice
+click Connect voice
+allow microphone permission
+speak into microphone
+confirm patient voice plays through speaker
+click Mute mic and confirm microphone track is disabled
+click Disconnect and confirm microphone indicator stops
+```
+
 ### 9.7 Send patient persona and current state to voice session
 
 Build voice instructions from:

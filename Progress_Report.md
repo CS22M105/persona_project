@@ -4181,6 +4181,97 @@ Frontend TypeScript production build passed.
 Backend compile check passed.
 ```
 
+## 51. Step 9.6 Browser Microphone and Speaker WebRTC Connection Implemented - July 3, 2026
+
+Goal:
+
+```text
+Connect the Voice Room to browser microphone capture, WebRTC, and AI patient audio playback.
+```
+
+Changed:
+
+```text
+codes/frontend/src/pages/VoiceRoom.tsx
+codes/frontend/src/styles.css
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- Added microphone permission request using `navigator.mediaDevices.getUserMedia`.
+- Added echo cancellation, noise suppression, and auto gain control.
+- Added `RTCPeerConnection` setup.
+- Added Realtime data channel named `oai-events`.
+- Added local microphone track to the peer connection.
+- Created WebRTC SDP offer.
+- Sent the SDP offer to the Realtime `connect_url` using the short-lived client secret.
+- Received SDP answer and set the remote description.
+- Attached remote AI patient audio to an audio element.
+- Added mute/unmute behavior by enabling and disabling microphone tracks.
+- Added disconnect cleanup for peer connection, data channel, microphone stream, and remote audio.
+- Added connection failure/disconnection handling.
+- Added `requesting_microphone` connection status styling.
+
+Why:
+
+- Students need to speak naturally to the AI patient in the sim room.
+- The AI patient response should play aloud through the sim-room speaker.
+- WebRTC provides the browser-native low-latency audio path.
+- This keeps the product moving from text chat toward the real voice experience.
+
+How it works:
+
+```text
+Connect voice
+request short-lived session from backend
+request microphone permission
+create peer connection
+add microphone audio track
+send SDP offer to OpenAI Realtime with short-lived client secret
+receive SDP answer
+play remote AI patient audio through browser speaker
+```
+
+Security note:
+
+```text
+The permanent OpenAI API key is not in frontend code.
+The frontend uses only the short-lived client secret from the backend.
+The client secret is not displayed in the UI.
+No .env file was opened.
+No API key was printed.
+```
+
+Verification:
+
+```text
+npm run build
+python -m compileall app
+```
+
+Result:
+
+```text
+Frontend TypeScript production build passed.
+Backend compile check passed.
+```
+
+Manual browser test still needed:
+
+```text
+start backend
+start frontend
+open /voice
+click Connect voice
+allow microphone access
+speak into microphone
+confirm AI patient voice plays through speaker
+test Mute mic
+test Disconnect
+```
+
 ## 50. Step 9.5 Voice Room UI Implemented - July 3, 2026
 
 Goal:

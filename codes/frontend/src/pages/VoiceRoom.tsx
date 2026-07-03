@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 
 import { getPatientState, PatientState } from "../api/state";
 import {
@@ -10,6 +10,7 @@ import {
 type VoiceConnectionStatus =
   | "idle"
   | "loading_state"
+  | "requesting_microphone"
   | "connecting"
   | "ready"
   | "disconnected"
@@ -24,9 +25,17 @@ export function VoiceRoom() {
   const [status, setStatus] = useState<VoiceConnectionStatus>("loading_state");
   const [isMuted, setIsMuted] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const localStreamRef = useRef<MediaStream | null>(null);
+  const dataChannelRef = useRef<RTCDataChannel | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     refreshPatientState();
+
+    return () => {
+      cleanupVoiceConnection();
+    };
   }, []);
 
   async function refreshPatientState() {
@@ -45,28 +54,136 @@ export function VoiceRoom() {
   }
 
   async function handleConnectVoice() {
+    cleanupVoiceConnection();
     setStatus("connecting");
     setErrorMessage("");
 
     try {
       const sessionResponse = await createRealtimeVoiceSession();
+      setStatus("requesting_microphone");
+      const microphoneStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+        },
+      });
+
+      setStatus("connecting");
+      await connectRealtimeWebRtc(sessionResponse, microphoneStream, remoteAudioRef);
       setVoiceSession(toPublicRealtimeSession(sessionResponse));
+      setIsMuted(false);
       setStatus("ready");
-    } catch {
+    } catch (error) {
+      cleanupVoiceConnection();
       setStatus("error");
-      setErrorMessage(
-        "Voice session failed to start. Check backend voice setup and API key configuration.",
-      );
+      setErrorMessage(buildVoiceConnectionErrorMessage(error));
     }
   }
 
   function handleDisconnectVoice() {
-    setVoiceSession(null);
-    setIsMuted(false);
+    cleanupVoiceConnection();
     setStatus("disconnected");
   }
 
-  const canConnect = status !== "connecting" && status !== "ready";
+  function handleToggleMute() {
+    const nextMuted = !isMuted;
+
+    localStreamRef.current
+      ?.getAudioTracks()
+      .forEach((track) => {
+        track.enabled = !nextMuted;
+      });
+
+    setIsMuted(nextMuted);
+  }
+
+  function cleanupVoiceConnection() {
+    dataChannelRef.current?.close();
+    dataChannelRef.current = null;
+    peerConnectionRef.current?.close();
+    peerConnectionRef.current = null;
+    localStreamRef.current?.getTracks().forEach((track) => track.stop());
+    localStreamRef.current = null;
+
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.srcObject = null;
+    }
+
+    setVoiceSession(null);
+    setIsMuted(false);
+  }
+
+  async function connectRealtimeWebRtc(
+    session: RealtimeSessionResponse,
+    microphoneStream: MediaStream,
+    audioRef: RefObject<HTMLAudioElement | null>,
+  ) {
+    const peerConnection = new RTCPeerConnection();
+    const dataChannel = peerConnection.createDataChannel("oai-events");
+
+    peerConnectionRef.current = peerConnection;
+    localStreamRef.current = microphoneStream;
+    dataChannelRef.current = dataChannel;
+
+    peerConnection.onconnectionstatechange = () => {
+      if (peerConnection.connectionState === "failed") {
+        cleanupVoiceConnection();
+        setStatus("error");
+        setErrorMessage("Voice connection failed. Disconnect and try again.");
+      }
+
+      if (peerConnection.connectionState === "disconnected") {
+        cleanupVoiceConnection();
+        setStatus("disconnected");
+      }
+    };
+
+    peerConnection.ontrack = (event) => {
+      if (!audioRef.current) {
+        return;
+      }
+
+      const [remoteStream] = event.streams;
+      audioRef.current.srcObject = remoteStream;
+      audioRef.current.play().catch(() => {
+        setErrorMessage("Patient audio is connected, but browser playback was blocked.");
+      });
+    };
+
+    microphoneStream.getAudioTracks().forEach((track) => {
+      peerConnection.addTrack(track, microphoneStream);
+    });
+
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+
+    const answerResponse = await fetch(session.connect_url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${session.client_secret}`,
+        "Content-Type": "application/sdp",
+      },
+      body: offer.sdp,
+    });
+
+    if (!answerResponse.ok) {
+      throw new Error(
+        `Realtime WebRTC connection failed with status ${answerResponse.status}`,
+      );
+    }
+
+    const answerSdp = await answerResponse.text();
+    await peerConnection.setRemoteDescription({
+      type: "answer",
+      sdp: answerSdp,
+    });
+  }
+
+  const canConnect =
+    status !== "connecting" &&
+    status !== "requesting_microphone" &&
+    status !== "ready";
   const canDisconnect = status === "ready";
   const statusLabel = formatStatus(status);
 
@@ -103,7 +220,9 @@ export function VoiceRoom() {
                 onClick={handleConnectVoice}
                 type="button"
               >
-                {status === "connecting" ? "Connecting..." : "Connect voice"}
+                {status === "connecting" || status === "requesting_microphone"
+                  ? "Connecting..."
+                  : "Connect voice"}
               </button>
               <button
                 className="control-button control-button-secondary"
@@ -116,7 +235,7 @@ export function VoiceRoom() {
               <button
                 className="control-button"
                 disabled={!canDisconnect}
-                onClick={() => setIsMuted((currentValue) => !currentValue)}
+                onClick={handleToggleMute}
                 type="button"
               >
                 {isMuted ? "Unmute mic" : "Mute mic"}
@@ -149,8 +268,14 @@ export function VoiceRoom() {
             </dl>
 
             <p className="dashboard-note">
-              Microphone and speaker streaming will be connected in Step 9.6.
+              Use the room microphone for student speech and the room speaker for
+              patient voice playback.
             </p>
+            <audio
+              ref={remoteAudioRef}
+              autoPlay
+              className="voice-remote-audio"
+            />
           </section>
 
           <section className="dashboard-card voice-state-card" aria-labelledby="voice-state-title">
@@ -239,6 +364,7 @@ function formatStatus(status: VoiceConnectionStatus): string {
   const labels: Record<VoiceConnectionStatus, string> = {
     idle: "Not connected",
     loading_state: "Loading state",
+    requesting_microphone: "Requesting microphone",
     connecting: "Connecting",
     ready: "Ready",
     disconnected: "Disconnected",
@@ -248,3 +374,15 @@ function formatStatus(status: VoiceConnectionStatus): string {
   return labels[status];
 }
 
+
+function buildVoiceConnectionErrorMessage(error: unknown): string {
+  if (error instanceof DOMException && error.name === "NotAllowedError") {
+    return "Microphone permission was blocked. Allow microphone access and try again.";
+  }
+
+  if (error instanceof DOMException && error.name === "NotFoundError") {
+    return "No microphone was found. Connect a microphone and try again.";
+  }
+
+  return "Voice session failed to start. Check backend voice setup, API key configuration, and microphone permissions.";
+}

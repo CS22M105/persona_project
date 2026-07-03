@@ -573,7 +573,8 @@ h1 {
   color: #374151;
 }
 
-.voice-status-connecting {
+.voice-status-connecting,
+.voice-status-requesting_microphone {
   background: #fff7e6;
   border: 1px solid #efd08a;
   color: #704a00;
@@ -589,6 +590,14 @@ h1 {
   background: #fdecec;
   border: 1px solid #f2c4c4;
   color: #9b1c1c;
+}
+
+.voice-remote-audio {
+  display: block;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  width: 1px;
 }
 
 .sr-only {
