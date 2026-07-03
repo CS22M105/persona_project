@@ -3,7 +3,9 @@ import { RefObject, useEffect, useRef, useState } from "react";
 import { getPatientState, PatientState } from "../api/state";
 import {
   createRealtimeVoiceSession,
+  getCurrentVoiceInstructions,
   RealtimeSessionResponse,
+  VoiceInstructionsResponse,
 } from "../api/voice";
 
 
@@ -24,11 +26,13 @@ export function VoiceRoom() {
   const [voiceSession, setVoiceSession] = useState<PublicRealtimeSession | null>(null);
   const [status, setStatus] = useState<VoiceConnectionStatus>("loading_state");
   const [isMuted, setIsMuted] = useState(false);
+  const [lastInstructionSyncAt, setLastInstructionSyncAt] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
+  const lastInstructionStateUpdatedAtRef = useRef<string | null>(null);
 
   useEffect(() => {
     refreshPatientState();
@@ -38,7 +42,23 @@ export function VoiceRoom() {
     };
   }, []);
 
-  async function refreshPatientState() {
+  useEffect(() => {
+    if (status !== "ready") {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      refreshPatientState({ syncVoiceInstructions: true });
+    }, 5000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [status]);
+
+  async function refreshPatientState(
+    options: { syncVoiceInstructions?: boolean } = {},
+  ) {
     setErrorMessage("");
 
     try {
@@ -47,6 +67,10 @@ export function VoiceRoom() {
       setStatus((currentStatus) =>
         currentStatus === "loading_state" ? "idle" : currentStatus,
       );
+
+      if (options.syncVoiceInstructions) {
+        await syncVoiceInstructions();
+      }
     } catch {
       setStatus("error");
       setErrorMessage("Patient state failed to load. Make sure the backend is running.");
@@ -74,6 +98,7 @@ export function VoiceRoom() {
       setVoiceSession(toPublicRealtimeSession(sessionResponse));
       setIsMuted(false);
       setStatus("ready");
+      await syncVoiceInstructions({ force: true });
     } catch (error) {
       cleanupVoiceConnection();
       setStatus("error");
@@ -105,6 +130,8 @@ export function VoiceRoom() {
     peerConnectionRef.current = null;
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
     localStreamRef.current = null;
+    lastInstructionStateUpdatedAtRef.current = null;
+    setLastInstructionSyncAt(null);
 
     if (remoteAudioRef.current) {
       remoteAudioRef.current.srcObject = null;
@@ -178,6 +205,70 @@ export function VoiceRoom() {
       type: "answer",
       sdp: answerSdp,
     });
+    await waitForDataChannelOpen(dataChannel);
+  }
+
+  async function syncVoiceInstructions(options: { force?: boolean } = {}) {
+    const instructionsResponse = await getCurrentVoiceInstructions();
+
+    if (
+      !options.force &&
+      instructionsResponse.patient_state_updated_at ===
+        lastInstructionStateUpdatedAtRef.current
+    ) {
+      return;
+    }
+
+    const updateWasSent = sendSessionUpdate(instructionsResponse);
+
+    if (updateWasSent) {
+      lastInstructionStateUpdatedAtRef.current =
+        instructionsResponse.patient_state_updated_at;
+      setLastInstructionSyncAt(new Date().toLocaleTimeString());
+    }
+  }
+
+  function sendSessionUpdate(
+    instructionsResponse: VoiceInstructionsResponse,
+  ): boolean {
+    const dataChannel = dataChannelRef.current;
+
+    if (!dataChannel || dataChannel.readyState !== "open") {
+      return false;
+    }
+
+    dataChannel.send(
+      JSON.stringify({
+        type: "session.update",
+        session: {
+          instructions: instructionsResponse.instructions,
+        },
+      }),
+    );
+
+    return true;
+  }
+
+  function waitForDataChannelOpen(dataChannel: RTCDataChannel): Promise<void> {
+    if (dataChannel.readyState === "open") {
+      return Promise.resolve();
+    }
+
+    return new Promise((resolve, reject) => {
+      const timeoutId = window.setTimeout(() => {
+        reject(new Error("Realtime data channel did not open."));
+      }, 5000);
+
+      dataChannel.onopen = () => {
+        window.clearTimeout(timeoutId);
+        resolve();
+      };
+
+      dataChannel.onerror = () => {
+        window.clearTimeout(timeoutId);
+        reject(new Error("Realtime data channel failed."));
+      };
+    });
   }
 
   const canConnect =
@@ -242,8 +333,8 @@ export function VoiceRoom() {
               </button>
               <button
                 className="control-button"
-                disabled={status === "connecting"}
-                onClick={refreshPatientState}
+                disabled={status === "connecting" || status === "requesting_microphone"}
+                onClick={() => refreshPatientState({ syncVoiceInstructions: true })}
                 type="button"
               >
                 Refresh state
@@ -253,6 +344,10 @@ export function VoiceRoom() {
             <dl className="voice-session-grid">
               <VoiceDetail label="Connection" value={statusLabel} />
               <VoiceDetail label="Microphone" value={isMuted ? "Muted" : "Ready"} />
+              <VoiceDetail
+                label="State sync"
+                value={lastInstructionSyncAt ?? "Waiting"}
+              />
               <VoiceDetail
                 label="Realtime model"
                 value={voiceSession?.model ?? "Not connected"}

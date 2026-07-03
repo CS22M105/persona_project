@@ -4337,6 +4337,79 @@ No API key was printed.
 The persona remains fictional and simulation-only.
 ```
 
+## 53. Step 9.8 Active Voice State Refresh Implemented - July 3, 2026
+
+Goal:
+
+```text
+Allow an active Realtime voice session to receive updated patient-state instructions after instructor cues.
+```
+
+Changed:
+
+```text
+codes/backend/app/schemas/voice.py
+codes/backend/app/services/realtime_voice_service.py
+codes/backend/app/api/voice.py
+codes/frontend/src/api/voice.ts
+codes/frontend/src/pages/VoiceRoom.tsx
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- Added `VoiceInstructionsResponse`.
+- Added `build_current_voice_instructions()`.
+- Added `GET /voice/instructions`.
+- Added frontend `getCurrentVoiceInstructions()`.
+- Added Voice Room state/instruction sync through the Realtime data channel.
+- Added `session.update` messages for refreshed voice instructions.
+- Added automatic polling every 5 seconds while voice is connected.
+- Added manual Refresh state support that also syncs active voice instructions.
+- Added a state-sync timestamp display.
+- Added data-channel-open waiting before the first instruction sync.
+
+Why:
+
+- The instructor can change the patient condition while voice is active.
+- The AI patient should not keep responding from stale vitals or symptoms.
+- The system remains instructor-cued, so updated state must be explicitly sent into the voice session.
+- Polling is safer for the July demo than adding WebSockets immediately.
+
+How it works:
+
+```text
+Instructor applies cue
+backend updates patient state
+Voice Room polls or refreshes state
+Voice Room calls GET /voice/instructions
+backend returns latest persona/state instructions
+Voice Room sends session.update over Realtime data channel
+next patient voice response follows the updated condition
+```
+
+Verification:
+
+```text
+python -m compileall app
+npm run build
+/voice/instructions ['GET'] VoiceInstructionsResponse
+voice instructions endpoint state-change verification passed
+recent_cue_count=1
+contains_updated_spo2=true
+```
+
+Security note:
+
+```text
+GET /voice/instructions does not return an API key.
+The endpoint does not create a new OpenAI session.
+No .env file was opened.
+No API key was printed.
+The system still does not read Laerdal/manikin state directly.
+```
+
 ## 50. Step 9.5 Voice Room UI Implemented - July 3, 2026
 
 Goal:

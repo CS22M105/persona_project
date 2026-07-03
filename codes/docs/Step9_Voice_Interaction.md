@@ -1239,6 +1239,102 @@ When instructor changes patient state:
 - update voice session instructions
 - make next patient response reflect new condition
 
+Implemented on July 3, 2026:
+
+```text
+Added a state-refresh path so an active Realtime voice session can receive updated patient instructions after instructor cues.
+```
+
+Files changed for 9.8:
+
+```text
+codes/backend/app/schemas/voice.py
+codes/backend/app/services/realtime_voice_service.py
+codes/backend/app/api/voice.py
+codes/frontend/src/api/voice.ts
+codes/frontend/src/pages/VoiceRoom.tsx
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- added `VoiceInstructionsResponse`
+- added backend `build_current_voice_instructions()`
+- added `GET /voice/instructions`
+- added frontend `VoiceInstructionsResponse` type
+- added frontend `getCurrentVoiceInstructions()`
+- updated Voice Room Refresh state behavior to also sync voice instructions when connected
+- added automatic polling every 5 seconds while the voice session is ready
+- added Realtime data-channel `session.update` messages with refreshed instructions
+- added a state-sync timestamp display in the Voice Room
+- added data-channel-open waiting before first sync
+
+Why:
+
+- the instructor may change patient condition while the voice session is active
+- the AI patient should not keep speaking from stale state after SpO2, heart rate, anxiety, breathing effort, or intervention status changes
+- the system remains instructor-cued, so the voice room must explicitly receive and send updated state instructions
+- polling/manual refresh is safer for the July demo than WebSocket state push
+
+How:
+
+```text
+Instructor applies cue in dashboard
+backend updates patient state and records event
+Voice Room polls or instructor clicks Refresh state
+Voice Room calls GET /voice/instructions
+backend builds instructions from latest scenario, state, and cue history
+Voice Room sends session.update over the Realtime data channel
+next AI patient voice response follows updated instructions
+```
+
+Realtime event sent by the Voice Room:
+
+```json
+{
+  "type": "session.update",
+  "session": {
+    "instructions": "latest persona and patient-state instructions"
+  }
+}
+```
+
+Current implementation boundary:
+
+```text
+This uses polling/manual refresh.
+It does not use WebSockets yet.
+It does not automatically read Laerdal/manikin state.
+The instructor still updates this app's patient state manually.
+```
+
+Security boundary:
+
+```text
+GET /voice/instructions does not return an OpenAI API key.
+The endpoint does not create a new OpenAI session.
+The frontend sends only updated instructions over the existing Realtime data channel.
+No .env file was opened.
+No API key was printed.
+```
+
+Verification:
+
+```text
+python -m compileall app
+npm run build
+/voice/instructions ['GET'] VoiceInstructionsResponse
+```
+
+State-change verification:
+
+```text
+voice instructions endpoint state-change verification passed
+recent_cue_count=1
+contains_updated_spo2=true
+```
+
 ### 9.9 Persist voice transcript and voice events
 
 Save:

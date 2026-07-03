@@ -4,7 +4,7 @@ import httpx
 
 from app.core.config import Settings, get_settings
 from app.schemas.state import PatientState, StateEvent
-from app.schemas.voice import RealtimeSessionResponse
+from app.schemas.voice import RealtimeSessionResponse, VoiceInstructionsResponse
 from app.services.scenario_loader import load_copd_sob_scenario
 from app.services.state_manager import get_current_state, get_state_events
 from app.services.voice_instruction_builder import build_realtime_voice_instructions
@@ -12,6 +12,26 @@ from app.services.voice_instruction_builder import build_realtime_voice_instruct
 
 class RealtimeVoiceSessionError(RuntimeError):
     pass
+
+
+def build_current_voice_instructions() -> VoiceInstructionsResponse:
+    scenario = load_copd_sob_scenario()
+    patient_state = get_current_state()
+    state_events = get_state_events()
+    recent_cue_count = sum(
+        1 for event in state_events if event.event_type == "instructor_cue"
+    )
+
+    return VoiceInstructionsResponse(
+        instructions=build_realtime_voice_instructions(
+            scenario,
+            patient_state,
+            state_events,
+        ),
+        scenario_id=scenario["scenario_id"],
+        patient_state_updated_at=patient_state.last_updated_at.isoformat(),
+        recent_cue_count=recent_cue_count,
+    )
 
 
 def create_realtime_voice_session(
