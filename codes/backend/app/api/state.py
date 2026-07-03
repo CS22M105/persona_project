@@ -12,7 +12,7 @@ from app.schemas.session import (
 from app.schemas.state import PatientStateResponse, StateEventsResponse
 from app.services.auto_patient_message import build_auto_patient_message_result
 from app.services.scenario_loader import load_copd_sob_scenario
-from app.services.session_service import start_session
+from app.services.session_service import start_fresh_session, start_session
 from app.services.state_manager import (
     apply_instructor_cue,
     end_instructor_takeover,
@@ -35,8 +35,14 @@ async def read_current_state() -> PatientStateResponse:
 
 
 @router.post("/reset", response_model=PatientStateResponse)
-async def reset_current_state() -> PatientStateResponse:
-    return PatientStateResponse(state=reset_state())
+async def reset_current_state(
+    db: Annotated[Session, Depends(get_db)],
+) -> PatientStateResponse:
+    scenario = load_copd_sob_scenario()
+    updated_state = reset_state()
+    start_fresh_session(db, scenario_id=scenario["scenario_id"])
+
+    return PatientStateResponse(state=updated_state)
 
 
 @router.post("/cues/{cue_id}", response_model=PatientStateResponse)

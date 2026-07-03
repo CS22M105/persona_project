@@ -202,6 +202,8 @@ export function VoiceRoom() {
     try {
       const response = await resetPatientState();
       setPatientState(response.state);
+      setTextConversationMessages([]);
+      setVoiceTranscriptMessages([]);
       await syncVoiceInstructions({ force: true });
       await refreshTextConversation();
     } catch {

@@ -36,6 +36,33 @@ def start_session(
     return session
 
 
+def start_fresh_session(
+    db: Session,
+    scenario_id: str = "copd-sob",
+) -> SimulationSession:
+    active_session = get_active_session(db)
+
+    if active_session is not None:
+        now = utc_now()
+        active_session.status = "ended"
+        active_session.ended_at = now
+        active_session.updated_at = now
+        db.add(active_session)
+        db.flush()
+
+    session = SimulationSession(
+        session_id=f"session-{uuid4()}",
+        scenario_id=scenario_id,
+        status="active",
+    )
+
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+
+    return session
+
+
 def get_active_session(db: Session) -> Optional[SimulationSession]:
     statement = (
         select(SimulationSession)
