@@ -1137,6 +1137,99 @@ Build voice instructions from:
 - current patient state
 - instructor-cued state changes
 
+Implemented on July 3, 2026:
+
+```text
+Added a dedicated voice instruction builder and connected it to Realtime voice session creation.
+```
+
+Files changed for 9.7:
+
+```text
+codes/backend/app/services/voice_instruction_builder.py
+codes/backend/app/services/realtime_voice_service.py
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- added `build_realtime_voice_instructions()`
+- moved voice persona/state instruction construction out of the Realtime session service
+- included COPD/SOB scenario identity, chief complaint, patient profile, allowed disclosures, hidden information, and safety rules
+- included full current patient state in the voice session instructions
+- included recent instructor cue context from state events
+- included voice guidance based on stage, vitals, breathing effort, anxiety, fatigue, oxygen, bronchodilator, pause, and instructor takeover
+- updated `create_realtime_voice_session()` so every new Realtime session uses these structured voice instructions
+
+Why:
+
+- the AI patient voice must behave like the COPD/SOB patient persona, not a generic assistant
+- the voice patient must follow the latest instructor-cued patient condition
+- hidden information and safety rules must remain active in voice mode
+- the instruction builder should be testable before live voice debugging
+- Step 9.8 will need a reusable instruction builder when refreshing state during an active voice session
+
+How:
+
+```text
+create_realtime_voice_session()
+loads COPD/SOB scenario
+loads current patient state
+loads recent state events
+build_realtime_voice_instructions() creates the Realtime instruction text
+the instruction text is sent inside the OpenAI Realtime client-secret session payload
+```
+
+Instruction content:
+
+```text
+scenario_id
+scenario_name
+chief_complaint
+patient_profile
+allowed_disclosures
+hidden_information
+safety_rules
+current_patient_state
+recent_instructor_cues
+voice_guidance
+```
+
+Important behavior:
+
+```text
+If SpO2 drops, the instructions include the updated SpO2 value.
+If breathing effort is severe, the instructions tell the patient to use short, broken, breathless phrases.
+If oxygen or bronchodilator is applied, the instructions allow symptom-level responses without clinical evaluation.
+If AI pause or instructor takeover is active, the instructions tell the patient not to respond.
+```
+
+Security boundary:
+
+```text
+No API key is included in the instructions.
+No real patient information is included.
+The persona remains fictional and simulation-only.
+The voice patient is not allowed to grade students or provide treatment orders.
+```
+
+Verification:
+
+```text
+python -m compileall app
+npm run build
+```
+
+Instruction builder verification:
+
+```text
+voice instruction builder verification passed
+contains_persona=true
+contains_current_state=true
+contains_recent_cue=true
+```
+
 ### 9.8 Support state changes during active voice session
 
 When instructor changes patient state:

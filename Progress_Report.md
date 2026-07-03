@@ -4272,6 +4272,71 @@ test Mute mic
 test Disconnect
 ```
 
+## 52. Step 9.7 Voice Persona and Current State Instructions Implemented - July 3, 2026
+
+Goal:
+
+```text
+Ensure every new Realtime voice session receives the COPD/SOB patient persona, safety rules, current patient state, and recent instructor cue context.
+```
+
+Changed:
+
+```text
+codes/backend/app/services/voice_instruction_builder.py
+codes/backend/app/services/realtime_voice_service.py
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- Added `build_realtime_voice_instructions()`.
+- Moved voice instruction construction into a dedicated backend service.
+- Included scenario identity, chief complaint, patient profile, allowed disclosures, hidden information, and safety rules.
+- Included full current patient state.
+- Included recent instructor cue context from state events.
+- Included voice guidance based on vitals, breathing effort, anxiety, fatigue, oxygen, bronchodilator, AI pause, and instructor takeover.
+- Updated Realtime voice session creation to use the dedicated instruction builder.
+
+Why:
+
+- The AI voice patient must act like the COPD/SOB patient, not a generic assistant.
+- The patient voice must follow the latest instructor-cued condition.
+- Safety rules and hidden-information rules must apply to spoken responses.
+- The instruction builder needs to be reusable for Step 9.8 active state refresh.
+
+How it works:
+
+```text
+create_realtime_voice_session()
+loads scenario
+loads current patient state
+loads state events
+build_realtime_voice_instructions()
+adds instructions to OpenAI Realtime session payload
+```
+
+Verification:
+
+```text
+python -m compileall app
+npm run build
+voice instruction builder verification passed
+contains_persona=true
+contains_current_state=true
+contains_recent_cue=true
+```
+
+Security note:
+
+```text
+No API key is included in the instructions.
+No .env file was opened.
+No API key was printed.
+The persona remains fictional and simulation-only.
+```
+
 ## 50. Step 9.5 Voice Room UI Implemented - July 3, 2026
 
 Goal:
