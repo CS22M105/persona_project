@@ -749,6 +749,58 @@ confirm checklist appears
 confirm disclaimer appears
 ```
 
+Completed on July 2, 2026.
+
+Verification method:
+
+```text
+Used FastAPI TestClient with an isolated temporary SQLite database.
+No real local PostgreSQL records were modified.
+No OpenAI request was made.
+No API key or .env value was printed.
+```
+
+What was tested:
+
+- `POST /sessions/start` created a COPD/SOB session
+- a student transcript message was saved
+- an instructor cue timeline event was saved
+- an automatic patient reaction transcript message was saved
+- `POST /sessions/{session_id}/end` ended the session
+- `GET /sessions/{session_id}/report` returned the final report
+- the report contained the debrief disclaimer
+- the report session status was `ended`
+- the report contained transcript entries
+- the report contained timeline entries
+- the timeline entry included SpO2 and anxiety from the state snapshot
+- the report contained the COPD/SOB assessment checklist
+- checklist items used `Faculty review`
+- communication observations and suggested debrief prompts were present
+
+Verification result:
+
+```text
+Step 8.8 backend e2e report verification passed
+session_status=ended
+transcript_count=2
+timeline_count=1
+checklist_count=7
+```
+
+Additional checks:
+
+```text
+python -m compileall app
+npm run build
+```
+
+Result:
+
+```text
+Step 8 final debrief report flow is verified from backend session record to structured report response.
+Frontend TypeScript build also passed.
+```
+
 ## Design Decision: Deterministic First
 
 Initial Step 8 should avoid AI-generated scoring.
