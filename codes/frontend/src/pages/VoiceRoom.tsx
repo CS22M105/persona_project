@@ -535,40 +535,50 @@ export function VoiceRoom() {
           <section className="dashboard-card voice-state-card" aria-labelledby="voice-state-title">
             <h2 id="voice-state-title">Current Patient State</h2>
             {patientState ? (
-              <dl className="state-grid voice-state-grid">
-                <VoiceDetail label="Status" value={patientState.status} />
-                <VoiceDetail label="Stage" value={patientState.stage} />
-                <VoiceDetail label="HR" value={`${patientState.vitals.heart_rate} bpm`} />
-                <VoiceDetail label="SpO2" value={`${patientState.vitals.spo2}%`} />
-                <VoiceDetail
+              <div className="voice-state-grid">
+                <StateMetric label="Status" value={patientState.status} />
+                <StateMetric label="Stage" value={patientState.stage} />
+                <StateMetric
+                  emphasized
+                  label="HR"
+                  value={`${patientState.vitals.heart_rate} bpm`}
+                />
+                <StateMetric
+                  emphasized
+                  label="SpO2"
+                  value={`${patientState.vitals.spo2}%`}
+                />
+                <StateMetric
+                  emphasized
                   label="RR"
                   value={`${patientState.vitals.respiratory_rate}/min`}
                 />
-                <VoiceDetail label="BP" value={patientState.vitals.blood_pressure} />
-                <VoiceDetail
+                <StateMetric label="BP" value={patientState.vitals.blood_pressure} />
+                <StateMetric
+                  emphasized
                   label="Breathing effort"
                   value={patientState.symptoms.breathing_effort}
                 />
-                <VoiceDetail
+                <StateMetric
                   label="Chest tightness"
                   value={patientState.symptoms.chest_tightness}
                 />
-                <VoiceDetail label="Anxiety" value={patientState.emotion.anxiety} />
-                <VoiceDetail label="Fatigue" value={patientState.emotion.fatigue} />
-                <VoiceDetail
+                <StateMetric label="Anxiety" value={patientState.emotion.anxiety} />
+                <StateMetric label="Fatigue" value={patientState.emotion.fatigue} />
+                <StateMetric
                   label="Speech"
                   value={patientState.voice_behavior.speech_pattern}
                 />
-                <VoiceDetail label="Tone" value={patientState.voice_behavior.tone} />
-                <VoiceDetail
+                <StateMetric label="Tone" value={patientState.voice_behavior.tone} />
+                <StateMetric
                   label="Oxygen"
                   value={formatBoolean(patientState.interventions.oxygen_applied)}
                 />
-                <VoiceDetail
+                <StateMetric
                   label="Bronchodilator"
                   value={formatBoolean(patientState.interventions.bronchodilator_given)}
                 />
-              </dl>
+              </div>
             ) : (
               <p className="dashboard-note">Patient state has not loaded yet.</p>
             )}
@@ -778,6 +788,26 @@ function VoiceDetail({ label, value }: { label: string; value: string }) {
       <dt>{label}</dt>
       <dd>{value}</dd>
     </>
+  );
+}
+
+
+function StateMetric({
+  emphasized = false,
+  label,
+  value,
+}: {
+  emphasized?: boolean;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div
+      className={`voice-state-item${emphasized ? " voice-state-item-emphasized" : ""}`}
+    >
+      <span className="voice-state-label">{label}</span>
+      <span className="voice-state-value">{value}</span>
+    </div>
   );
 }
 
