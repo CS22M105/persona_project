@@ -536,46 +536,78 @@ export function VoiceRoom() {
             <h2 id="voice-state-title">Current Patient State</h2>
             {patientState ? (
               <div className="voice-state-grid">
-                <StateMetric label="Status" value={patientState.status} />
-                <StateMetric label="Stage" value={patientState.stage} />
+                <StateMetric
+                  label="Status"
+                  tone="status"
+                  value={patientState.status}
+                />
+                <StateMetric
+                  label="Stage"
+                  tone="status"
+                  value={patientState.stage}
+                />
                 <StateMetric
                   emphasized
                   label="HR"
+                  tone="vital"
                   value={`${patientState.vitals.heart_rate} bpm`}
                 />
                 <StateMetric
                   emphasized
                   label="SpO2"
+                  tone="vital"
                   value={`${patientState.vitals.spo2}%`}
                 />
                 <StateMetric
                   emphasized
                   label="RR"
+                  tone="vital"
                   value={`${patientState.vitals.respiratory_rate}/min`}
                 />
-                <StateMetric label="BP" value={patientState.vitals.blood_pressure} />
+                <StateMetric
+                  label="BP"
+                  tone="vital"
+                  value={patientState.vitals.blood_pressure}
+                />
                 <StateMetric
                   emphasized
                   label="Breathing effort"
+                  tone="symptom"
                   value={patientState.symptoms.breathing_effort}
                 />
                 <StateMetric
                   label="Chest tightness"
+                  tone="symptom"
                   value={patientState.symptoms.chest_tightness}
                 />
-                <StateMetric label="Anxiety" value={patientState.emotion.anxiety} />
-                <StateMetric label="Fatigue" value={patientState.emotion.fatigue} />
+                <StateMetric
+                  label="Anxiety"
+                  tone="emotion"
+                  value={patientState.emotion.anxiety}
+                />
+                <StateMetric
+                  label="Fatigue"
+                  tone="emotion"
+                  value={patientState.emotion.fatigue}
+                />
                 <StateMetric
                   label="Speech"
+                  tone="voice"
                   value={patientState.voice_behavior.speech_pattern}
                 />
-                <StateMetric label="Tone" value={patientState.voice_behavior.tone} />
+                <StateMetric
+                  label="Tone"
+                  tone="voice"
+                  value={patientState.voice_behavior.tone}
+                />
                 <StateMetric
                   label="Oxygen"
+                  tone="intervention"
                   value={formatBoolean(patientState.interventions.oxygen_applied)}
                 />
                 <StateMetric
                   label="Bronchodilator"
+                  tone="intervention"
                   value={formatBoolean(patientState.interventions.bronchodilator_given)}
                 />
               </div>
@@ -795,15 +827,19 @@ function VoiceDetail({ label, value }: { label: string; value: string }) {
 function StateMetric({
   emphasized = false,
   label,
+  tone = "default",
   value,
 }: {
   emphasized?: boolean;
   label: string;
+  tone?: "default" | "emotion" | "intervention" | "status" | "symptom" | "vital" | "voice";
   value: string;
 }) {
   return (
     <div
-      className={`voice-state-item${emphasized ? " voice-state-item-emphasized" : ""}`}
+      className={`voice-state-item voice-state-item-${tone}${
+        emphasized ? " voice-state-item-emphasized" : ""
+      }`}
     >
       <span className="voice-state-label">{label}</span>
       <span className="voice-state-value">{value}</span>

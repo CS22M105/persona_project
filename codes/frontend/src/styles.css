@@ -611,16 +611,55 @@ h1 {
   box-sizing: border-box;
   min-height: 54px;
   padding: 8px 10px;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
 }
 
-.voice-state-item-emphasized {
+.voice-state-item:hover {
+  border-color: #8aa0b8;
+  box-shadow: 0 8px 18px rgb(39 58 86 / 12%);
+  transform: translateY(-1px);
+}
+
+.voice-state-item-status {
+  background: #f3f6fb;
+  box-shadow: inset 3px 0 0 #577399;
+}
+
+.voice-state-item-vital {
   background: #edf7f3;
-  border-color: #9ccdbd;
   box-shadow: inset 3px 0 0 #2f6f63;
 }
 
+.voice-state-item-symptom {
+  background: #fff7e6;
+  box-shadow: inset 3px 0 0 #c8821e;
+}
+
+.voice-state-item-emotion {
+  background: #fff0f3;
+  box-shadow: inset 3px 0 0 #c75166;
+}
+
+.voice-state-item-voice {
+  background: #eef5ff;
+  box-shadow: inset 3px 0 0 #3d6fb6;
+}
+
+.voice-state-item-intervention {
+  background: #f1f8ec;
+  box-shadow: inset 3px 0 0 #5f8f3f;
+}
+
+.voice-state-item-emphasized {
+  border-color: #8cbcac;
+}
+
 .voice-state-label {
-  color: #667085;
+  color: #4b5563;
   display: block;
   font-size: 0.76rem;
   font-weight: 800;
@@ -638,8 +677,31 @@ h1 {
 }
 
 .voice-state-item-emphasized .voice-state-value {
-  color: #1f5f4f;
   font-size: 1rem;
+}
+
+.voice-state-item-status .voice-state-value {
+  color: #273a56;
+}
+
+.voice-state-item-vital .voice-state-value {
+  color: #1f5f4f;
+}
+
+.voice-state-item-symptom .voice-state-value {
+  color: #704a00;
+}
+
+.voice-state-item-emotion .voice-state-value {
+  color: #8f263a;
+}
+
+.voice-state-item-voice .voice-state-value {
+  color: #244f8f;
+}
+
+.voice-state-item-intervention .voice-state-value {
+  color: #3e6d2d;
 }
 
 .voice-transcript-card {
