@@ -172,52 +172,11 @@ export function Dashboard() {
           </div>
         </header>
 
-        {isLoading ? <p>Loading patient state...</p> : null}
+        {isLoading ? <p>Loading dashboard...</p> : null}
         {errorMessage ? <p className="chat-error">{errorMessage}</p> : null}
 
         {patientState ? (
           <div className="dashboard-grid">
-            <section className="dashboard-card state-card" aria-labelledby="state-title">
-              <h2 id="state-title">Current State</h2>
-              <dl className="state-grid">
-                <StateRow label="Status" value={patientState.status} />
-                <StateRow label="Stage" value={patientState.stage} />
-                <StateRow label="HR" value={`${patientState.vitals.heart_rate} bpm`} />
-                <StateRow label="SpO2" value={`${patientState.vitals.spo2}%`} />
-                <StateRow
-                  label="RR"
-                  value={`${patientState.vitals.respiratory_rate}/min`}
-                />
-                <StateRow label="BP" value={patientState.vitals.blood_pressure} />
-                <StateRow
-                  label="Breathing effort"
-                  value={patientState.symptoms.breathing_effort}
-                />
-                <StateRow
-                  label="Chest tightness"
-                  value={patientState.symptoms.chest_tightness}
-                />
-                <StateRow label="Anxiety" value={patientState.emotion.anxiety} />
-                <StateRow label="Fatigue" value={patientState.emotion.fatigue} />
-                <StateRow
-                  label="Oxygen applied"
-                  value={formatBoolean(patientState.interventions.oxygen_applied)}
-                />
-                <StateRow
-                  label="Bronchodilator given"
-                  value={formatBoolean(patientState.interventions.bronchodilator_given)}
-                />
-                <StateRow
-                  label="AI paused"
-                  value={formatBoolean(patientState.safety.ai_paused)}
-                />
-                <StateRow
-                  label="Instructor takeover"
-                  value={formatBoolean(patientState.safety.instructor_takeover)}
-                />
-              </dl>
-            </section>
-
             <section className="dashboard-card controls-card" aria-labelledby="controls-title">
               <h2 id="controls-title">Instructor Controls</h2>
               <button
@@ -434,15 +393,6 @@ type StateRowProps = {
 };
 
 function ReportMeta({ label, value }: StateRowProps) {
-  return (
-    <>
-      <dt>{label}</dt>
-      <dd>{value}</dd>
-    </>
-  );
-}
-
-function StateRow({ label, value }: StateRowProps) {
   return (
     <>
       <dt>{label}</dt>
