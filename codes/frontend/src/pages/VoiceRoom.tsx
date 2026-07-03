@@ -511,15 +511,15 @@ export function VoiceRoom() {
   return (
     <main className="app-shell voice-shell">
       <section className="voice-page" aria-labelledby="voice-title">
-        <header className="dashboard-header">
-          <div>
+        <nav className="voice-nav" aria-label="Voice room navigation">
+          <div className="voice-nav-heading">
             <p className="eyebrow">Student voice room</p>
             <h1 id="voice-title">AI Patient Voice</h1>
             <p className="lede">
               Sim-room interface for speaking with the COPD/SOB AI patient.
             </p>
           </div>
-          <div className="header-actions">
+          <div className="voice-nav-actions">
             <a className="header-link" href="/">
               Instructor dashboard
             </a>
@@ -527,7 +527,7 @@ export function VoiceRoom() {
               {statusLabel}
             </span>
           </div>
-        </header>
+        </nav>
 
         {errorMessage ? <p className="chat-error">{errorMessage}</p> : null}
 

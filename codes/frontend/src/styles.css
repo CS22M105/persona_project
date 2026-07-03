@@ -520,6 +520,38 @@ h1 {
   width: 100%;
 }
 
+.voice-nav {
+  align-items: flex-start;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin: 0 0 16px;
+  padding: 16px 18px;
+}
+
+.voice-nav-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.voice-nav-heading {
+  min-width: 0;
+}
+
+.voice-nav-heading h1 {
+  margin-bottom: 8px;
+}
+
+.voice-nav-heading .lede {
+  margin-bottom: 0;
+}
+
 .voice-grid {
   align-items: start;
   display: grid;
@@ -829,6 +861,19 @@ h1 {
 
   .header-actions {
     justify-content: flex-start;
+  }
+
+  .voice-nav {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .voice-nav-actions {
+    align-items: stretch;
+  }
+
+  .voice-nav-actions .header-link {
+    text-align: center;
   }
 
   .dashboard-grid {
