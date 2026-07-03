@@ -369,6 +369,374 @@ Create this planning document.
 
 Document exact backend/frontend responsibilities before coding.
 
+Implemented on July 3, 2026:
+
+```text
+Defined the production voice architecture for the first integrated voice implementation.
+```
+
+References checked:
+
+```text
+OpenAI Realtime and audio guide:
+https://developers.openai.com/api/docs/guides/realtime
+
+OpenAI Realtime client secrets API reference:
+https://developers.openai.com/api/reference/resources/realtime/subresources/client_secrets
+```
+
+What was defined:
+
+- browser voice room responsibility
+- FastAPI backend responsibility
+- OpenAI Realtime responsibility
+- patient state responsibility
+- transcript and timeline persistence boundary
+- security boundary for the OpenAI API key
+- first implementation path versus later production upgrades
+
+Why:
+
+- voice is the riskiest and most valuable feature, so the architecture must be clear before coding
+- the frontend must never receive the permanent OpenAI API key
+- the instructor dashboard and student voice room are separate browser experiences
+- the AI patient remains instructor-cued and does not directly read Laerdal/manikin state
+- Step 7 and Step 8 persistence/reporting must keep working after voice is added
+
+How:
+
+- the backend will expose a voice session endpoint
+- the frontend voice room will request a short-lived Realtime client secret from the backend
+- the frontend will use browser WebRTC for microphone capture and speaker playback
+- the backend will build patient instructions from the COPD/SOB scenario and current patient state
+- instructor cues will update this app's patient state first
+- voice session instructions will be refreshed after patient state changes
+- transcript and event persistence will be added after the minimal voice loop is stable
+
+Files changed for 9.2:
+
+```text
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+No production code was changed in this substep.
+
+## 9.2 Production Voice Architecture
+
+### Architecture Decision
+
+Use a browser-based WebRTC voice session for the student voice room.
+
+```text
+Student voice room:
+  captures microphone audio
+  sends audio to OpenAI Realtime using WebRTC
+  plays AI patient voice through the sim-room speaker
+
+Backend:
+  stores permanent OpenAI API key securely
+  creates short-lived Realtime client secrets
+  builds patient persona/state instructions
+  exposes patient state and persistence APIs
+
+Instructor dashboard:
+  controls patient state
+  applies scenario cues
+  pauses or takes over the AI patient when needed
+
+OpenAI Realtime:
+  receives student audio
+  returns AI patient audio
+  emits conversation events/transcript data when available
+```
+
+Reason:
+
+- WebRTC is the right fit for browser microphone and speaker workflows
+- a direct browser audio path reduces latency
+- the backend-only key pattern protects the permanent API key
+- the architecture can scale later without rewriting the text chat, state manager, transcript, or report modules
+
+### Production Component Diagram
+
+```mermaid
+flowchart TD
+    subgraph SimRoom[Sim Room]
+        Student[Students]
+        Mic[Room Microphone]
+        Speaker[Patient Speaker]
+        VoiceRoom[Browser Voice Room]
+    end
+
+    subgraph ControlRoom[Control Room]
+        Instructor[Instructor]
+        Dashboard[Instructor Dashboard]
+    end
+
+    subgraph Backend[FastAPI Backend]
+        VoiceAPI[Voice API]
+        StateAPI[Patient State API]
+        SessionAPI[Session API]
+        PersonaBuilder[Voice Persona Builder]
+        TranscriptService[Transcript Service]
+        TimelineService[Timeline Service]
+        ReportService[Report Service]
+        Database[(PostgreSQL)]
+    end
+
+    subgraph OpenAI[OpenAI]
+        Realtime[Realtime Voice Session]
+    end
+
+    Student --> Mic
+    Mic --> VoiceRoom
+    VoiceRoom -->|WebRTC audio| Realtime
+    Realtime -->|AI patient audio| VoiceRoom
+    VoiceRoom --> Speaker
+
+    Instructor --> Dashboard
+    Dashboard --> StateAPI
+    Dashboard --> SessionAPI
+
+    VoiceRoom --> VoiceAPI
+    VoiceAPI --> PersonaBuilder
+    VoiceAPI -->|server API key only| OpenAI
+    VoiceAPI -->|short-lived client secret| VoiceRoom
+
+    StateAPI --> TimelineService
+    TimelineService --> Database
+    TranscriptService --> Database
+    SessionAPI --> Database
+    ReportService --> Database
+```
+
+### Backend Responsibilities
+
+The backend owns:
+
+- permanent OpenAI API key
+- short-lived Realtime client secret creation
+- voice session configuration
+- scenario/persona loading
+- current patient state loading
+- patient instruction building
+- transcript persistence
+- event timeline persistence
+- report compatibility
+- future authentication and role checks
+
+The backend must not:
+
+- send the permanent OpenAI API key to the frontend
+- log the API key
+- require students to have OpenAI accounts
+- directly control Laerdal/LLEAP/manikin software
+
+### Frontend Responsibilities
+
+The frontend voice room owns:
+
+- microphone permission request
+- microphone stream capture
+- WebRTC peer connection setup
+- patient voice audio playback
+- connection status display
+- mute/disconnect controls
+- visible patient state summary
+- display of voice transcript when available
+
+The frontend must not:
+
+- contain the permanent OpenAI API key
+- generate clinical grades
+- store secrets in local storage
+- directly read the database
+- directly control manikin software
+
+### Instructor Dashboard Responsibilities
+
+The instructor dashboard owns:
+
+- cue buttons
+- current patient state display
+- pause/resume controls
+- instructor takeover control
+- end session workflow
+- final report workflow
+
+Important:
+
+```text
+The instructor dashboard changes this app's AI patient state.
+The instructor still separately controls the Laerdal/manikin dashboard.
+```
+
+### Voice Session Creation Flow
+
+```mermaid
+sequenceDiagram
+    participant VoiceRoom as Browser Voice Room
+    participant Backend as FastAPI Backend
+    participant State as Patient State Manager
+    participant Scenario as COPD/SOB Scenario
+    participant OpenAI as OpenAI Realtime
+
+    VoiceRoom->>Backend: POST /voice/realtime-session
+    Backend->>Scenario: Load COPD/SOB persona and safety rules
+    Backend->>State: Load current patient state
+    Backend->>Backend: Build voice instructions
+    Backend->>OpenAI: Create Realtime client secret using server API key
+    OpenAI-->>Backend: Short-lived client secret/session metadata
+    Backend-->>VoiceRoom: Return short-lived client secret only
+    VoiceRoom->>OpenAI: Establish WebRTC voice session
+    VoiceRoom->>OpenAI: Stream microphone audio
+    OpenAI-->>VoiceRoom: Stream AI patient audio
+```
+
+### State Update During Active Voice Flow
+
+```mermaid
+sequenceDiagram
+    participant Instructor
+    participant Dashboard
+    participant Backend
+    participant Database
+    participant VoiceRoom
+    participant Realtime as OpenAI Realtime
+
+    Instructor->>Dashboard: Apply instructor cue
+    Dashboard->>Backend: POST /state/cues/{cue_id}
+    Backend->>Backend: Update patient state
+    Backend->>Database: Save timeline event
+    Backend-->>Dashboard: Return updated patient state
+    VoiceRoom->>Backend: Request latest patient state
+    Backend-->>VoiceRoom: Return latest patient state
+    VoiceRoom->>Realtime: Send updated patient-state instructions
+    Realtime-->>VoiceRoom: Future patient responses follow updated state
+```
+
+Initial implementation:
+
+```text
+Voice room polls or manually refreshes patient state.
+```
+
+Later production upgrade:
+
+```text
+Backend pushes state updates to voice room through WebSockets.
+```
+
+Reason:
+
+- polling/manual refresh is safer for a July demo
+- WebSockets are better later for production responsiveness
+- the architecture leaves room for both
+
+### Instruction-Building Boundary
+
+Voice instructions should be built from:
+
+```text
+scenario patient profile
+chief complaint
+allowed disclosures
+hidden information rules
+safety rules
+current patient state
+latest instructor cues
+voice behavior rules
+```
+
+The voice persona must:
+
+- speak only as the simulated patient
+- keep responses short when respiratory distress is high
+- avoid treatment orders
+- avoid grading or evaluating students
+- avoid revealing hidden clinical information unless allowed
+- follow latest instructor-cued state
+- remain fictional and simulation-only
+
+### Data Persistence Boundary
+
+Step 9 should preserve the existing data flow:
+
+```text
+sessions
+transcript_messages
+timeline_events
+final report
+```
+
+Voice transcript persistence should be added carefully:
+
+- student speech transcript should become a `student` transcript message
+- AI patient voice transcript should become a `patient` transcript message
+- voice connection events should become timeline events
+- instructor safety controls should become timeline events
+
+The first voice loop can work before full transcript persistence, but persistence must be added before considering Step 9 complete.
+
+### Security Boundary
+
+Security rules for the architecture:
+
+- backend `.env` stores the permanent API key
+- `.env` remains ignored by Git
+- backend requests short-lived Realtime client secrets
+- frontend receives only the short-lived secret
+- frontend does not store the secret permanently
+- no key is printed in terminal output
+- no key is written to Markdown
+- no real patient data is used
+- voice report content remains debrief support only
+
+### First Implementation Architecture
+
+Build this first:
+
+```text
+POST /voice/realtime-session
+frontend voice API client
+VoiceRoom page
+connect/disconnect button
+microphone permission
+speaker playback
+basic patient voice instructions
+manual state refresh before/while connected
+```
+
+Do not build first:
+
+```text
+WebSocket state push
+complex device selector
+production authentication
+voice analytics
+grading
+Laerdal integration
+PDF/DOCX voice report export
+```
+
+### Production Upgrade Path
+
+After the July demo:
+
+```text
+add auth and role-based access
+add WebSocket state push
+add device selector
+add transcript persistence from Realtime events
+add voice audit events
+add better instructor takeover workflow
+add deployment secrets manager
+add rate limiting
+add monitoring and cost controls
+add institutional privacy review
+```
+
 ### 9.3 Add secure backend realtime-session endpoint
 
 Create backend endpoint that returns a short-lived Realtime session/client secret.
@@ -527,4 +895,3 @@ Start with:
 ```
 
 This creates a minimal working voice path while keeping the rest of the product safe.
-

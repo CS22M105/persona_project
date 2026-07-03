@@ -3976,3 +3976,68 @@ Security note:
 ```text
 No API keys, .env values, or secret files were opened, printed, or modified.
 ```
+
+## 47. Step 9.2 Production Voice Architecture Defined - July 3, 2026
+
+Goal:
+
+```text
+Define exact backend, frontend, dashboard, OpenAI Realtime, state, and persistence responsibilities before coding voice.
+```
+
+Changed:
+
+```text
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- Added the production voice architecture for the integrated product.
+- Added a production component diagram.
+- Added a voice session creation sequence diagram.
+- Added an active voice state-update sequence diagram.
+- Defined backend responsibilities.
+- Defined frontend voice room responsibilities.
+- Defined instructor dashboard responsibilities.
+- Defined instruction-building boundaries.
+- Defined data persistence boundaries.
+- Defined security boundaries.
+- Defined first implementation architecture versus later production upgrades.
+- Documented official OpenAI Realtime references checked before implementation planning.
+
+Why:
+
+- Voice is high value but higher risk than text chat.
+- The architecture must protect the OpenAI API key.
+- The student voice room and instructor dashboard have different responsibilities.
+- The AI patient must remain instructor-cued.
+- The existing transcript, event timeline, and final report features must keep working after voice is added.
+
+How:
+
+```text
+Browser voice room captures microphone audio
+Browser voice room plays AI patient audio through speaker
+Backend creates short-lived Realtime client secret
+Backend keeps permanent API key private
+OpenAI Realtime handles live speech-to-speech interaction
+Instructor dashboard updates patient state
+Voice room refreshes state and sends updated instructions to the active voice session
+Transcript and events remain the source for final report
+```
+
+Main architecture decision:
+
+```text
+Use browser WebRTC for the student voice room and backend-created short-lived Realtime client secrets for security.
+```
+
+Security note:
+
+```text
+No production code was changed.
+No API keys were opened, printed, or modified.
+No .env values were opened, printed, or modified.
+```
