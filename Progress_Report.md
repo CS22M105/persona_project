@@ -4116,3 +4116,67 @@ The outbound HTTP call was mocked.
 No .env file was opened.
 No API key was printed.
 ```
+
+## 49. Step 9.4 Frontend Voice API Client Implemented - July 3, 2026
+
+Goal:
+
+```text
+Add a typed frontend function that requests a short-lived Realtime voice session from the backend.
+```
+
+Changed:
+
+```text
+codes/frontend/src/api/voice.ts
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- Added `RealtimeSessionResponse` TypeScript type.
+- Added `createRealtimeVoiceSession()`.
+- Connected the frontend to `POST /voice/realtime-session`.
+- Added error handling for failed backend voice session requests.
+- Documented what, why, how, changed files, and security boundary in the Step 9 document.
+
+Why:
+
+- The future Voice Room page needs a clean client function before UI work starts.
+- The frontend should match the backend response contract from Step 9.3.
+- The browser must not call OpenAI with the permanent API key.
+- The frontend should receive only short-lived Realtime session data.
+
+How it works:
+
+```text
+Voice Room will call createRealtimeVoiceSession()
+createRealtimeVoiceSession() calls the backend
+backend creates a short-lived Realtime client secret
+frontend receives typed short-lived session data
+```
+
+Security note:
+
+```text
+The frontend voice client does not contain the permanent OpenAI API key.
+The frontend voice client does not call OpenAI directly.
+The frontend voice client does not store secrets.
+No .env file was opened.
+No API key was printed.
+```
+
+Verification:
+
+```text
+npm run build
+python -m compileall app
+```
+
+Result:
+
+```text
+Frontend TypeScript production build passed.
+Backend compile check passed.
+```

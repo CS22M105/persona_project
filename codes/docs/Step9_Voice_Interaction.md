@@ -873,6 +873,75 @@ No .env file was opened.
 
 Create a frontend function that calls the backend voice session endpoint.
 
+Implemented on July 3, 2026:
+
+```text
+Added the frontend API client for requesting a short-lived Realtime voice session.
+```
+
+Files changed for 9.4:
+
+```text
+codes/frontend/src/api/voice.ts
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- added `RealtimeSessionResponse` TypeScript type
+- added `createRealtimeVoiceSession()`
+- connected the frontend client to `POST /voice/realtime-session`
+- added frontend error handling when the backend voice session request fails
+
+Why:
+
+- the future Voice Room page needs one clean function for starting a voice session
+- the frontend should know the exact response shape from the backend
+- TypeScript should catch mismatches before runtime
+- the browser should request short-lived session data from the backend, not call OpenAI using the permanent API key
+
+How:
+
+```typescript
+export async function createRealtimeVoiceSession(): Promise<RealtimeSessionResponse> {
+  const response = await fetch(`${API_BASE_URL}/voice/realtime-session`, {
+    method: "POST",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Realtime voice session request failed with status ${response.status}`,
+    );
+  }
+
+  return response.json();
+}
+```
+
+Security boundary:
+
+```text
+The frontend voice client does not contain the permanent OpenAI API key.
+The frontend voice client calls only the backend.
+The frontend voice client receives only short-lived session data.
+The frontend voice client does not store secrets.
+```
+
+Verification:
+
+```text
+npm run build
+python -m compileall app
+```
+
+Verification result:
+
+```text
+Frontend TypeScript production build passed.
+Backend compile check passed.
+```
+
 ### 9.5 Add voice room UI
 
 Create a browser page for:
