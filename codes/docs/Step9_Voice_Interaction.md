@@ -1571,6 +1571,111 @@ end session
 generate final report
 ```
 
+Completed automated verification on July 3, 2026.
+
+Files changed for 9.11:
+
+```text
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What was verified automatically:
+
+- frontend production build
+- backend compile check
+- session start
+- voice connected timeline event
+- student voice transcript persistence
+- patient voice transcript persistence
+- instructor cue state update
+- refreshed voice instructions after cue
+- safety controls:
+  - pause
+  - takeover started
+  - takeover ended
+  - resume
+- voice disconnected timeline event
+- session end
+- session transcript retrieval
+- session timeline retrieval
+- final report generation
+- final report disclaimer
+
+Why:
+
+- Step 9 touches backend, frontend, state, transcript, timeline, voice session logic, safety controls, and final report flow
+- automated verification confirms these pieces work together without requiring a live microphone or speaker
+- physical microphone/speaker testing still requires a real browser and user permission
+
+How:
+
+```text
+Used FastAPI TestClient with an isolated temporary SQLite database.
+Disabled live OpenAI text persona for the verification run.
+Did not make a real OpenAI voice request.
+Did not use the permanent OpenAI API key.
+Did not modify local PostgreSQL records.
+```
+
+Verification commands:
+
+```text
+python -m compileall app
+npm run build
+automated FastAPI voice-flow verification
+```
+
+Verification output:
+
+```text
+step 9.11 automated voice flow verification passed
+session_status=ended
+transcript_count=3
+timeline_count=8
+voice_transcript_source=openai_realtime
+verified_events=voice_connected,instructor_cue,auto_patient_response,pause,takeover_started,takeover_ended,resume,voice_disconnected
+```
+
+Manual browser test still required:
+
+```text
+start backend
+start frontend
+open instructor dashboard
+open /voice
+click Connect voice
+allow microphone access
+speak as student
+confirm AI patient voice plays through speaker
+apply instructor cue
+confirm next patient response follows new state
+test Pause AI
+test Resume AI
+test Start takeover
+test End takeover
+test Mute mic
+test Disconnect
+end session
+generate final report
+```
+
+Manual test boundary:
+
+```text
+The automated test cannot confirm physical microphone input or speaker output.
+That must be checked in a real browser with microphone permission and audio hardware.
+```
+
+Security boundary:
+
+```text
+No API key was printed.
+No .env file was opened.
+No raw audio was persisted.
+No real patient or student identity was used.
+```
+
 ## Acceptance Criteria
 
 Step 9 is complete when:

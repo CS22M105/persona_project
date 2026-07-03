@@ -4572,6 +4572,99 @@ No API key was printed.
 The controls affect only this app's AI patient state and browser voice session.
 ```
 
+## 56. Step 9.11 Automated Voice End-to-End Verification Completed - July 3, 2026
+
+Goal:
+
+```text
+Verify the integrated voice flow across session, transcript, timeline, state updates, safety controls, and final report generation.
+```
+
+Changed:
+
+```text
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What was verified:
+
+- Frontend production build.
+- Backend compile check.
+- Session start.
+- Voice connected event persistence.
+- Student voice transcript persistence.
+- Patient voice transcript persistence.
+- Instructor cue update.
+- Voice instructions refreshed after cue.
+- Pause AI.
+- Instructor takeover start.
+- Instructor takeover end.
+- Resume AI.
+- Voice disconnected event persistence.
+- Session end.
+- Session transcript retrieval.
+- Session timeline retrieval.
+- Final report generation.
+- Final report disclaimer.
+
+Why:
+
+- Step 9 combines multiple product areas: voice, state, persistence, safety, and report flow.
+- Automated verification catches integration problems before manual browser testing.
+- Physical microphone and speaker testing requires a real browser, user permission, and audio hardware.
+
+How:
+
+```text
+Used FastAPI TestClient with an isolated temporary SQLite database.
+Disabled live OpenAI text persona for the verification run.
+Did not make a real OpenAI voice request.
+Did not modify local PostgreSQL records.
+```
+
+Verification output:
+
+```text
+step 9.11 automated voice flow verification passed
+session_status=ended
+transcript_count=3
+timeline_count=8
+voice_transcript_source=openai_realtime
+verified_events=voice_connected,instructor_cue,auto_patient_response,pause,takeover_started,takeover_ended,resume,voice_disconnected
+```
+
+Additional checks:
+
+```text
+python -m compileall app
+npm run build
+```
+
+Manual browser test still required:
+
+```text
+open /voice
+click Connect voice
+allow microphone access
+speak as student
+confirm patient voice plays through speaker
+apply instructor cue
+confirm patient response changes
+test pause/resume/takeover/mute/disconnect
+end session
+generate final report
+```
+
+Security note:
+
+```text
+No API key was printed.
+No .env file was opened.
+No raw audio was persisted.
+No real patient or student identity was used.
+```
+
 ## 50. Step 9.5 Voice Room UI Implemented - July 3, 2026
 
 Goal:
