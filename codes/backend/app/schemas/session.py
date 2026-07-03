@@ -12,7 +12,13 @@ TranscriptMessageType = Literal[
     "auto_patient_reaction",
     "system_note",
 ]
-TranscriptSource = Literal["manual", "openai", "mock_fallback", "system"]
+TranscriptSource = Literal[
+    "manual",
+    "openai",
+    "openai_realtime",
+    "mock_fallback",
+    "system",
+]
 TimelineEventType = Literal[
     "session_started",
     "student_message",
@@ -24,6 +30,10 @@ TimelineEventType = Literal[
     "takeover_started",
     "takeover_ended",
     "intervention",
+    "voice_connected",
+    "voice_disconnected",
+    "voice_muted",
+    "voice_unmuted",
     "session_ended",
 ]
 

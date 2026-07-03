@@ -1,10 +1,13 @@
 import { RefObject, useEffect, useRef, useState } from "react";
 
 import { getPatientState, PatientState } from "../api/state";
+import { TranscriptMessageResponse } from "../api/sessions";
 import {
   createRealtimeVoiceSession,
   getCurrentVoiceInstructions,
   RealtimeSessionResponse,
+  saveVoiceTimelineEvent,
+  saveVoiceTranscriptMessage,
   VoiceInstructionsResponse,
 } from "../api/voice";
 
@@ -20,6 +23,12 @@ type VoiceConnectionStatus =
 
 type PublicRealtimeSession = Omit<RealtimeSessionResponse, "client_secret">;
 
+type RealtimeTranscriptEvent = {
+  type?: string;
+  transcript?: string;
+  text?: string;
+};
+
 
 export function VoiceRoom() {
   const [patientState, setPatientState] = useState<PatientState | null>(null);
@@ -27,6 +36,9 @@ export function VoiceRoom() {
   const [status, setStatus] = useState<VoiceConnectionStatus>("loading_state");
   const [isMuted, setIsMuted] = useState(false);
   const [lastInstructionSyncAt, setLastInstructionSyncAt] = useState<string | null>(null);
+  const [voiceTranscriptMessages, setVoiceTranscriptMessages] = useState<
+    TranscriptMessageResponse[]
+  >([]);
   const [errorMessage, setErrorMessage] = useState("");
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -99,6 +111,11 @@ export function VoiceRoom() {
       setIsMuted(false);
       setStatus("ready");
       await syncVoiceInstructions({ force: true });
+      await recordVoiceTimelineEvent(
+        "voice_connected",
+        "Voice connected",
+        sessionResponse.session_id,
+      );
     } catch (error) {
       cleanupVoiceConnection();
       setStatus("error");
@@ -106,12 +123,13 @@ export function VoiceRoom() {
     }
   }
 
-  function handleDisconnectVoice() {
+  async function handleDisconnectVoice() {
+    await recordVoiceTimelineEvent("voice_disconnected", "Voice disconnected");
     cleanupVoiceConnection();
     setStatus("disconnected");
   }
 
-  function handleToggleMute() {
+  async function handleToggleMute() {
     const nextMuted = !isMuted;
 
     localStreamRef.current
@@ -121,6 +139,10 @@ export function VoiceRoom() {
       });
 
     setIsMuted(nextMuted);
+    await recordVoiceTimelineEvent(
+      nextMuted ? "voice_muted" : "voice_unmuted",
+      nextMuted ? "Voice microphone muted" : "Voice microphone unmuted",
+    );
   }
 
   function cleanupVoiceConnection() {
@@ -152,6 +174,9 @@ export function VoiceRoom() {
     peerConnectionRef.current = peerConnection;
     localStreamRef.current = microphoneStream;
     dataChannelRef.current = dataChannel;
+    dataChannel.onmessage = (event) => {
+      handleRealtimeDataChannelMessage(event);
+    };
 
     peerConnection.onconnectionstatechange = () => {
       if (peerConnection.connectionState === "failed") {
@@ -269,6 +294,49 @@ export function VoiceRoom() {
         reject(new Error("Realtime data channel failed."));
       };
     });
+  }
+
+  async function handleRealtimeDataChannelMessage(messageEvent: MessageEvent) {
+    const event = parseRealtimeTranscriptEvent(messageEvent.data);
+
+    if (!event) {
+      return;
+    }
+
+    const speaker = getTranscriptSpeaker(event.type);
+    const text = event.transcript ?? event.text;
+
+    if (!speaker || !text?.trim()) {
+      return;
+    }
+
+    try {
+      const savedMessage = await saveVoiceTranscriptMessage({
+        speaker,
+        text: text.trim(),
+        realtime_event_type: event.type ?? null,
+      });
+
+      setVoiceTranscriptMessages((messages) => [...messages, savedMessage]);
+    } catch {
+      setErrorMessage("Voice transcript could not be saved.");
+    }
+  }
+
+  async function recordVoiceTimelineEvent(
+    eventType: "voice_connected" | "voice_disconnected" | "voice_muted" | "voice_unmuted",
+    label: string,
+    realtimeSessionId = voiceSession?.session_id ?? null,
+  ) {
+    try {
+      await saveVoiceTimelineEvent({
+        event_type: eventType,
+        label,
+        realtime_session_id: realtimeSessionId,
+      });
+    } catch {
+      setErrorMessage("Voice event could not be saved.");
+    }
   }
 
   const canConnect =
@@ -410,14 +478,28 @@ export function VoiceRoom() {
 
           <section className="dashboard-card voice-transcript-card" aria-labelledby="voice-transcript-title">
             <h2 id="voice-transcript-title">Voice Transcript</h2>
-            <ol className="event-list">
-              <li>
-                <strong>Waiting for voice transcript</strong>
-                <span className="report-entry-meta">
-                  Transcript persistence will be added after the voice connection is stable.
-                </span>
-              </li>
-            </ol>
+            {voiceTranscriptMessages.length > 0 ? (
+              <ol className="event-list">
+                {voiceTranscriptMessages.map((message) => (
+                  <li key={message.message_id}>
+                    <strong>{formatLabel(message.speaker)}:</strong> {message.text}
+                    <span className="report-entry-meta">
+                      Source: {formatLabel(message.source)}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <ol className="event-list">
+                <li>
+                  <strong>Waiting for voice transcript</strong>
+                  <span className="report-entry-meta">
+                    Transcript messages will appear here when Realtime transcript
+                    events are received.
+                  </span>
+                </li>
+              </ol>
+            )}
           </section>
         </div>
       </section>
@@ -467,6 +549,53 @@ function formatStatus(status: VoiceConnectionStatus): string {
   };
 
   return labels[status];
+}
+
+
+function formatLabel(value: string): string {
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+
+function parseRealtimeTranscriptEvent(data: unknown): RealtimeTranscriptEvent | null {
+  if (typeof data !== "string") {
+    return null;
+  }
+
+  try {
+    const parsedData = JSON.parse(data) as RealtimeTranscriptEvent;
+    return parsedData;
+  } catch {
+    return null;
+  }
+}
+
+
+function getTranscriptSpeaker(
+  eventType: string | undefined,
+): "student" | "patient" | null {
+  if (!eventType) {
+    return null;
+  }
+
+  if (
+    eventType === "conversation.item.input_audio_transcription.completed" ||
+    eventType === "input_audio_transcription.completed"
+  ) {
+    return "student";
+  }
+
+  if (
+    eventType === "response.audio_transcript.done" ||
+    eventType === "response.output_audio_transcript.done"
+  ) {
+    return "patient";
+  }
+
+  return null;
 }
 
 

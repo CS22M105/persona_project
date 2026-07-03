@@ -24,7 +24,12 @@ export type TranscriptMessageType =
   | "auto_patient_reaction"
   | "system_note";
 
-export type TranscriptSource = "manual" | "openai" | "mock_fallback" | "system";
+export type TranscriptSource =
+  | "manual"
+  | "openai"
+  | "openai_realtime"
+  | "mock_fallback"
+  | "system";
 
 export type TranscriptMessageResponse = {
   message_id: string;
@@ -54,6 +59,10 @@ export type TimelineEventType =
   | "takeover_started"
   | "takeover_ended"
   | "intervention"
+  | "voice_connected"
+  | "voice_disconnected"
+  | "voice_muted"
+  | "voice_unmuted"
   | "session_ended";
 
 export type TimelineEventResponse = {

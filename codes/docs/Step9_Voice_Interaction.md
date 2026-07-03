@@ -1344,6 +1344,111 @@ Save:
 - voice connected/disconnected events
 - mute/pause/takeover events
 
+Implemented on July 3, 2026:
+
+```text
+Added backend and frontend persistence for voice transcript messages and voice lifecycle timeline events.
+```
+
+Files changed for 9.9:
+
+```text
+codes/backend/app/schemas/session.py
+codes/backend/app/schemas/voice.py
+codes/backend/app/api/voice.py
+codes/frontend/src/api/sessions.ts
+codes/frontend/src/api/voice.ts
+codes/frontend/src/pages/VoiceRoom.tsx
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- added `openai_realtime` as a transcript source
+- added voice timeline event types:
+  - `voice_connected`
+  - `voice_disconnected`
+  - `voice_muted`
+  - `voice_unmuted`
+- added `VoiceTranscriptCreateRequest`
+- added `VoiceTimelineEventCreateRequest`
+- added `POST /voice/transcript`
+- added `POST /voice/events`
+- added frontend `saveVoiceTranscriptMessage()`
+- added frontend `saveVoiceTimelineEvent()`
+- updated Voice Room to save voice connect, disconnect, mute, and unmute events
+- updated Voice Room to listen for Realtime transcript events from the data channel
+- updated Voice Room to save recognized student and patient voice transcript events
+- updated Voice Room transcript display to show saved voice transcript messages
+
+Why:
+
+- Step 7 transcript and timeline persistence should include voice interaction too
+- final debrief reports become more useful when they include voice interaction records
+- faculty need to see when voice connected, muted, disconnected, and what was said
+- voice transcript persistence should reuse the same session record instead of creating a separate data path
+
+How:
+
+```text
+Realtime data channel emits transcript event
+Voice Room parses event
+Voice Room identifies speaker as student or patient
+Voice Room calls POST /voice/transcript
+backend starts/reuses active session
+backend saves transcript message with source openai_realtime
+Voice Room displays saved transcript message
+```
+
+Voice lifecycle event flow:
+
+```text
+Voice connected/disconnected/muted/unmuted
+Voice Room calls POST /voice/events
+backend starts/reuses active session
+backend saves timeline event
+event becomes available to session timeline and future reports
+```
+
+Recognized Realtime transcript events:
+
+```text
+conversation.item.input_audio_transcription.completed -> student
+input_audio_transcription.completed -> student
+response.audio_transcript.done -> patient
+response.output_audio_transcript.done -> patient
+```
+
+Current implementation boundary:
+
+```text
+The implementation saves transcript events when OpenAI Realtime emits transcript data over the data channel.
+It does not yet save raw audio.
+It does not save real student identity.
+Pause and instructor takeover timeline events are planned for Step 9.10.
+```
+
+Security boundary:
+
+```text
+No API key is persisted.
+No raw audio is persisted.
+No .env file was opened.
+No API key was printed.
+Voice records remain simulation-only.
+```
+
+Verification:
+
+```text
+python -m compileall app
+npm run build
+voice persistence endpoint verification passed
+saved_transcript_source=openai_realtime
+saved_event_type=voice_connected
+```
+
 ### 9.10 Add safety controls
 
 Implement:

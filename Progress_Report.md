@@ -4410,6 +4410,87 @@ No API key was printed.
 The system still does not read Laerdal/manikin state directly.
 ```
 
+## 54. Step 9.9 Voice Transcript and Event Persistence Implemented - July 3, 2026
+
+Goal:
+
+```text
+Persist voice transcript messages and voice lifecycle events into the existing session transcript and timeline record.
+```
+
+Changed:
+
+```text
+codes/backend/app/schemas/session.py
+codes/backend/app/schemas/voice.py
+codes/backend/app/api/voice.py
+codes/frontend/src/api/sessions.ts
+codes/frontend/src/api/voice.ts
+codes/frontend/src/pages/VoiceRoom.tsx
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- Added `openai_realtime` transcript source.
+- Added voice timeline event types for connected, disconnected, muted, and unmuted.
+- Added backend request schemas for voice transcript and voice event persistence.
+- Added `POST /voice/transcript`.
+- Added `POST /voice/events`.
+- Added frontend functions for saving voice transcript messages and voice events.
+- Updated Voice Room to save voice connected/disconnected/muted/unmuted timeline events.
+- Updated Voice Room to parse Realtime transcript events from the data channel.
+- Updated Voice Room to save recognized student and patient voice transcript messages.
+- Updated Voice Room to display saved voice transcript messages.
+
+Why:
+
+- Voice interaction should be part of the same session record as text chat, cues, and reports.
+- Faculty need transcript and event evidence for debriefing.
+- The final report can later include voice records without a separate storage design.
+- Voice lifecycle events help explain what happened during the simulation.
+
+How it works:
+
+```text
+Realtime transcript event received
+Voice Room identifies speaker
+Voice Room saves transcript through POST /voice/transcript
+backend saves message with source openai_realtime
+
+Voice connected/muted/disconnected
+Voice Room saves timeline event through POST /voice/events
+backend saves event to active session timeline
+```
+
+Verification:
+
+```text
+python -m compileall app
+npm run build
+voice persistence endpoint verification passed
+saved_transcript_source=openai_realtime
+saved_event_type=voice_connected
+```
+
+Security note:
+
+```text
+No API key is persisted.
+No raw audio is persisted.
+No real student identity is saved.
+No .env file was opened.
+No API key was printed.
+```
+
+Boundary:
+
+```text
+Pause and instructor takeover events are planned for Step 9.10.
+This step persists transcript text when Realtime transcript events are emitted.
+```
+
 ## 50. Step 9.5 Voice Room UI Implemented - July 3, 2026
 
 Goal:
