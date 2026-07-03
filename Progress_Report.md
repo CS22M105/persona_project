@@ -4181,6 +4181,73 @@ Frontend TypeScript production build passed.
 Backend compile check passed.
 ```
 
+## July 3, 2026 - Local Dashboard Connection Fix During Voice Test
+
+Goal:
+
+```text
+Fix the issue where the instructor dashboard and patient state appeared disconnected during the live voice test.
+```
+
+Problem found:
+
+- The backend API was running correctly.
+- The patient state endpoint returned `200 OK` from the terminal.
+- The dashboard still failed in the browser because the frontend was opened at `http://127.0.0.1:5173`.
+- The backend CORS policy only allowed `http://localhost:5173`.
+- Browsers treat `localhost` and `127.0.0.1` as different origins, so the dashboard API request was blocked by CORS.
+
+Changed:
+
+```text
+codes/backend/app/main.py
+Progress_Report.md
+```
+
+What changed:
+
+- Added a local development CORS allowlist.
+- Kept the configured frontend origin from settings.
+- Added support for both common local frontend origins:
+
+```text
+http://localhost:5173
+http://127.0.0.1:5173
+```
+
+Why:
+
+- The instructor dashboard, voice room, and backend must connect reliably during local testing.
+- Developers may open the frontend using either `localhost` or `127.0.0.1`.
+- A product-grade backend should make local development predictable while still keeping CORS explicit.
+
+How it works:
+
+```text
+main.py reads settings.frontend_origin
+main.py builds an allowed_frontend_origins list
+the list includes localhost and 127.0.0.1 dev origins
+CORSMiddleware uses that list for browser API requests
+```
+
+Security note:
+
+```text
+No API key or .env value was printed.
+No frontend code received the permanent OpenAI API key.
+The change only affects local browser origins used for development.
+```
+
+Verification:
+
+```text
+/state with Origin http://127.0.0.1:5173 returned access-control-allow-origin
+/state with Origin http://localhost:5173 returned access-control-allow-origin
+/sessions/start browser preflight for 127.0.0.1 succeeded
+/sessions/start dashboard-style POST succeeded
+python -m compileall app passed
+```
+
 ## 51. Step 9.6 Browser Microphone and Speaker WebRTC Connection Implemented - July 3, 2026
 
 Goal:
