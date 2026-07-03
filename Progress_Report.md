@@ -4041,3 +4041,78 @@ No production code was changed.
 No API keys were opened, printed, or modified.
 No .env values were opened, printed, or modified.
 ```
+
+## 48. Step 9.3 Secure Backend Realtime Session Endpoint Implemented - July 3, 2026
+
+Goal:
+
+```text
+Add a backend endpoint that creates a short-lived OpenAI Realtime voice session for the browser voice room.
+```
+
+Changed:
+
+```text
+codes/backend/app/core/config.py
+codes/backend/app/schemas/voice.py
+codes/backend/app/services/realtime_voice_service.py
+codes/backend/app/api/voice.py
+codes/backend/app/main.py
+codes/backend/requirements.txt
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- Added Realtime backend configuration fields for model, voice, client-secret URL, connect URL, and timeout.
+- Added `RealtimeSessionResponse` Pydantic schema.
+- Added `create_realtime_voice_session()` backend service.
+- Added `POST /voice/realtime-session`.
+- Registered the voice router in the FastAPI app.
+- Added `httpx` as an explicit backend dependency.
+- Documented what, why, how, files changed, endpoint shape, and security boundary in the Step 9 document.
+
+Why:
+
+- The browser voice room needs a safe way to start OpenAI Realtime voice.
+- The permanent OpenAI API key must remain on the backend.
+- The frontend should receive only a short-lived client secret.
+- Voice instructions should be built from the COPD/SOB scenario and current patient state.
+- This prepares Step 9 voice UI work without disrupting chat, state, transcript, or report features.
+
+How it works:
+
+```text
+frontend calls POST /voice/realtime-session
+backend loads scenario and current patient state
+backend builds patient voice instructions
+backend calls OpenAI Realtime client-secret endpoint using the server API key
+backend returns only short-lived session data to the frontend
+```
+
+Security note:
+
+```text
+The endpoint does not return the permanent OpenAI API key.
+The API key is not logged.
+The API key was not printed or added to docs.
+The frontend still has no direct access to the permanent key.
+```
+
+Verification:
+
+```text
+python -m compileall app
+/voice/realtime-session ['POST'] RealtimeSessionResponse
+mocked realtime session service verification passed
+```
+
+Verification boundary:
+
+```text
+No real OpenAI request was made.
+The outbound HTTP call was mocked.
+No .env file was opened.
+No API key was printed.
+```

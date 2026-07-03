@@ -6,6 +6,7 @@ from app.api.health import router as health_router
 from app.api.scenarios import router as scenarios_router
 from app.api.sessions import router as sessions_router
 from app.api.state import router as state_router
+from app.api.voice import router as voice_router
 from app.core.config import get_settings
 
 settings = get_settings()
@@ -25,6 +26,7 @@ app.include_router(scenarios_router)
 app.include_router(chat_router)
 app.include_router(state_router)
 app.include_router(sessions_router)
+app.include_router(voice_router)
 
 
 # cd /Users/farhatjahan/Desktop/YU/summer26/YU_internship/Sim_Intern/persona_project/codes/backend

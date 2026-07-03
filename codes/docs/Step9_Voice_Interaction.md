@@ -749,6 +749,126 @@ backend can request realtime session from OpenAI
 endpoint returns only short-lived session data
 ```
 
+Implemented on July 3, 2026:
+
+```text
+Added a secure backend endpoint for creating short-lived OpenAI Realtime voice sessions.
+```
+
+Files changed for 9.3:
+
+```text
+codes/backend/app/core/config.py
+codes/backend/app/schemas/voice.py
+codes/backend/app/services/realtime_voice_service.py
+codes/backend/app/api/voice.py
+codes/backend/app/main.py
+codes/backend/requirements.txt
+codes/docs/Step9_Voice_Interaction.md
+Progress_Report.md
+```
+
+What changed:
+
+- added backend Realtime configuration values
+- added `RealtimeSessionResponse` schema
+- added `create_realtime_voice_session()` service
+- added `POST /voice/realtime-session`
+- registered the voice router in the main FastAPI app
+- added `httpx` as an explicit backend dependency
+
+Why:
+
+- the frontend needs a safe way to start a voice session
+- the permanent OpenAI API key must stay on the backend
+- the browser should receive only a short-lived Realtime client secret
+- the voice session should be configured with the COPD/SOB persona and current patient state
+- this endpoint prepares the project for the Step 9 browser voice room without touching the existing chat/report flow
+
+How:
+
+```text
+Frontend will call POST /voice/realtime-session
+FastAPI route calls create_realtime_voice_session()
+service loads COPD/SOB scenario
+service loads current patient state
+service builds voice instructions
+service sends server-side request to OpenAI Realtime client secret endpoint
+service returns only short-lived client secret response fields to frontend
+```
+
+Endpoint:
+
+```text
+POST /voice/realtime-session
+```
+
+Response shape:
+
+```json
+{
+  "client_secret": "short-lived-client-secret-from-openai",
+  "expires_at": 1790000000,
+  "session_id": "sess_...",
+  "model": "gpt-realtime-2",
+  "voice": "marin",
+  "scenario_id": "copd-sob",
+  "connect_url": "https://api.openai.com/v1/realtime/calls"
+}
+```
+
+Security boundary:
+
+```text
+The endpoint never returns the permanent OpenAI API key.
+The permanent key is read only by the backend service.
+The key is not logged.
+The key is not written to Markdown.
+The key is not placed in frontend code.
+```
+
+Error behavior:
+
+```text
+If the OpenAI API key is missing, the endpoint returns 503.
+If the OpenAI client-secret request fails, the endpoint returns 503.
+```
+
+Important implementation note:
+
+```text
+The service uses a direct backend HTTP request to OpenAI's Realtime client-secret endpoint through httpx.
+This avoids depending on a specific OpenAI Python client method for this new Realtime endpoint.
+```
+
+Verification completed:
+
+```text
+python -m compileall app
+```
+
+Confirmed route registration:
+
+```text
+/voice/realtime-session ['POST'] RealtimeSessionResponse
+```
+
+Mocked service verification:
+
+```text
+mocked realtime session service verification passed
+returned_client_secret_only=short-lived-test-secret
+```
+
+Verification boundary:
+
+```text
+No real OpenAI request was made during verification.
+The outbound HTTP call was mocked.
+No API key was printed.
+No .env file was opened.
+```
+
 ### 9.4 Add frontend voice API client
 
 Create a frontend function that calls the backend voice session endpoint.

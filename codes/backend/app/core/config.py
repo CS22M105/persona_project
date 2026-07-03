@@ -15,6 +15,13 @@ class Settings(BaseSettings):
     openai_max_output_tokens: int = 180
     openai_reasoning_effort: str = "low"
     openai_text_verbosity: str = "low"
+    openai_realtime_model: str = "gpt-realtime-2"
+    openai_realtime_voice: str = "marin"
+    openai_realtime_client_secret_url: str = (
+        "https://api.openai.com/v1/realtime/client_secrets"
+    )
+    openai_realtime_connect_url: str = "https://api.openai.com/v1/realtime/calls"
+    openai_realtime_request_timeout_seconds: int = 20
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
