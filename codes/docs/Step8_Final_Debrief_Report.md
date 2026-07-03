@@ -665,12 +665,14 @@ Implemented on July 2, 2026:
 
 ```text
 Added an End session button and a Generate report button to the instructor dashboard.
+Refined the workflow so the final report can only be generated after the session is ended.
 ```
 
 Why:
 
 - the instructor needs a visible workflow for final debriefing
 - the report should be generated from the saved session record
+- the report should represent a stable final state, not a still-changing live session
 - the report must stay short for the July 25 demo
 - the dashboard should not require terminal commands or external tools
 
@@ -680,8 +682,37 @@ How:
 - `getSessionReport(sessionId)` calls `GET /sessions/{session_id}/report`
 - `Dashboard.tsx` stores the returned report in local React state
 - the report card renders the report immediately after the instructor clicks Generate report
+- the Generate report button is disabled until the session status is `ended`
+- ending the session clears any stale report already displayed
+- generating the report refreshes persisted transcript and timeline data first
 - changing patient state or resetting the scenario clears the old report so stale report content is not shown
 - instructor cue buttons are disabled after the session record is ended so the final report is based on a stable record
+
+Control flow:
+
+```text
+Instructor runs scenario
+Instructor applies cues and students interact with patient
+Dashboard saves transcript and event timeline through backend services
+Instructor clicks End session
+Backend marks session as ended
+Dashboard disables instructor cue buttons
+Instructor clicks Generate report
+Dashboard refreshes persisted transcript and timeline
+Dashboard calls GET /sessions/{session_id}/report
+Backend returns FinalDebriefReport
+Dashboard displays the report
+```
+
+Safety and product boundary:
+
+```text
+The final report workflow is instructor-triggered.
+The report is not generated automatically during active patient interaction.
+The workflow does not call OpenAI.
+The workflow does not expose API keys.
+The report supports faculty debriefing and does not replace faculty judgment.
+```
 
 Two-page report decision:
 

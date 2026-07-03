@@ -3792,3 +3792,54 @@ It does not generate report content.
 It does not call OpenAI.
 It does not expose API keys.
 ```
+
+## 44. Step 8.7 Generate Report Workflow Refined - July 2, 2026
+
+Goal:
+
+```text
+Make the instructor workflow for ending a session and generating the final report clear and stable.
+```
+
+Changed:
+
+```text
+codes/frontend/src/pages/Dashboard.tsx
+codes/docs/Step8_Final_Debrief_Report.md
+Progress_Report.md
+```
+
+What changed:
+
+- Report generation is now enabled only after the session status is `ended`.
+- The dashboard shows a note telling the instructor to end the session before generating the report.
+- Ending the session clears any stale report currently displayed.
+- Generating the report refreshes persisted transcript and timeline data before requesting the final report.
+- The empty report state now describes the correct workflow: end session, then generate report.
+
+Why:
+
+- A final debrief report should represent a stable completed session.
+- Instructor cues and patient state should not keep changing after the report is generated.
+- The July 25 demo needs a clear instructor workflow that does not require terminal commands.
+- This makes the report feel more like a real product feature rather than a backend test.
+
+How it works:
+
+```text
+Instructor clicks End session
+backend marks the session ended
+dashboard disables further cue buttons
+Generate report becomes available
+dashboard refreshes saved transcript and events
+dashboard calls GET /sessions/{session_id}/report
+dashboard displays FinalDebriefReport
+```
+
+Security note:
+
+```text
+The workflow does not expose API keys.
+The workflow does not call OpenAI.
+The report remains faculty debrief support, not independent grading.
+```

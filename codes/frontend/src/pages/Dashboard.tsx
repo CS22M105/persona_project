@@ -116,6 +116,7 @@ export function Dashboard() {
     setErrorMessage("");
 
     try {
+      setReport(null);
       const endedSession = await endSession(session.session_id);
       setSession(endedSession);
       await refreshPersistedSessionData(endedSession.session_id);
@@ -135,6 +136,7 @@ export function Dashboard() {
     setErrorMessage("");
 
     try {
+      await refreshPersistedSessionData(session.session_id);
       const reportResponse = await getSessionReport(session.session_id);
       setReport(reportResponse);
     } catch {
@@ -147,7 +149,7 @@ export function Dashboard() {
   const isActionRunning = activeAction !== null;
   const isSessionEnded = session?.status === "ended";
   const canEndSession = Boolean(session && session.status !== "ended");
-  const canGenerateReport = Boolean(session);
+  const canGenerateReport = Boolean(session && isSessionEnded);
 
   return (
     <main className="app-shell dashboard-shell">
@@ -241,6 +243,11 @@ export function Dashboard() {
                     : "Generate report"}
                 </button>
               </div>
+              {session && !isSessionEnded ? (
+                <p className="dashboard-note">
+                  End the session before generating the final report.
+                </p>
+              ) : null}
               <div className="cue-grid">
                 {cueButtons.map((cue) => (
                   <button
@@ -299,8 +306,8 @@ export function Dashboard() {
 function ReportEmptyState() {
   return (
     <p className="dashboard-note">
-      Generate a concise two-page debrief report after the scenario. The report uses
-      persisted transcript and timeline records.
+      End the session, then generate the final debrief report from the persisted
+      transcript and timeline.
     </p>
   );
 }
