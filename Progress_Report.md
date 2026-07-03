@@ -3914,3 +3914,65 @@ Result:
 Step 8 Final Debrief Report is verified end to end.
 The feature is ready for manual dashboard testing and demo preparation.
 ```
+
+## 46. Step 9 Voice Interaction Documentation Created - July 3, 2026
+
+Goal:
+
+```text
+Plan secure browser-based voice interaction for the AI patient persona.
+```
+
+Created:
+
+```text
+codes/docs/Step9_Voice_Interaction.md
+```
+
+What the document covers:
+
+- Step 9 goal and product value
+- instructor-cued voice boundary
+- sim-room and control-room audio setup
+- recommended microphone and speaker setup
+- voice architecture
+- secure OpenAI Realtime session pattern
+- current patient state in voice instructions
+- instructor-cued state changes during active voice
+- voice safety controls
+- transcript and event persistence plan
+- security and privacy rules
+- backend and frontend file plan
+- Step 9 substeps
+- acceptance criteria
+- risks and mitigations
+
+Main design decision:
+
+```text
+The permanent OpenAI API key must stay on the backend.
+The frontend should receive only a short-lived realtime session/client secret.
+```
+
+Product boundary:
+
+```text
+The system remains instructor-cued.
+The AI voice patient does not read Laerdal/LLEAP/manikin state directly.
+The instructor updates this app's patient state manually through the dashboard.
+```
+
+Recommended first implementation target:
+
+```text
+secure backend realtime-session endpoint
+frontend voice API client
+simple voice room UI
+browser microphone and speaker connection
+```
+
+Security note:
+
+```text
+No API keys, .env values, or secret files were opened, printed, or modified.
+```
