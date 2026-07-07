@@ -311,6 +311,11 @@ export function VoiceRoom() {
       setPatientState(response.state);
       await syncVoiceInstructions({ force: true });
       appendAutoPatientMessage(response.auto_patient_message);
+      triggerRealtimeCueReaction(
+        cue?.label ?? "Patient condition changed",
+        response.auto_patient_message?.text ?? null,
+        response.state,
+      );
     } catch {
       await refreshPatientState({ syncVoiceInstructions: true });
       setErrorMessage("Instructor cue failed. Make sure the backend is running.");
@@ -350,6 +355,29 @@ export function VoiceRoom() {
           text: autoPatientMessage.text,
         },
       ];
+    });
+  }
+
+  function triggerRealtimeCueReaction(
+    cueLabel: string,
+    patientUtterance: string | null,
+    updatedState: PatientState,
+  ) {
+    if (status !== "ready") {
+      return;
+    }
+
+    if (updatedState.safety.ai_paused || updatedState.safety.instructor_takeover) {
+      return;
+    }
+
+    cancelCurrentRealtimeResponse();
+    sendRealtimeEvent({
+      type: "response.create",
+      response: {
+        modalities: ["audio"],
+        instructions: buildCueReactionInstructions(cueLabel, patientUtterance),
+      },
     });
   }
 
@@ -1087,6 +1115,27 @@ function deepMergePatientState<T extends Record<string, unknown>>(
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+
+function buildCueReactionInstructions(
+  cueLabel: string,
+  patientUtterance: string | null,
+): string {
+  if (patientUtterance?.trim()) {
+    return [
+      `The simulated patient's condition just changed: ${cueLabel}.`,
+      `Speak this patient reaction now, naturally and with the current patient voice: "${patientUtterance.trim()}"`,
+      "Do not mention the instructor, dashboard, cue, simulation, AI, or vital-sign numbers.",
+    ].join(" ");
+  }
+
+  return [
+    `The simulated patient's condition just changed: ${cueLabel}.`,
+    "React immediately as the patient in one short spoken sentence.",
+    "Describe only what you feel in the room.",
+    "Do not mention the instructor, dashboard, cue, simulation, AI, or vital-sign numbers.",
+  ].join(" ");
 }
 
 
