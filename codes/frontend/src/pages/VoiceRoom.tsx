@@ -155,17 +155,12 @@ export function VoiceRoom() {
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const lastInstructionStateUpdatedAtRef = useRef<string | null>(null);
-  const stateHighlightTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     refreshPatientState();
     refreshTextConversation();
 
     return () => {
-      if (stateHighlightTimeoutRef.current) {
-        window.clearTimeout(stateHighlightTimeoutRef.current);
-      }
-
       cleanupVoiceConnection();
     };
   }, []);
@@ -325,19 +320,10 @@ export function VoiceRoom() {
   }
 
   function showChangedStateHighlights(stateKeys: string[]) {
-    if (stateHighlightTimeoutRef.current) {
-      window.clearTimeout(stateHighlightTimeoutRef.current);
-    }
-
     setHighlightedStateKeys([]);
     window.requestAnimationFrame(() => {
       setHighlightedStateKeys(stateKeys);
     });
-
-    stateHighlightTimeoutRef.current = window.setTimeout(() => {
-      setHighlightedStateKeys([]);
-      stateHighlightTimeoutRef.current = null;
-    }, 5200);
   }
 
   function appendAutoPatientMessage(
