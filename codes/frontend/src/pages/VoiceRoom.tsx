@@ -816,8 +816,15 @@ export function VoiceRoom() {
                 </button>
               ))}
             </div>
-            <div className="voice-instructor-chat" aria-labelledby="voice-chat-title">
-              <h3 id="voice-chat-title">Patient Conversation</h3>
+          </section>
+
+          <section
+            className="dashboard-card voice-chat-card"
+            id="voice-chat-section"
+            aria-labelledby="voice-chat-title"
+          >
+            <h2 id="voice-chat-title">Patient Conversation</h2>
+            <div className="voice-instructor-chat">
               <Chat
                 embedded
                 onMessageSent={refreshTextConversation}
