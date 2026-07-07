@@ -664,9 +664,7 @@ export function VoiceRoom() {
       <section className="voice-page" aria-labelledby="voice-title">
         <nav className="voice-nav" aria-label="Voice room navigation">
           <div className="voice-nav-brand">
-            <p className="eyebrow">Student voice room</p>
             <h1 id="voice-title">AI Patient Voice: COPD/SOB</h1>
-            <p>Sim-room interface for speaking</p>
           </div>
           <div className="voice-nav-actions">
             <a className="header-link" href="/">
@@ -848,8 +846,8 @@ export function VoiceRoom() {
                 type="button"
               >
                 {status === "connecting" || status === "requesting_microphone"
-                  ? "Connecting..."
-                  : "Connect voice"}
+                  ? "Connecting"
+                  : "Connect"}
               </button>
               <button
                 className="control-button control-button-secondary"
@@ -865,7 +863,7 @@ export function VoiceRoom() {
                 onClick={handleToggleMute}
                 type="button"
               >
-                {isMuted ? "Unmute mic" : "Mute mic"}
+                {isMuted ? "Unmute" : "Mute"}
               </button>
               <button
                 className="control-button"
@@ -873,7 +871,7 @@ export function VoiceRoom() {
                 onClick={() => refreshPatientState({ syncVoiceInstructions: true })}
                 type="button"
               >
-                Refresh state
+                Refresh
               </button>
               <button
                 className="control-button"
@@ -897,7 +895,7 @@ export function VoiceRoom() {
                 onClick={handleStartTakeover}
                 type="button"
               >
-                Start takeover
+                Takeover
               </button>
               <button
                 className="control-button"
@@ -905,7 +903,7 @@ export function VoiceRoom() {
                 onClick={handleEndTakeover}
                 type="button"
               >
-                End takeover
+                Release
               </button>
             </div>
 
