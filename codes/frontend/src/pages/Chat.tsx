@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { sendChatMessage } from "../api/chat";
 import { AutoPatientMessage } from "../api/state";
@@ -36,6 +36,17 @@ export function Chat({
   const [messageInput, setMessageInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const conversationRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const conversationElement = conversationRef.current;
+
+    if (!conversationElement) {
+      return;
+    }
+
+    conversationElement.scrollTop = conversationElement.scrollHeight;
+  }, [messages, isSending]);
 
   useEffect(() => {
     if (!persistedMessages) {
@@ -126,7 +137,7 @@ export function Chat({
           <span className="scenario-badge">{statusLabel}</span>
         </header>
 
-        <div className="conversation" aria-live="polite">
+        <div className="conversation" aria-live="polite" ref={conversationRef}>
           {messages.map((message) => (
             <article
               className={`message message-${message.speaker}`}
