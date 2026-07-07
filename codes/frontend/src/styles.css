@@ -636,9 +636,35 @@ h1 {
 
 .voice-instructor-card .control-button,
 .voice-control-card .control-button {
+  align-items: center;
+  display: inline-flex;
   font-size: 0.86rem;
+  gap: 6px;
+  justify-content: center;
+  line-height: 1.1;
+  max-width: 100%;
+  min-width: 0;
   min-height: 34px;
+  overflow: hidden;
   padding: 6px 9px;
+  white-space: nowrap;
+}
+
+.button-spinner {
+  animation: spin 700ms linear infinite;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 999px;
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 0.75rem;
+  width: 0.75rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .voice-state-card {
@@ -674,6 +700,28 @@ h1 {
   border-color: #8aa0b8;
   box-shadow: 0 8px 18px rgb(39 58 86 / 12%);
   transform: translateY(-1px);
+}
+
+.voice-state-item-highlighted {
+  animation: state-highlight 1200ms ease-in-out 2;
+  border-color: #1f7a5a;
+  box-shadow:
+    0 0 0 3px rgb(47 111 99 / 18%),
+    0 8px 18px rgb(39 58 86 / 14%);
+}
+
+@keyframes state-highlight {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
 }
 
 .voice-state-item-status {

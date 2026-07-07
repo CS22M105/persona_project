@@ -45,12 +45,91 @@ type RealtimeTranscriptEvent = {
 };
 
 const cueButtons = [
-  { cueId: "spo2_dropped", label: "SpO2 dropped" },
-  { cueId: "hr_increased", label: "HR increased" },
-  { cueId: "breathing_worsened", label: "Breathing worsened" },
-  { cueId: "oxygen_applied", label: "Oxygen applied" },
-  { cueId: "bronchodilator_given", label: "Bronchodilator given" },
-  { cueId: "patient_improving", label: "Patient improving" },
+  {
+    cueId: "spo2_dropped",
+    label: "SpO2 dropped",
+    stateUpdates: {
+      vitals: { spo2: 88 },
+      symptoms: { breathing_effort: "severe" },
+      emotion: { anxiety: "high" },
+      voice_behavior: {
+        speech_pattern: "very short phrases",
+        tone: "more anxious and breathless",
+      },
+    },
+  },
+  {
+    cueId: "hr_increased",
+    label: "HR increased",
+    stateUpdates: {
+      vitals: { heart_rate: 128 },
+      emotion: { anxiety: "high" },
+    },
+  },
+  {
+    cueId: "breathing_worsened",
+    label: "Breathing worsened",
+    stateUpdates: {
+      stage: "worsening",
+      symptoms: {
+        breathing_effort: "severe",
+        chest_tightness: "moderate",
+      },
+      voice_behavior: {
+        speech_pattern: "very short phrases",
+        tone: "fearful and breathless",
+      },
+    },
+  },
+  {
+    cueId: "oxygen_applied",
+    label: "Oxygen applied",
+    stateUpdates: {
+      interventions: { oxygen_applied: true },
+    },
+  },
+  {
+    cueId: "bronchodilator_given",
+    label: "Bronchodilator given",
+    stateUpdates: {
+      interventions: { bronchodilator_given: true },
+    },
+  },
+  {
+    cueId: "patient_improving",
+    label: "Patient improving",
+    stateUpdates: {
+      stage: "partial_improvement",
+      vitals: {
+        heart_rate: 104,
+        spo2: 93,
+        respiratory_rate: 22,
+      },
+      symptoms: { breathing_effort: "mild" },
+      emotion: { anxiety: "mild" },
+      voice_behavior: {
+        speech_pattern: "short but more comfortable phrases",
+        tone: "calmer",
+      },
+    },
+  },
+];
+
+const allStateMetricKeys = [
+  "status",
+  "stage",
+  "heart_rate",
+  "spo2",
+  "respiratory_rate",
+  "blood_pressure",
+  "breathing_effort",
+  "chest_tightness",
+  "anxiety",
+  "fatigue",
+  "speech_pattern",
+  "tone",
+  "oxygen_applied",
+  "bronchodilator_given",
 ];
 
 
@@ -62,6 +141,7 @@ export function VoiceRoom() {
   const [activeInstructorAction, setActiveInstructorAction] = useState<string | null>(
     null,
   );
+  const [highlightedStateKeys, setHighlightedStateKeys] = useState<string[]>([]);
   const [lastInstructionSyncAt, setLastInstructionSyncAt] = useState<string | null>(null);
   const [textConversationMessages, setTextConversationMessages] = useState<
     ChatMessage[]
@@ -75,12 +155,17 @@ export function VoiceRoom() {
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
   const lastInstructionStateUpdatedAtRef = useRef<string | null>(null);
+  const stateHighlightTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     refreshPatientState();
     refreshTextConversation();
 
     return () => {
+      if (stateHighlightTimeoutRef.current) {
+        window.clearTimeout(stateHighlightTimeoutRef.current);
+      }
+
       cleanupVoiceConnection();
     };
   }, []);
@@ -198,6 +283,7 @@ export function VoiceRoom() {
   async function handleResetState() {
     setActiveInstructorAction("reset");
     setErrorMessage("");
+    showChangedStateHighlights(allStateMetricKeys);
 
     try {
       const response = await resetPatientState();
@@ -214,19 +300,67 @@ export function VoiceRoom() {
   }
 
   async function handleCueClick(cueId: string) {
+    const cue = cueButtons.find((button) => button.cueId === cueId);
+
     setActiveInstructorAction(cueId);
     setErrorMessage("");
+    showChangedStateHighlights(cue ? getChangedStateKeys(cue.stateUpdates) : []);
+    setPatientState((currentState) =>
+      currentState && cue
+        ? applyOptimisticStateUpdates(currentState, cue.stateUpdates)
+        : currentState,
+    );
 
     try {
       const response = await applyInstructorCue(cueId);
       setPatientState(response.state);
       await syncVoiceInstructions({ force: true });
-      await refreshTextConversation();
+      appendAutoPatientMessage(response.auto_patient_message);
     } catch {
+      await refreshPatientState({ syncVoiceInstructions: true });
       setErrorMessage("Instructor cue failed. Make sure the backend is running.");
     } finally {
       setActiveInstructorAction(null);
     }
+  }
+
+  function showChangedStateHighlights(stateKeys: string[]) {
+    if (stateHighlightTimeoutRef.current) {
+      window.clearTimeout(stateHighlightTimeoutRef.current);
+    }
+
+    setHighlightedStateKeys(stateKeys);
+    stateHighlightTimeoutRef.current = window.setTimeout(() => {
+      setHighlightedStateKeys([]);
+      stateHighlightTimeoutRef.current = null;
+    }, 3200);
+  }
+
+  function appendAutoPatientMessage(
+    autoPatientMessage: { message_id: string; text: string } | null,
+  ) {
+    if (!autoPatientMessage) {
+      return;
+    }
+
+    setTextConversationMessages((messages) => {
+      const messageAlreadyExists = messages.some(
+        (message) => message.id === autoPatientMessage.message_id,
+      );
+
+      if (messageAlreadyExists) {
+        return messages;
+      }
+
+      return [
+        ...messages,
+        {
+          id: autoPatientMessage.message_id,
+          speaker: "patient",
+          text: autoPatientMessage.text,
+        },
+      ];
+    });
   }
 
   async function handlePauseAi() {
@@ -506,7 +640,6 @@ export function VoiceRoom() {
   const aiIsPaused = Boolean(patientState?.safety.ai_paused);
   const takeoverIsActive = Boolean(patientState?.safety.instructor_takeover);
   const statusLabel = formatStatus(status);
-  const isInstructorActionRunning = activeInstructorAction !== null;
 
   return (
     <main className="app-shell voice-shell">
@@ -539,75 +672,89 @@ export function VoiceRoom() {
             {patientState ? (
               <div className="voice-state-grid">
                 <StateMetric
+                  highlighted={highlightedStateKeys.includes("status")}
                   label="Status"
                   tone="status"
                   value={patientState.status}
                 />
                 <StateMetric
+                  highlighted={highlightedStateKeys.includes("stage")}
                   label="Stage"
                   tone="status"
                   value={patientState.stage}
                 />
                 <StateMetric
                   emphasized
+                  highlighted={highlightedStateKeys.includes("heart_rate")}
                   label="HR"
                   tone="vital"
                   value={`${patientState.vitals.heart_rate} bpm`}
                 />
                 <StateMetric
                   emphasized
+                  highlighted={highlightedStateKeys.includes("spo2")}
                   label="SpO2"
                   tone="vital"
                   value={`${patientState.vitals.spo2}%`}
                 />
                 <StateMetric
                   emphasized
+                  highlighted={highlightedStateKeys.includes("respiratory_rate")}
                   label="RR"
                   tone="vital"
                   value={`${patientState.vitals.respiratory_rate}/min`}
                 />
                 <StateMetric
+                  highlighted={highlightedStateKeys.includes("blood_pressure")}
                   label="BP"
                   tone="vital"
                   value={patientState.vitals.blood_pressure}
                 />
                 <StateMetric
                   emphasized
+                  highlighted={highlightedStateKeys.includes("breathing_effort")}
                   label="Breathing effort"
                   tone="symptom"
                   value={patientState.symptoms.breathing_effort}
                 />
                 <StateMetric
+                  highlighted={highlightedStateKeys.includes("chest_tightness")}
                   label="Chest tightness"
                   tone="symptom"
                   value={patientState.symptoms.chest_tightness}
                 />
                 <StateMetric
+                  highlighted={highlightedStateKeys.includes("anxiety")}
                   label="Anxiety"
                   tone="emotion"
                   value={patientState.emotion.anxiety}
                 />
                 <StateMetric
+                  highlighted={highlightedStateKeys.includes("fatigue")}
                   label="Fatigue"
                   tone="emotion"
                   value={patientState.emotion.fatigue}
                 />
                 <StateMetric
+                  highlighted={highlightedStateKeys.includes("speech_pattern")}
                   label="Speech"
                   tone="voice"
                   value={patientState.voice_behavior.speech_pattern}
                 />
                 <StateMetric
+                  highlighted={highlightedStateKeys.includes("tone")}
                   label="Tone"
                   tone="voice"
                   value={patientState.voice_behavior.tone}
                 />
                 <StateMetric
+                  highlighted={highlightedStateKeys.includes("oxygen_applied")}
                   label="Oxygen"
                   tone="intervention"
                   value={formatBoolean(patientState.interventions.oxygen_applied)}
                 />
                 <StateMetric
+                  highlighted={highlightedStateKeys.includes("bronchodilator_given")}
                   label="Bronchodilator"
                   tone="intervention"
                   value={formatBoolean(patientState.interventions.bronchodilator_given)}
@@ -626,28 +773,31 @@ export function VoiceRoom() {
             <h2 id="voice-instructor-title">Instructor Controls</h2>
             <button
               className="control-button control-button-secondary"
-              disabled={isInstructorActionRunning}
+              disabled={activeInstructorAction === "reset"}
               onClick={handleResetState}
               type="button"
             >
-              {activeInstructorAction === "reset" ? "Resetting..." : "Reset patient state"}
+              Reset patient state
+              {activeInstructorAction === "reset" ? (
+                <span className="button-spinner" aria-hidden="true" />
+              ) : null}
             </button>
             <div className="cue-grid">
               {cueButtons.map((cue) => (
                 <button
                   className="control-button"
-                  disabled={isInstructorActionRunning}
+                  disabled={activeInstructorAction === cue.cueId}
                   key={cue.cueId}
                   onClick={() => handleCueClick(cue.cueId)}
                   type="button"
                 >
-                  {activeInstructorAction === cue.cueId ? "Updating..." : cue.label}
+                  {cue.label}
+                  {activeInstructorAction === cue.cueId ? (
+                    <span className="button-spinner" aria-hidden="true" />
+                  ) : null}
                 </button>
               ))}
             </div>
-            {activeInstructorAction ? (
-              <p className="dashboard-note">Updating patient state...</p>
-            ) : null}
             <div className="voice-instructor-chat" aria-labelledby="voice-chat-title">
               <h3 id="voice-chat-title">Patient Conversation</h3>
               <Chat
@@ -836,11 +986,13 @@ function VoiceDetail({ label, value }: { label: string; value: string }) {
 
 function StateMetric({
   emphasized = false,
+  highlighted = false,
   label,
   tone = "default",
   value,
 }: {
   emphasized?: boolean;
+  highlighted?: boolean;
   label: string;
   tone?: "default" | "emotion" | "intervention" | "status" | "symptom" | "vital" | "voice";
   value: string;
@@ -849,6 +1001,7 @@ function StateMetric({
     <div
       className={`voice-state-item voice-state-item-${tone}${
         emphasized ? " voice-state-item-emphasized" : ""
+      }${highlighted ? " voice-state-item-highlighted" : ""
       }`}
     >
       <span className="voice-state-label">{label}</span>
@@ -906,6 +1059,61 @@ function isChatSpeaker(
   speaker: TranscriptSpeaker,
 ): speaker is "student" | "patient" {
   return speaker === "student" || speaker === "patient";
+}
+
+
+function applyOptimisticStateUpdates(
+  patientState: PatientState,
+  updates: Record<string, unknown>,
+): PatientState {
+  return {
+    ...deepMergePatientState(patientState, updates),
+    last_updated_at: new Date().toISOString(),
+  };
+}
+
+
+function deepMergePatientState<T extends Record<string, unknown>>(
+  target: T,
+  updates: Record<string, unknown>,
+): T {
+  const merged = { ...target } as Record<string, unknown>;
+
+  Object.entries(updates).forEach(([key, value]) => {
+    const currentValue = merged[key];
+
+    if (isPlainObject(currentValue) && isPlainObject(value)) {
+      merged[key] = deepMergePatientState(currentValue, value);
+      return;
+    }
+
+    merged[key] = value;
+  });
+
+  return merged as T;
+}
+
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+
+function getChangedStateKeys(updates: Record<string, unknown>): string[] {
+  const changedKeys = new Set<string>();
+
+  Object.entries(updates).forEach(([key, value]) => {
+    if (!isPlainObject(value)) {
+      changedKeys.add(key);
+      return;
+    }
+
+    Object.keys(value).forEach((nestedKey) => {
+      changedKeys.add(nestedKey);
+    });
+  });
+
+  return Array.from(changedKeys);
 }
 
 

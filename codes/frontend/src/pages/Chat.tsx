@@ -42,7 +42,16 @@ export function Chat({
       return;
     }
 
-    setMessages(persistedMessages.length > 0 ? persistedMessages : initialMessages);
+    setMessages((currentMessages) => {
+      const nextMessages =
+        persistedMessages.length > 0 ? persistedMessages : initialMessages;
+
+      if (messagesAreEqual(currentMessages, nextMessages)) {
+        return currentMessages;
+      }
+
+      return nextMessages;
+    });
   }, [persistedMessages]);
 
   useEffect(() => {
@@ -168,4 +177,23 @@ export function Chat({
       {chatPanel}
     </main>
   );
+}
+
+function messagesAreEqual(
+  currentMessages: ChatMessage[],
+  nextMessages: ChatMessage[],
+): boolean {
+  if (currentMessages.length !== nextMessages.length) {
+    return false;
+  }
+
+  return currentMessages.every((message, index) => {
+    const nextMessage = nextMessages[index];
+
+    return (
+      message.id === nextMessage.id &&
+      message.speaker === nextMessage.speaker &&
+      message.text === nextMessage.text
+    );
+  });
 }
