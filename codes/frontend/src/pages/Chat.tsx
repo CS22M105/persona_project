@@ -140,18 +140,18 @@ export function Chat({
         <div className="conversation" aria-live="polite" ref={conversationRef}>
           {messages.map((message) => (
             <article
+              aria-label={message.speaker === "patient" ? "Patient message" : "Student message"}
               className={`message message-${message.speaker}`}
               key={message.id}
             >
-              <p className="message-speaker">
-                {message.speaker === "patient" ? "Patient" : "Student"}
-              </p>
               <p className="message-text">{message.text}</p>
             </article>
           ))}
           {isSending ? (
-            <article className="message message-patient message-pending">
-              <p className="message-speaker">Patient</p>
+            <article
+              aria-label="Patient response pending"
+              className="message message-patient message-pending"
+            >
               <p className="message-text">...</p>
             </article>
           ) : null}

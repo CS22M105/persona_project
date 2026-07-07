@@ -146,13 +146,6 @@ h1 {
   font-style: italic;
 }
 
-.message-speaker {
-  font-size: 0.74rem;
-  font-weight: 700;
-  margin: 0 0 6px;
-  text-transform: uppercase;
-}
-
 .message-text {
   line-height: 1.45;
   margin: 0;
