@@ -329,11 +329,15 @@ export function VoiceRoom() {
       window.clearTimeout(stateHighlightTimeoutRef.current);
     }
 
-    setHighlightedStateKeys(stateKeys);
+    setHighlightedStateKeys([]);
+    window.requestAnimationFrame(() => {
+      setHighlightedStateKeys(stateKeys);
+    });
+
     stateHighlightTimeoutRef.current = window.setTimeout(() => {
       setHighlightedStateKeys([]);
       stateHighlightTimeoutRef.current = null;
-    }, 3200);
+    }, 5200);
   }
 
   function appendAutoPatientMessage(
@@ -1006,6 +1010,7 @@ function StateMetric({
     >
       <span className="voice-state-label">{label}</span>
       <span className="voice-state-value">{value}</span>
+      {highlighted ? <span className="voice-state-updated-badge">Updated</span> : null}
     </div>
   );
 }
