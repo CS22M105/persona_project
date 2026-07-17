@@ -122,9 +122,6 @@ export function PersonaPage() {
             <span className={`connection-pill connection-pill-${backendStatus}`}>
               {formatBackendStatus(backendStatus)}
             </span>
-            <a className="persona-start-button" href="/voice">
-              Start Voice Room
-            </a>
           </div>
         </header>
 
@@ -140,61 +137,75 @@ export function PersonaPage() {
               <div>
                 <p className="eyebrow">Patient summary</p>
                 <h2 id="patient-summary-title">{patientName}</h2>
-                <dl className="persona-fact-list">
-                  <PersonaFact label="Age" value={String(patientAge)} />
-                  <PersonaFact label="Gender" value={formatGender(patientGender)} />
-                  <PersonaFact label="Chief complaint" value="Shortness of breath" />
-                  <PersonaFact label="Scenario" value="COPD exacerbation" />
-                  <PersonaFact label="Affect" value="Anxious, tired, breathless" />
-                </dl>
-                <form className="persona-setting-editor" onSubmit={handleAgeSave}>
-                  <label htmlFor="patient-age">Adjust age</label>
-                  <div className="persona-setting-row">
-                    <input
-                      id="patient-age"
-                      inputMode="numeric"
-                      max="110"
-                      min="18"
-                      onChange={(event) => setAgeInput(event.target.value)}
-                      type="number"
-                      value={ageInput}
-                    />
-                    <button disabled={isSavingAge} type="submit">
-                      {isSavingAge ? "Saving..." : "Save"}
-                    </button>
-                  </div>
-                  {ageStatusMessage ? (
-                    <p className="persona-setting-status">{ageStatusMessage}</p>
-                  ) : null}
-                </form>
-                <form className="persona-setting-editor" onSubmit={handleGenderSave}>
-                  <label htmlFor="patient-gender">Adjust gender</label>
-                  <div className="persona-setting-row">
-                    <select
-                      id="patient-gender"
-                      onChange={(event) =>
-                        setGenderInput(event.target.value as PatientGender)
-                      }
-                      value={genderInput}
+                <div className="persona-summary-layout">
+                  <dl className="persona-fact-list">
+                    <PersonaFact label="Age" value={String(patientAge)} />
+                    <PersonaFact label="Gender" value={formatGender(patientGender)} />
+                    <PersonaFact label="Chief complaint" value="Shortness of breath" />
+                    <PersonaFact label="Scenario" value="COPD exacerbation" />
+                    <PersonaFact label="Affect" value="Anxious, tired, breathless" />
+                  </dl>
+                  <div className="persona-settings-grid">
+                    <form className="persona-setting-editor" onSubmit={handleAgeSave}>
+                      <label htmlFor="patient-age">Adjust age</label>
+                      <div className="persona-setting-row">
+                        <input
+                          id="patient-age"
+                          inputMode="numeric"
+                          max="110"
+                          min="18"
+                          onChange={(event) => setAgeInput(event.target.value)}
+                          type="number"
+                          value={ageInput}
+                        />
+                        <button disabled={isSavingAge} type="submit">
+                          {isSavingAge ? "Saving..." : "Save"}
+                        </button>
+                      </div>
+                      {ageStatusMessage ? (
+                        <p className="persona-setting-status">{ageStatusMessage}</p>
+                      ) : null}
+                    </form>
+                    <form
+                      className="persona-setting-editor"
+                      onSubmit={handleGenderSave}
                     >
-                      <option value="female">Female</option>
-                      <option value="male">Male</option>
-                      <option value="nonbinary">Nonbinary</option>
-                    </select>
-                    <button disabled={isSavingGender} type="submit">
-                      {isSavingGender ? "Saving..." : "Save"}
-                    </button>
+                      <label htmlFor="patient-gender">Adjust gender</label>
+                      <div className="persona-setting-row">
+                        <select
+                          id="patient-gender"
+                          onChange={(event) =>
+                            setGenderInput(event.target.value as PatientGender)
+                          }
+                          value={genderInput}
+                        >
+                          <option value="female">Female</option>
+                          <option value="male">Male</option>
+                          <option value="nonbinary">Nonbinary</option>
+                        </select>
+                        <button disabled={isSavingGender} type="submit">
+                          {isSavingGender ? "Saving..." : "Save"}
+                        </button>
+                      </div>
+                      {genderStatusMessage ? (
+                        <p className="persona-setting-status">
+                          {genderStatusMessage}
+                        </p>
+                      ) : null}
+                    </form>
                   </div>
-                  {genderStatusMessage ? (
-                    <p className="persona-setting-status">{genderStatusMessage}</p>
-                  ) : null}
-                </form>
+                </div>
               </div>
             </section>
 
             <section className="persona-brief-card" aria-labelledby="condition-title">
               <p className="eyebrow">Starting condition</p>
-              <h2 id="condition-title">Baseline state</h2>
+              <div className="condition-card-header">
+                <h2 id="condition-title">Baseline state</h2>
+                <a className="persona-start-button" href="/voice">
+                  Start Voice Room
+                </a>
+              </div>
               <div className="condition-grid">
                 <ConditionMetric label="HR" value="104" unit="bpm" tone="heart" />
                 <ConditionMetric label="SpO2" value="91" unit="%" tone="oxygen" />
@@ -226,12 +237,6 @@ export function PersonaPage() {
             </section>
           </div>
 
-          <footer className="persona-page-footer">
-            <p>Use the voice room to run the live patient interaction.</p>
-            <a className="persona-start-button" href="/voice">
-              Start Voice Room
-            </a>
-          </footer>
         </div>
       </section>
     </main>
@@ -261,8 +266,10 @@ function ConditionMetric({
   return (
     <div className={`condition-metric condition-metric-${tone}`}>
       <span className="condition-label">{label}</span>
-      <strong>{value}</strong>
-      {unit ? <span className="condition-unit">{unit}</span> : null}
+      <div className="condition-value">
+        <strong>{value}</strong>
+        {unit ? <span className="condition-unit">{unit}</span> : null}
+      </div>
     </div>
   );
 }

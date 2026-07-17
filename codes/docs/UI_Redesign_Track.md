@@ -247,6 +247,94 @@ event timeline should live inside the voice room, close to instructor controls.
 - Gender is also in-memory for this prototype and resets when the backend server
   restarts. Production should persist persona settings per scenario/session.
 
+## 2026-07-17 - Step UI-5: Persona Page Layout Polish
+
+### What Changed
+
+- Moved the age and gender edit controls beside the patient summary instead of
+  stacking them below the summary facts.
+- Kept age and gender as compact setting cards so they are visible without
+  overloading the page.
+- Updated baseline state tiles so the metric label sits at the top left and the
+  value sits at the bottom right.
+- Changed the Start Voice Room button color from blue/green-leaning styling to
+  a purple-blue action color.
+
+### Why It Changed
+
+- The patient summary should feel like one compact briefing area.
+- Age and gender are important setup controls, but they should not push the page
+  vertically.
+- Baseline vitals are easier to scan when labels and values have consistent
+  positions.
+- The Start Voice Room button needed to avoid green so it does not visually
+  conflict with health/status indicators.
+
+### How It Changed
+
+- Added a `persona-summary-layout` grid inside the Patient Summary card.
+- Added a `persona-settings-grid` for the age and gender editor cards.
+- Wrapped baseline metric values in a `condition-value` container for better
+  bottom-right alignment.
+- Updated responsive CSS so the summary and setting cards stack on smaller
+  screens.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Added summary/settings layout wrappers.
+  - Wrapped baseline metric value and unit together.
+
+- `codes/frontend/src/styles.css`
+  - Added side-by-side summary/settings layout.
+  - Adjusted setting-card layout.
+  - Adjusted baseline state tile alignment.
+  - Updated Start Voice Room button color.
+
+## 2026-07-17 - Step UI-5: Broader Persona Page Cards
+
+### What Changed
+
+- Made the persona page content wider.
+- Reduced card padding and vertical gaps so the briefing is easier to see at
+  once on a desktop screen.
+- Moved the only Start Voice Room button into the Starting Condition card.
+- Removed the duplicate Start Voice Room button from the top bar.
+- Removed the footer action area from the persona page.
+- Made the Patient Summary card wider so age, gender, and key persona facts are
+  easier to read.
+
+### Why It Changed
+
+- The persona page is a pre-session briefing page, so the instructor should be
+  able to scan it quickly without scrolling.
+- The Start Voice Room action belongs near the baseline patient state because
+  that is the final check before entering the live room.
+- Duplicate primary actions can make the page feel busier than necessary.
+
+### How It Changed
+
+- Adjusted the persona page grid from a narrow centered layout to a wider
+  12-column layout.
+- Let Patient Summary span more columns and tightened the Starting Condition
+  card.
+- Added a compact header inside the Starting Condition card for the Start Voice
+  Room action.
+- Removed unused footer JSX and footer CSS.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Removed Start Voice Room from the top bar.
+  - Added Start Voice Room inside the Starting Condition card.
+  - Removed the bottom footer action.
+
+- `codes/frontend/src/styles.css`
+  - Increased persona content width.
+  - Reduced persona card spacing.
+  - Added Starting Condition header layout.
+  - Removed obsolete persona footer styles.
+
 ## 2026-07-17 - Step UI-3: Edge-Aligned Navigation Bars
 
 ### What Changed
