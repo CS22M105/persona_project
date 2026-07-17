@@ -1,0 +1,64 @@
+# UI Redesign Track
+
+This document records user-facing redesign changes so each page update stays easy
+to understand and review.
+
+## 2026-07-17 - Step UI-1: Dashboard Persona Selection
+
+### What Changed
+
+- Redesigned the current dashboard into a simple persona-selection page.
+- Added a clinical product-style top bar with the app name, backend connection
+  status, and a settings button placeholder.
+- Added four compact persona cards:
+  - COPD / Shortness of Breath
+  - Post-op Pain
+  - Sepsis Concern
+  - Chest Pain
+- Marked COPD / Shortness of Breath as the available persona for the current
+  build.
+- Kept the other persona cards visible as coming-soon placeholders so the product
+  direction is clear without adding unfinished functionality.
+
+### Why It Changed
+
+- The dashboard should help instructors choose a patient persona.
+- Live session details such as event timeline, transcript, report generation, and
+  state controls belong in the live session/voice room, not on the selection
+  dashboard.
+- Loading the dashboard should not automatically start a simulation session or
+  create session records.
+- A clean selection dashboard supports future scaling to multiple personas.
+
+### How It Changed
+
+- Replaced the dashboard's session/report-heavy logic with a lightweight
+  persona-card data model in the frontend.
+- Reused the backend health check only for the connection badge.
+- Added visual hierarchy with a top bar, short hero section, scenario chips, and
+  a primary action on the active persona.
+- Added responsive CSS so the persona grid changes from four columns to two
+  columns to one column depending on screen width.
+
+### Files Changed
+
+- `codes/frontend/src/pages/Dashboard.tsx`
+  - Removed automatic session start, event loading, and report controls from the
+    dashboard page.
+  - Added static persona card data for the dashboard selection view.
+  - Added backend connection status using the existing health endpoint.
+  - Linked the currently available COPD/SOB persona action to the existing voice
+    room route until the separate persona page is created.
+
+- `codes/frontend/src/styles.css`
+  - Added dashboard top bar styles.
+  - Added connection pill styles.
+  - Added persona grid and persona card styles.
+  - Added scenario chip and action button styles.
+  - Added responsive layout rules for tablet and mobile screens.
+
+### Next Recommended UI Step
+
+Create the persona-specific page for COPD/SOB. That page should sit between the
+dashboard and the voice room, showing a concise patient briefing and a Start
+Voice Room button.

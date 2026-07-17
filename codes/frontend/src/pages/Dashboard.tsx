@@ -1,399 +1,154 @@
 import { useEffect, useState } from "react";
 
-import { getPatientState, PatientState } from "../api/state";
-import {
-  endSession,
-  FinalDebriefReport,
-  getSessionEvents,
-  getSessionReport,
-  SessionResponse,
-  startSession,
-  TimelineEventResponse,
-} from "../api/sessions";
+import { getHealth } from "../api/client";
+
+type BackendStatus = "checking" | "connected" | "unavailable";
+
+type PersonaCard = {
+  id: string;
+  name: string;
+  scenarioType: string;
+  summary: string;
+  difficulty: "Beginner" | "Intermediate" | "Advanced";
+  duration: string;
+  isAvailable: boolean;
+};
+
+const personas: PersonaCard[] = [
+  {
+    id: "copd-sob",
+    name: "COPD / Shortness of Breath",
+    scenarioType: "Respiratory distress scenario",
+    summary: "Adult patient with worsening dyspnea, anxiety, and low oxygen saturation.",
+    difficulty: "Beginner",
+    duration: "10-15 min",
+    isAvailable: true,
+  },
+  {
+    id: "post-op-pain",
+    name: "Post-op Pain",
+    scenarioType: "Post-operative assessment",
+    summary: "Pain reassessment and communication after a surgical procedure.",
+    difficulty: "Intermediate",
+    duration: "10-15 min",
+    isAvailable: false,
+  },
+  {
+    id: "sepsis-concern",
+    name: "Sepsis Concern",
+    scenarioType: "Early recognition scenario",
+    summary: "Focused escalation practice for infection-related deterioration.",
+    difficulty: "Intermediate",
+    duration: "15-20 min",
+    isAvailable: false,
+  },
+  {
+    id: "chest-pain",
+    name: "Chest Pain",
+    scenarioType: "Cardiac assessment scenario",
+    summary: "Assessment and communication for acute chest discomfort.",
+    difficulty: "Advanced",
+    duration: "15-20 min",
+    isAvailable: false,
+  },
+];
 
 export function Dashboard() {
-  const [patientState, setPatientState] = useState<PatientState | null>(null);
-  const [session, setSession] = useState<SessionResponse | null>(null);
-  const [events, setEvents] = useState<TimelineEventResponse[]>([]);
-  const [report, setReport] = useState<FinalDebriefReport | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeAction, setActiveAction] = useState<string | null>(null);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [backendStatus, setBackendStatus] = useState<BackendStatus>("checking");
 
   useEffect(() => {
-    async function loadDashboardData() {
-      try {
-        const stateResponse = await getPatientState();
-        const sessionResponse = await startSession(stateResponse.state.scenario_id);
-
-        setPatientState(stateResponse.state);
-        setSession(sessionResponse);
-        await refreshPersistedSessionData(sessionResponse.session_id);
-        setErrorMessage("");
-      } catch {
-        setErrorMessage("Dashboard data failed to load. Make sure the backend is running.");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadDashboardData();
+    getHealth()
+      .then(() => setBackendStatus("connected"))
+      .catch(() => setBackendStatus("unavailable"));
   }, []);
-
-  async function refreshPersistedSessionData(sessionId = session?.session_id) {
-    if (!sessionId) {
-      return;
-    }
-
-    const eventsResponse = await getSessionEvents(sessionId);
-    setEvents(eventsResponse.events);
-  }
-
-  async function handleEndSession() {
-    if (!session) {
-      return;
-    }
-
-    setActiveAction("end-session");
-    setErrorMessage("");
-
-    try {
-      setReport(null);
-      const endedSession = await endSession(session.session_id);
-      setSession(endedSession);
-      await refreshPersistedSessionData(endedSession.session_id);
-    } catch {
-      setErrorMessage("Session failed to end. Make sure the backend is running.");
-    } finally {
-      setActiveAction(null);
-    }
-  }
-
-  async function handleGenerateReport() {
-    if (!session) {
-      return;
-    }
-
-    setActiveAction("generate-report");
-    setErrorMessage("");
-
-    try {
-      await refreshPersistedSessionData(session.session_id);
-      const reportResponse = await getSessionReport(session.session_id);
-      setReport(reportResponse);
-    } catch {
-      setErrorMessage("Report failed to generate. Make sure the backend is running.");
-    } finally {
-      setActiveAction(null);
-    }
-  }
-
-  const isActionRunning = activeAction !== null;
-  const isSessionEnded = session?.status === "ended";
-  const canEndSession = Boolean(session && session.status !== "ended");
-  const canGenerateReport = Boolean(session && isSessionEnded);
 
   return (
     <main className="app-shell dashboard-shell">
       <section className="dashboard-page" aria-labelledby="dashboard-title">
-        <nav className="voice-nav dashboard-nav" aria-label="Instructor dashboard navigation">
-          <div className="voice-nav-brand">
-            <h1 id="dashboard-title">Dashboard</h1>
-            <p>Persona selection and debrief review</p>
+        <header className="dashboard-topbar">
+          <a className="dashboard-brand" href="/" aria-label="AI Patient Voice dashboard">
+            AI Patient Voice
+          </a>
+          <div className="dashboard-topbar-actions">
+            <span className={`connection-pill connection-pill-${backendStatus}`}>
+              {formatBackendStatus(backendStatus)}
+            </span>
+            <button className="settings-button" type="button">
+              Settings
+            </button>
           </div>
-          <div className="voice-nav-actions">
-            <a className="header-link" href="/voice">
-              Open voice room
-            </a>
-            {patientState ? (
-              <span className="scenario-badge">Session: {patientState.status}</span>
-            ) : null}
-            {session ? (
-              <span className="scenario-badge">Record: {session.status}</span>
-            ) : null}
-          </div>
-        </nav>
+        </header>
 
-        {isLoading ? <p>Loading dashboard...</p> : null}
-        {errorMessage ? <p className="chat-error">{errorMessage}</p> : null}
+        <section className="dashboard-hero" aria-labelledby="dashboard-title">
+          <p className="eyebrow">Instructor workspace</p>
+          <h1 id="dashboard-title">Select a patient persona</h1>
+          <p className="lede">
+            Choose a simulation patient to review the scenario and start a live
+            voice room.
+          </p>
+        </section>
 
-        {patientState ? (
-          <div className="dashboard-grid">
-            <section className="dashboard-card persona-card" aria-labelledby="persona-title">
-              <h2 id="persona-title">Persona Selection</h2>
-              <dl className="state-grid">
-                <ReportMeta label="Active persona" value="COPD/SOB Patient" />
-                <ReportMeta label="Scenario ID" value={patientState.scenario_id} />
-                <ReportMeta label="Patient session" value={patientState.status} />
-                <ReportMeta
-                  label="Session record"
-                  value={session?.status ?? "Not started"}
-                />
-              </dl>
-              <p className="dashboard-note">
-                Additional patient personas can be selected from this dashboard in a
-                future build. Use the voice room for live instructor controls.
-              </p>
-            </section>
-
-            <section className="dashboard-card timeline-card" aria-labelledby="events-title">
-              <h2 id="events-title">Event Timeline</h2>
-              {events.length > 0 ? (
-                <ol className="event-list">
-                  {events.map((event) => (
-                    <li key={event.event_id}>
-                      <strong>{event.label ?? event.event_type}</strong>
-                      {formatTimelineDetails(event)}
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p>No state events yet.</p>
-              )}
-            </section>
-
-            <section className="dashboard-card report-card" aria-labelledby="report-title">
-              <div className="report-card-header">
-                <h2 id="report-title">Final Debrief Report</h2>
-                <div className="session-action-grid report-action-grid">
-                  <button
-                    className="control-button"
-                    disabled={isActionRunning || !canEndSession}
-                    onClick={handleEndSession}
-                    type="button"
-                  >
-                    {activeAction === "end-session" ? "Ending..." : "End session"}
-                  </button>
-                  <button
-                    className="control-button"
-                    disabled={isActionRunning || !canGenerateReport}
-                    onClick={handleGenerateReport}
-                    type="button"
-                  >
-                    {activeAction === "generate-report"
-                      ? "Generating..."
-                      : "Generate report"}
-                  </button>
-                </div>
+        <section className="persona-grid" aria-label="Available patient personas">
+          {personas.map((persona) => (
+            <article
+              className={`persona-select-card${
+                persona.isAvailable ? " persona-select-card-active" : ""
+              }`}
+              key={persona.id}
+            >
+              <div className="persona-card-mark" aria-hidden="true">
+                {getPersonaInitials(persona.name)}
               </div>
-              {session && !isSessionEnded ? (
-                <p className="dashboard-note">
-                  End the session before generating the final report.
-                </p>
-              ) : null}
-              {report ? <ReportView report={report} /> : <ReportEmptyState />}
-            </section>
-          </div>
-        ) : null}
+              <div>
+                <h2>{persona.name}</h2>
+                <p className="persona-type">{persona.scenarioType}</p>
+                <p className="persona-summary">{persona.summary}</p>
+              </div>
+              <div className="persona-chip-row" aria-label="Scenario details">
+                <span className={`persona-chip ${getDifficultyClass(persona.difficulty)}`}>
+                  {persona.difficulty}
+                </span>
+                <span className="persona-chip">{persona.duration}</span>
+              </div>
+              {persona.isAvailable ? (
+                <a className="persona-action persona-action-primary" href="/voice">
+                  Open Persona
+                  <span aria-hidden="true">&gt;</span>
+                </a>
+              ) : (
+                <button className="persona-action" disabled type="button">
+                  Coming Soon
+                </button>
+              )}
+            </article>
+          ))}
+        </section>
       </section>
     </main>
   );
 }
 
-function ReportEmptyState() {
-  return (
-    <p className="dashboard-note">
-      End the session, then generate the final debrief report from the persisted
-      transcript and timeline.
-    </p>
-  );
-}
-
-function ReportView({ report }: { report: FinalDebriefReport }) {
-  return (
-    <article className="report-document" aria-label={report.report_title}>
-      <header className="report-header">
-        <div>
-          <p className="eyebrow">{report.report_length_target}</p>
-          <h3>{report.report_title}</h3>
-        </div>
-        <span className="scenario-badge">{report.session.status}</span>
-      </header>
-
-      <p className="report-disclaimer">{report.disclaimer}</p>
-      <p className="report-summary">{report.summary}</p>
-
-      <dl className="report-meta">
-        <ReportMeta label="Scenario" value={report.session.scenario_name} />
-        <ReportMeta
-          label="Transcript"
-          value={`${report.session.transcript_message_count} messages`}
-        />
-        <ReportMeta
-          label="Timeline"
-          value={`${report.session.timeline_event_count} events`}
-        />
-        <ReportMeta label="Started" value={formatDateTime(report.session.started_at)} />
-        <ReportMeta
-          label="Ended"
-          value={report.session.ended_at ? formatDateTime(report.session.ended_at) : "Not ended"}
-        />
-        <ReportMeta label="Session ID" value={report.session.session_id} />
-      </dl>
-
-      <div className="report-section-grid">
-        <section>
-          <h4>Transcript Excerpt</h4>
-          <ol className="compact-list">
-            {report.transcript_excerpt.map((message) => (
-              <li key={`${message.timestamp}-${message.speaker}-${message.text}`}>
-                <strong>{formatLabel(message.speaker)}:</strong> {message.text}
-                <span className="report-entry-meta">
-                  {formatDateTime(message.timestamp)} | {formatLabel(message.message_type)} |
-                  Source: {formatLabel(message.source)}
-                  {message.cue_id ? ` | Cue: ${formatLabel(message.cue_id)}` : ""}
-                </span>
-              </li>
-            ))}
-          </ol>
-          {report.transcript_omitted_count > 0 ? (
-            <p className="report-small">
-              {report.transcript_omitted_count} additional transcript message(s)
-              omitted for report length.
-            </p>
-          ) : null}
-        </section>
-
-        <section>
-          <h4>Event Timeline</h4>
-          <ol className="compact-list">
-            {report.timeline_excerpt.map((event) => (
-              <li key={`${event.timestamp}-${event.event_type}-${event.label}`}>
-                <strong>{event.label}</strong>
-                {formatReportVitals(event)}
-                <span className="report-entry-meta">
-                  {formatDateTime(event.timestamp)} | {formatLabel(event.event_type)}
-                  {event.cue_id ? ` | Cue: ${formatLabel(event.cue_id)}` : ""}
-                </span>
-              </li>
-            ))}
-          </ol>
-          {report.timeline_omitted_count > 0 ? (
-            <p className="report-small">
-              {report.timeline_omitted_count} additional event(s) omitted for report
-              length.
-            </p>
-          ) : null}
-        </section>
-
-        <section>
-          <h4>Faculty Review Checklist</h4>
-          <ul className="compact-list">
-            {report.assessment_checklist.map((item) => (
-              <li key={item.item_id}>
-                {item.label}
-                <span className="report-entry-meta">{item.review_status}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section>
-          <h4>Debrief Focus</h4>
-          <ul className="compact-list">
-            {report.communication_observations.map((observation) => (
-              <li key={observation}>{observation}</li>
-            ))}
-          </ul>
-
-          <h4>Prompts</h4>
-          <ul className="compact-list">
-            {report.suggested_debrief_prompts.map((prompt) => (
-              <li key={prompt}>{prompt}</li>
-            ))}
-          </ul>
-        </section>
-      </div>
-
-      <p className="report-small">{report.instructor_notes_placeholder}</p>
-    </article>
-  );
-}
-
-type StateRowProps = {
-  label: string;
-  value: string;
-};
-
-function ReportMeta({ label, value }: StateRowProps) {
-  return (
-    <>
-      <dt>{label}</dt>
-      <dd>{value}</dd>
-    </>
-  );
-}
-
-function formatBoolean(value: boolean): string {
-  return value ? "Yes" : "No";
-}
-
-function formatDateTime(value: string): string {
-  return new Intl.DateTimeFormat("en-US", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function formatLabel(value: string): string {
-  return value
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-function formatReportVitals(event: {
-  heart_rate: number | null;
-  spo2: number | null;
-  respiratory_rate: number | null;
-  breathing_effort: string | null;
-  anxiety: string | null;
-  oxygen_applied: boolean | null;
-  bronchodilator_given: boolean | null;
-}) {
-  const details = [
-    event.heart_rate !== null ? `HR ${event.heart_rate}` : null,
-    event.spo2 !== null ? `SpO2 ${event.spo2}%` : null,
-    event.respiratory_rate !== null ? `RR ${event.respiratory_rate}` : null,
-    event.breathing_effort ? `effort ${event.breathing_effort}` : null,
-    event.anxiety ? `anxiety ${event.anxiety}` : null,
-    event.oxygen_applied !== null ? `oxygen ${formatBoolean(event.oxygen_applied)}` : null,
-    event.bronchodilator_given !== null
-      ? `bronchodilator ${formatBoolean(event.bronchodilator_given)}`
-      : null,
-  ].filter(Boolean);
-
-  if (details.length === 0) {
-    return null;
+function formatBackendStatus(status: BackendStatus): string {
+  if (status === "connected") {
+    return "Connected";
   }
 
-  return <span> - {details.join(", ")}</span>;
+  if (status === "unavailable") {
+    return "Backend unavailable";
+  }
+
+  return "Checking";
 }
 
-function formatTimelineDetails(event: TimelineEventResponse) {
-  const stateSnapshot = event.state_snapshot_json;
+function getPersonaInitials(name: string): string {
+  return name
+    .split(/[\s/]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join("");
+}
 
-  if (!stateSnapshot || typeof stateSnapshot !== "object") {
-    return null;
-  }
-
-  const vitals = stateSnapshot["vitals"];
-
-  if (!vitals || typeof vitals !== "object") {
-    return null;
-  }
-
-  const heartRate = "heart_rate" in vitals ? vitals.heart_rate : null;
-  const spo2 = "spo2" in vitals ? vitals.spo2 : null;
-
-  if (heartRate === null && spo2 === null) {
-    return null;
-  }
-
-  return (
-    <span>
-      {" "}
-      - HR {String(heartRate ?? "n/a")}, SpO2 {String(spo2 ?? "n/a")}
-    </span>
-  );
+function getDifficultyClass(difficulty: PersonaCard["difficulty"]): string {
+  return `persona-chip-${difficulty.toLowerCase()}`;
 }
