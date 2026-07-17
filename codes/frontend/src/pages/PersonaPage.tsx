@@ -49,66 +49,68 @@ export function PersonaPage() {
           </div>
         </header>
 
-        <div className="persona-brief-grid">
-          <section
-            className="persona-brief-card persona-summary-card"
-            aria-labelledby="patient-summary-title"
-          >
-            <div className="persona-section-mark" aria-hidden="true">
-              MT
-            </div>
-            <div>
-              <p className="eyebrow">Patient summary</p>
-              <h2 id="patient-summary-title">Maria Thompson</h2>
-              <dl className="persona-fact-list">
-                <PersonaFact label="Age" value="68" />
-                <PersonaFact label="Chief complaint" value="Shortness of breath" />
-                <PersonaFact label="Scenario" value="COPD exacerbation" />
-                <PersonaFact label="Affect" value="Anxious, tired, breathless" />
-              </dl>
-            </div>
-          </section>
+        <div className="persona-content">
+          <div className="persona-brief-grid">
+            <section
+              className="persona-brief-card persona-summary-card"
+              aria-labelledby="patient-summary-title"
+            >
+              <div className="persona-section-mark" aria-hidden="true">
+                MT
+              </div>
+              <div>
+                <p className="eyebrow">Patient summary</p>
+                <h2 id="patient-summary-title">Maria Thompson</h2>
+                <dl className="persona-fact-list">
+                  <PersonaFact label="Age" value="68" />
+                  <PersonaFact label="Chief complaint" value="Shortness of breath" />
+                  <PersonaFact label="Scenario" value="COPD exacerbation" />
+                  <PersonaFact label="Affect" value="Anxious, tired, breathless" />
+                </dl>
+              </div>
+            </section>
 
-          <section className="persona-brief-card" aria-labelledby="condition-title">
-            <p className="eyebrow">Starting condition</p>
-            <h2 id="condition-title">Baseline state</h2>
-            <div className="condition-grid">
-              <ConditionMetric label="HR" value="104" unit="bpm" tone="heart" />
-              <ConditionMetric label="SpO2" value="91" unit="%" tone="oxygen" />
-              <ConditionMetric label="RR" value="24" unit="/min" tone="breathing" />
-              <ConditionMetric label="Breathing" value="Labored" unit="" tone="warning" />
-            </div>
-          </section>
+            <section className="persona-brief-card" aria-labelledby="condition-title">
+              <p className="eyebrow">Starting condition</p>
+              <h2 id="condition-title">Baseline state</h2>
+              <div className="condition-grid">
+                <ConditionMetric label="HR" value="104" unit="bpm" tone="heart" />
+                <ConditionMetric label="SpO2" value="91" unit="%" tone="oxygen" />
+                <ConditionMetric label="RR" value="24" unit="/min" tone="breathing" />
+                <ConditionMetric label="Breathing" value="Labored" unit="" tone="warning" />
+              </div>
+            </section>
 
-          <section className="persona-brief-card" aria-labelledby="cues-title">
-            <p className="eyebrow">Instructor cues</p>
-            <h2 id="cues-title">Available changes</h2>
-            <div className="persona-cue-list">
-              {availableCues.map((cue) => (
-                <span className="persona-cue-chip" key={cue}>
-                  {cue}
-                </span>
-              ))}
-            </div>
-          </section>
+            <section className="persona-brief-card" aria-labelledby="cues-title">
+              <p className="eyebrow">Instructor cues</p>
+              <h2 id="cues-title">Available changes</h2>
+              <div className="persona-cue-list">
+                {availableCues.map((cue) => (
+                  <span className="persona-cue-chip" key={cue}>
+                    {cue}
+                  </span>
+                ))}
+              </div>
+            </section>
 
-          <section className="persona-brief-card" aria-labelledby="goals-title">
-            <p className="eyebrow">Learning goals</p>
-            <h2 id="goals-title">Faculty focus</h2>
-            <ol className="persona-goal-list">
-              {learningGoals.map((goal) => (
-                <li key={goal}>{goal}</li>
-              ))}
-            </ol>
-          </section>
+            <section className="persona-brief-card" aria-labelledby="goals-title">
+              <p className="eyebrow">Learning goals</p>
+              <h2 id="goals-title">Faculty focus</h2>
+              <ol className="persona-goal-list">
+                {learningGoals.map((goal) => (
+                  <li key={goal}>{goal}</li>
+                ))}
+              </ol>
+            </section>
+          </div>
+
+          <footer className="persona-page-footer">
+            <p>Use the voice room to run the live patient interaction.</p>
+            <a className="persona-start-button" href="/voice">
+              Start Voice Room
+            </a>
+          </footer>
         </div>
-
-        <footer className="persona-page-footer">
-          <p>Use the voice room to run the live patient interaction.</p>
-          <a className="persona-start-button" href="/voice">
-            Start Voice Room
-          </a>
-        </footer>
       </section>
     </main>
   );

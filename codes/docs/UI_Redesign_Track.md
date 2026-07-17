@@ -128,6 +128,48 @@ Voice Room button.
 Refine the voice room layout so it visually matches the new page system. The
 event timeline should live inside the voice room, close to instructor controls.
 
+## 2026-07-17 - Step UI-2B: Persona Page Layout Refinement
+
+### What Changed
+
+- Expanded the persona page navigation bar so it spans the full browser width.
+- Removed the large outer container/card around the persona briefing content.
+- Kept the briefing sections as independent cards on the page background.
+- Added a constrained content area below the full-width navigation bar.
+- Improved the persona page visual style with a stronger navigation gradient,
+  subtle independent card shadows, hover feedback, and cleaner spacing.
+
+### Why It Changed
+
+- The previous persona page felt like smaller cards placed inside one large card.
+- The redesigned dashboard feels more open, so the persona page should follow the
+  same product direction.
+- A full-width navigation bar makes the page feel like a real app screen instead
+  of a modal-like panel.
+- Independent cards keep information simple and scannable without overloading the
+  instructor.
+
+### How It Changed
+
+- Wrapped the persona briefing grid and footer inside a new `persona-content`
+  container.
+- Made the `persona-topbar` full-width by removing the page-level constrained
+  shell behavior.
+- Removed background, border, radius, and shadow from the briefing grid.
+- Applied visual treatment to each briefing card individually.
+- Updated mobile spacing so the new open layout still stacks cleanly.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Added the `persona-content` wrapper around the page body.
+
+- `codes/frontend/src/styles.css`
+  - Changed persona shell/page sizing.
+  - Made the persona navigation bar full-width.
+  - Removed the outer card treatment from the briefing grid.
+  - Added independent card styling and responsive spacing.
+
 ## 2026-07-17 - Step UI-2A: Expand Persona Page Layout
 
 ### What Changed
