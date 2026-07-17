@@ -512,8 +512,8 @@ h1 {
 
 .persona-start-button {
   align-items: center;
-  background: #4f46e5;
-  border: 1px solid #4f46e5;
+  background: #e11d48;
+  border: 1px solid #e11d48;
   border-radius: 6px;
   color: #ffffff;
   display: inline-flex;
@@ -525,7 +525,7 @@ h1 {
 }
 
 .persona-start-button:hover {
-  background: #4338ca;
+  background: #be123c;
 }
 
 .persona-content {
@@ -736,7 +736,7 @@ h1 {
 .condition-label {
   align-self: start;
   color: #667085;
-  font-size: 0.8rem;
+  font-size: 0.94rem;
   font-weight: 900;
   justify-self: start;
 }
