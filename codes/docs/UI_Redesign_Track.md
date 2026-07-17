@@ -8,8 +8,8 @@ to understand and review.
 ### What Changed
 
 - Redesigned the current dashboard into a simple persona-selection page.
-- Added a clinical product-style top bar with the app name, backend connection
-  status, and a settings button placeholder.
+- Added a clinical product-style top bar with the app name and backend
+  connection status.
 - Added four compact persona cards:
   - COPD / Shortness of Breath
   - Post-op Pain

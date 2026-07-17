@@ -73,9 +73,6 @@ export function Dashboard() {
             <span className={`connection-pill connection-pill-${backendStatus}`}>
               {formatBackendStatus(backendStatus)}
             </span>
-            <button className="settings-button" type="button">
-              Settings
-            </button>
           </div>
         </header>
 

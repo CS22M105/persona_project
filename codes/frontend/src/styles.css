@@ -280,21 +280,6 @@ h1 {
   background: #ff6b6b;
 }
 
-.settings-button {
-  background: transparent;
-  border: 1px solid rgb(255 255 255 / 34%);
-  border-radius: 6px;
-  color: #ffffff;
-  cursor: pointer;
-  font-weight: 800;
-  min-height: 34px;
-  padding: 6px 10px;
-}
-
-.settings-button:hover {
-  background: rgb(255 255 255 / 12%);
-}
-
 .dashboard-hero {
   background: #ffffff;
   border: 1px solid #dbe2ea;
