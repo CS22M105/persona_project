@@ -128,6 +128,46 @@ Voice Room button.
 Refine the voice room layout so it visually matches the new page system. The
 event timeline should live inside the voice room, close to instructor controls.
 
+## 2026-07-17 - Step UI-3: Edge-Aligned Navigation Bars
+
+### What Changed
+
+- Moved navigation content toward the far left and far right edges on the
+  dashboard, persona page, and voice room.
+- Changed the persona page top bar from a three-column layout into a standard
+  web app layout:
+  - Left group: Dashboard link and persona title
+  - Right group: connection status and Start Voice Room button
+- Changed the voice room top bar into a full-width app bar.
+- Kept the voice room working content constrained below the nav so controls and
+  cards remain readable.
+
+### Why It Changed
+
+- Most web apps place brand/page identity on the left and actions/status on the
+  right.
+- The previous persona page layout made the title feel too centered instead of
+  attached to the page context.
+- The voice room nav looked more like a contained card than a page-level app bar.
+
+### How It Changed
+
+- Added a left-side wrapper in the persona page markup.
+- Updated dashboard, persona, and voice nav CSS to use edge padding.
+- Set voice room shell padding to zero so the nav reaches the page edges.
+- Added padding and max-width to the voice room content grid so only the nav
+  stretches fully.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Grouped the Dashboard link and persona title into a left navigation group.
+
+- `codes/frontend/src/styles.css`
+  - Updated dashboard top bar padding.
+  - Updated persona top bar layout and spacing.
+  - Updated voice shell, voice nav, and voice grid layout.
+
 ## 2026-07-17 - Step UI-2B: Persona Page Layout Refinement
 
 ### What Changed

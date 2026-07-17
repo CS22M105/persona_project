@@ -32,12 +32,14 @@ export function PersonaPage() {
     <main className="app-shell persona-shell">
       <section className="persona-page" aria-labelledby="persona-page-title">
         <header className="persona-topbar">
-          <a className="header-link persona-back-link" href="/">
-            Dashboard
-          </a>
-          <div className="persona-title-block">
-            <p className="eyebrow">Patient persona</p>
-            <h1 id="persona-page-title">COPD / Shortness of Breath</h1>
+          <div className="persona-topbar-left">
+            <a className="header-link persona-back-link" href="/">
+              Dashboard
+            </a>
+            <div className="persona-title-block">
+              <p className="eyebrow">Patient persona</p>
+              <h1 id="persona-page-title">COPD / Shortness of Breath</h1>
+            </div>
           </div>
           <div className="persona-topbar-actions">
             <span className={`connection-pill connection-pill-${backendStatus}`}>
