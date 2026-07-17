@@ -128,6 +128,38 @@ Voice Room button.
 Refine the voice room layout so it visually matches the new page system. The
 event timeline should live inside the voice room, close to instructor controls.
 
+## 2026-07-17 - Step UI-2A: Expand Persona Page Layout
+
+### What Changed
+
+- Expanded the persona page width to match the dashboard and voice room.
+- Changed the briefing area from a narrow two-column layout to a 12-column grid.
+- Made the patient summary and starting condition cards use more horizontal
+  space on wide screens.
+- Preserved a stacked layout on mobile and tablet screens.
+
+### Why It Changed
+
+- The previous persona page left too much unused white space inside the page
+  boundary.
+- The page should feel like a full product screen, not a small centered panel.
+- The page did not need more content; it needed better use of the available
+  space.
+
+### How It Changed
+
+- Updated only CSS layout rules for the persona page.
+- Increased `.persona-page` max width from `1120px` to `1440px`.
+- Changed `.persona-brief-grid` to a 12-column grid.
+- Added grid spans for the four existing briefing cards.
+- Added responsive overrides so cards still stack cleanly on smaller screens.
+
+### Files Changed
+
+- `codes/frontend/src/styles.css`
+  - Updated persona page width and grid behavior.
+  - Added responsive grid-span resets.
+
 ## 2026-07-17 - Step UI-1B: Dashboard Webpage Layout
 
 ### What Changed

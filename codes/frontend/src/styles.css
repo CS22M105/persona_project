@@ -447,7 +447,7 @@ h1 {
 
 .persona-page {
   box-sizing: border-box;
-  max-width: 1120px;
+  max-width: 1440px;
   width: 100%;
 }
 
@@ -526,7 +526,7 @@ h1 {
   box-sizing: border-box;
   display: grid;
   gap: 18px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   padding: 22px;
 }
 
@@ -537,6 +537,19 @@ h1 {
   box-sizing: border-box;
   min-width: 0;
   padding: 20px;
+}
+
+.persona-brief-card:nth-child(1) {
+  grid-column: span 5;
+}
+
+.persona-brief-card:nth-child(2) {
+  grid-column: span 7;
+}
+
+.persona-brief-card:nth-child(3),
+.persona-brief-card:nth-child(4) {
+  grid-column: span 6;
 }
 
 .persona-brief-card h2 {
@@ -1477,6 +1490,13 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .persona-brief-card:nth-child(1),
+  .persona-brief-card:nth-child(2),
+  .persona-brief-card:nth-child(3),
+  .persona-brief-card:nth-child(4) {
+    grid-column: auto;
+  }
+
   .persona-brief-grid {
     padding: 16px;
   }
@@ -1604,6 +1624,13 @@ h1 {
 @media (min-width: 641px) and (max-width: 1100px) {
   .persona-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .persona-brief-card:nth-child(1),
+  .persona-brief-card:nth-child(2),
+  .persona-brief-card:nth-child(3),
+  .persona-brief-card:nth-child(4) {
+    grid-column: span 12;
   }
 
   .condition-grid {
