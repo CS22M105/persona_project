@@ -44,10 +44,24 @@ type RealtimeTranscriptEvent = {
   text?: string;
 };
 
+type AudioDeviceOption = {
+  deviceId: string;
+  label: string;
+};
+
+type AudioContextWithSink = AudioContext & {
+  setSinkId?: (sinkId: string) => Promise<void>;
+};
+
+type AudioElementWithSink = HTMLAudioElement & {
+  setSinkId?: (sinkId: string) => Promise<void>;
+};
+
 const cueButtons = [
   {
     cueId: "spo2_dropped",
     label: "SpO2 dropped",
+    symbol: "O2",
     stateUpdates: {
       vitals: { spo2: 88 },
       symptoms: { breathing_effort: "severe" },
@@ -61,6 +75,7 @@ const cueButtons = [
   {
     cueId: "hr_increased",
     label: "HR increased",
+    symbol: "HR",
     stateUpdates: {
       vitals: { heart_rate: 128 },
       emotion: { anxiety: "high" },
@@ -69,6 +84,7 @@ const cueButtons = [
   {
     cueId: "breathing_worsened",
     label: "Breathing worsened",
+    symbol: "RR",
     stateUpdates: {
       stage: "worsening",
       symptoms: {
@@ -84,6 +100,7 @@ const cueButtons = [
   {
     cueId: "oxygen_applied",
     label: "Oxygen applied",
+    symbol: "O2+",
     stateUpdates: {
       interventions: { oxygen_applied: true },
     },
@@ -91,6 +108,7 @@ const cueButtons = [
   {
     cueId: "bronchodilator_given",
     label: "Bronchodilator given",
+    symbol: "Rx",
     stateUpdates: {
       interventions: { bronchodilator_given: true },
     },
@@ -98,6 +116,7 @@ const cueButtons = [
   {
     cueId: "patient_improving",
     label: "Patient improving",
+    symbol: "OK",
     stateUpdates: {
       stage: "partial_improvement",
       vitals: {
@@ -149,6 +168,11 @@ export function VoiceRoom() {
   const [voiceTranscriptMessages, setVoiceTranscriptMessages] = useState<
     TranscriptMessageResponse[]
   >([]);
+  const [audioInputDevices, setAudioInputDevices] = useState<AudioDeviceOption[]>([]);
+  const [audioOutputDevices, setAudioOutputDevices] = useState<AudioDeviceOption[]>([]);
+  const [selectedMicrophoneId, setSelectedMicrophoneId] = useState("");
+  const [selectedSpeakerId, setSelectedSpeakerId] = useState("");
+  const [audioSetupMessage, setAudioSetupMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -159,6 +183,7 @@ export function VoiceRoom() {
   useEffect(() => {
     refreshPatientState();
     refreshTextConversation();
+    loadAudioDevices();
 
     return () => {
       cleanupVoiceConnection();
@@ -178,6 +203,12 @@ export function VoiceRoom() {
       window.clearInterval(intervalId);
     };
   }, [status]);
+
+  useEffect(() => {
+    if (status === "ready") {
+      applySelectedSpeaker();
+    }
+  }, [selectedSpeakerId, status]);
 
   async function refreshPatientState(
     options: { syncVoiceInstructions?: boolean } = {},
@@ -229,6 +260,9 @@ export function VoiceRoom() {
       setStatus("requesting_microphone");
       const microphoneStream = await navigator.mediaDevices.getUserMedia({
         audio: {
+          ...(selectedMicrophoneId
+            ? { deviceId: { exact: selectedMicrophoneId } }
+            : {}),
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
@@ -237,6 +271,8 @@ export function VoiceRoom() {
 
       setStatus("connecting");
       await connectRealtimeWebRtc(sessionResponse, microphoneStream, remoteAudioRef);
+      await applySelectedSpeaker();
+      await loadAudioDevices();
       setVoiceSession(toPublicRealtimeSession(sessionResponse));
       setIsMuted(false);
       setStatus("ready");
@@ -257,6 +293,106 @@ export function VoiceRoom() {
     await recordVoiceTimelineEvent("voice_disconnected", "Voice disconnected");
     cleanupVoiceConnection();
     setStatus("disconnected");
+  }
+
+  async function loadAudioDevices() {
+    if (!navigator.mediaDevices?.enumerateDevices) {
+      setAudioSetupMessage("Audio device selection is not supported in this browser.");
+      return;
+    }
+
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const microphones = devices
+        .filter((device) => device.kind === "audioinput")
+        .map((device, index) => ({
+          deviceId: device.deviceId,
+          label: device.label || `Microphone ${index + 1}`,
+        }));
+      const speakers = devices
+        .filter((device) => device.kind === "audiooutput")
+        .map((device, index) => ({
+          deviceId: device.deviceId,
+          label: device.label || `Speaker ${index + 1}`,
+        }));
+
+      setAudioInputDevices(microphones);
+      setAudioOutputDevices(speakers);
+      setSelectedMicrophoneId((currentId) =>
+        currentId || microphones[0]?.deviceId || "",
+      );
+      setSelectedSpeakerId((currentId) => currentId || speakers[0]?.deviceId || "");
+    } catch {
+      setAudioSetupMessage("Audio devices could not be loaded.");
+    }
+  }
+
+  async function handleTestMicrophone() {
+    setAudioSetupMessage("");
+
+    try {
+      const testStream = await navigator.mediaDevices.getUserMedia({
+        audio: selectedMicrophoneId
+          ? { deviceId: { exact: selectedMicrophoneId } }
+          : true,
+      });
+      testStream.getTracks().forEach((track) => track.stop());
+      await loadAudioDevices();
+      setAudioSetupMessage("Microphone test passed.");
+    } catch {
+      setAudioSetupMessage("Microphone test failed. Check browser permission.");
+    }
+  }
+
+  async function handleTestSpeaker() {
+    setAudioSetupMessage("");
+
+    try {
+      const AudioContextConstructor =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
+
+      if (!AudioContextConstructor) {
+        setAudioSetupMessage("Speaker test is not supported in this browser.");
+        return;
+      }
+
+      const audioContext = new AudioContextConstructor() as AudioContextWithSink;
+
+      if (selectedSpeakerId && audioContext.setSinkId) {
+        await audioContext.setSinkId(selectedSpeakerId);
+      }
+
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+      oscillator.frequency.value = 660;
+      gain.gain.value = 0.08;
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+      oscillator.start();
+      window.setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, 260);
+      setAudioSetupMessage("Speaker test played.");
+    } catch {
+      setAudioSetupMessage("Speaker test failed in this browser.");
+    }
+  }
+
+  async function applySelectedSpeaker() {
+    const remoteAudio = remoteAudioRef.current as AudioElementWithSink | null;
+
+    if (!remoteAudio || !selectedSpeakerId || !remoteAudio.setSinkId) {
+      return;
+    }
+
+    try {
+      await remoteAudio.setSinkId(selectedSpeakerId);
+    } catch {
+      setAudioSetupMessage("Speaker selection could not be applied.");
+    }
   }
 
   async function handleToggleMute() {
@@ -664,7 +800,9 @@ export function VoiceRoom() {
       <section className="voice-page" aria-labelledby="voice-title">
         <nav className="voice-nav" aria-label="Voice room navigation">
           <div className="voice-nav-brand">
+            <p className="eyebrow">Student voice room</p>
             <h1 id="voice-title">AI Patient Voice: COPD/SOB</h1>
+            <p>Sim-room interface for speaking</p>
           </div>
           <div className="voice-nav-actions">
             <a className="header-link" href="/personas/copd-sob">
@@ -789,32 +927,30 @@ export function VoiceRoom() {
             id="voice-instructor-section"
             aria-labelledby="voice-instructor-title"
           >
-            <h2 id="voice-instructor-title">Instructor Controls</h2>
-            <button
-              className="control-button control-button-secondary"
-              disabled={activeInstructorAction === "reset"}
-              onClick={handleResetState}
-              type="button"
-            >
-              Reset patient state
-              {activeInstructorAction === "reset" ? (
-                <span className="button-spinner" aria-hidden="true" />
-              ) : null}
-            </button>
-            <div className="cue-grid">
+            <div className="control-panel-heading">
+              <div>
+                <p className="eyebrow">Instructor</p>
+                <h2 id="voice-instructor-title">Patient State Controls</h2>
+              </div>
+            </div>
+            <div className="instructor-control-grid">
+              <ControlTile
+                disabled={activeInstructorAction === "reset"}
+                isLoading={activeInstructorAction === "reset"}
+                label="Reset patient state"
+                onClick={handleResetState}
+                symbol="RST"
+                tone="secondary"
+              />
               {cueButtons.map((cue) => (
-                <button
-                  className="control-button"
+                <ControlTile
                   disabled={activeInstructorAction === cue.cueId}
+                  isLoading={activeInstructorAction === cue.cueId}
                   key={cue.cueId}
+                  label={cue.label}
                   onClick={() => handleCueClick(cue.cueId)}
-                  type="button"
-                >
-                  {cue.label}
-                  {activeInstructorAction === cue.cueId ? (
-                    <span className="button-spinner" aria-hidden="true" />
-                  ) : null}
-                </button>
+                  symbol={cue.symbol}
+                />
               ))}
             </div>
           </section>
@@ -840,74 +976,119 @@ export function VoiceRoom() {
             id="voice-controls-section"
             aria-labelledby="voice-controls-title"
           >
-            <h2 id="voice-controls-title">Voice Controls</h2>
+            <div className="control-panel-heading">
+              <div>
+                <p className="eyebrow">Audio and safety</p>
+                <h2 id="voice-controls-title">Voice Controls</h2>
+              </div>
+            </div>
+            <div className="audio-setup-panel" aria-label="Audio setup">
+              <label htmlFor="voice-microphone">Microphone</label>
+              <div className="audio-device-row">
+                <select
+                  id="voice-microphone"
+                  onChange={(event) => setSelectedMicrophoneId(event.target.value)}
+                  value={selectedMicrophoneId}
+                >
+                  {audioInputDevices.length > 0 ? (
+                    audioInputDevices.map((device) => (
+                      <option key={device.deviceId} value={device.deviceId}>
+                        {device.label}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">Default microphone</option>
+                  )}
+                </select>
+                <button onClick={handleTestMicrophone} type="button">
+                  Test Mic
+                </button>
+              </div>
+
+              <label htmlFor="voice-speaker">Speaker</label>
+              <div className="audio-device-row">
+                <select
+                  id="voice-speaker"
+                  onChange={(event) => setSelectedSpeakerId(event.target.value)}
+                  value={selectedSpeakerId}
+                >
+                  {audioOutputDevices.length > 0 ? (
+                    audioOutputDevices.map((device) => (
+                      <option key={device.deviceId} value={device.deviceId}>
+                        {device.label}
+                      </option>
+                    ))
+                  ) : (
+                    <option value="">Default speaker</option>
+                  )}
+                </select>
+                <button onClick={handleTestSpeaker} type="button">
+                  Test Speaker
+                </button>
+              </div>
+
+              {audioSetupMessage ? (
+                <p className="audio-setup-message">{audioSetupMessage}</p>
+              ) : null}
+            </div>
             <div className="voice-control-grid">
-              <button
-                className="control-button"
+              <ControlTile
                 disabled={!canConnect}
+                label={
+                  status === "connecting" || status === "requesting_microphone"
+                    ? "Connecting"
+                    : "Connect"
+                }
                 onClick={handleConnectVoice}
-                type="button"
-              >
-                {status === "connecting" || status === "requesting_microphone"
-                  ? "Connecting"
-                  : "Connect"}
-              </button>
-              <button
-                className="control-button control-button-secondary"
+                symbol="ON"
+                tone="success"
+              />
+              <ControlTile
                 disabled={!canDisconnect}
+                label="Disconnect"
                 onClick={handleDisconnectVoice}
-                type="button"
-              >
-                Disconnect
-              </button>
-              <button
-                className="control-button"
+                symbol="OFF"
+                tone="danger"
+              />
+              <ControlTile
                 disabled={!canDisconnect}
+                label={isMuted ? "Unmute" : "Mute"}
                 onClick={handleToggleMute}
-                type="button"
-              >
-                {isMuted ? "Unmute" : "Mute"}
-              </button>
-              <button
-                className="control-button"
+                symbol={isMuted ? "MIC" : "MUT"}
+              />
+              <ControlTile
                 disabled={status === "connecting" || status === "requesting_microphone"}
+                label="Refresh"
                 onClick={() => refreshPatientState({ syncVoiceInstructions: true })}
-                type="button"
-              >
-                Refresh
-              </button>
-              <button
-                className="control-button"
+                symbol="REF"
+              />
+              <ControlTile
                 disabled={!canUseSafetyControls || aiIsPaused}
+                label="Pause AI"
                 onClick={handlePauseAi}
-                type="button"
-              >
-                Pause AI
-              </button>
-              <button
-                className="control-button"
+                symbol="PAU"
+                tone="warning"
+              />
+              <ControlTile
                 disabled={!canUseSafetyControls || !aiIsPaused || takeoverIsActive}
+                label="Resume AI"
                 onClick={handleResumeAi}
-                type="button"
-              >
-                Resume AI
-              </button>
-              <button
-                className="control-button"
+                symbol="RES"
+                tone="success"
+              />
+              <ControlTile
                 disabled={!canUseSafetyControls || takeoverIsActive}
+                label="Takeover"
                 onClick={handleStartTakeover}
-                type="button"
-              >
-                Takeover
-              </button>
-              <button
-                className="control-button"
+                symbol="CTL"
+                tone="warning"
+              />
+              <ControlTile
                 disabled={!canUseSafetyControls || !takeoverIsActive}
+                label="Release"
                 onClick={handleEndTakeover}
-                type="button"
-              >
-                Release
-              </button>
+                symbol="REL"
+              />
             </div>
 
             <dl className="voice-session-grid">
@@ -997,6 +1178,38 @@ function toPublicRealtimeSession(
     scenario_id: session.scenario_id,
     connect_url: session.connect_url,
   };
+}
+
+
+function ControlTile({
+  disabled,
+  isLoading = false,
+  label,
+  onClick,
+  symbol,
+  tone = "default",
+}: {
+  disabled: boolean;
+  isLoading?: boolean;
+  label: string;
+  onClick: () => void;
+  symbol: string;
+  tone?: "default" | "danger" | "secondary" | "success" | "warning";
+}) {
+  return (
+    <button
+      className={`control-tile control-tile-${tone}`}
+      disabled={disabled}
+      onClick={onClick}
+      type="button"
+    >
+      <span className="control-tile-symbol" aria-hidden="true">
+        {symbol}
+      </span>
+      <span className="control-tile-label">{label}</span>
+      {isLoading ? <span className="button-spinner" aria-hidden="true" /> : null}
+    </button>
+  );
 }
 
 

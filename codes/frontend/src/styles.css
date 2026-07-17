@@ -1143,15 +1143,15 @@ h1 {
 
 .voice-nav {
   align-items: center;
-  background: linear-gradient(90deg, #ffffff 0%, #f3f8f6 54%, #eef5ff 100%);
-  border-bottom: 1px solid #cfdbe7;
-  border-top: 4px solid #2f6f63;
+  background: #00606d;
+  border-bottom: 1px solid #004b55;
   box-sizing: border-box;
+  color: #ffffff;
   display: flex;
   gap: 16px;
   justify-content: space-between;
   margin: 0 0 16px;
-  padding: 14px 24px;
+  padding: 16px 24px;
   width: 100%;
 }
 
@@ -1160,18 +1160,19 @@ h1 {
 }
 
 .voice-nav-brand .eyebrow {
+  color: #c8f3ee;
   margin-bottom: 4px;
 }
 
 .voice-nav-brand h1 {
-  color: #18212f;
+  color: #ffffff;
   font-size: 1.5rem;
   line-height: 1.1;
   margin: 0;
 }
 
 .voice-nav-brand p:not(.eyebrow) {
-  color: #4b5563;
+  color: #d9f3f0;
   font-size: 0.94rem;
   font-weight: 700;
   margin: 5px 0 0;
@@ -1187,18 +1188,25 @@ h1 {
 }
 
 .voice-nav .header-link {
-  box-shadow: 0 2px 6px rgb(39 58 86 / 8%);
+  background: rgb(255 255 255 / 10%);
+  border-color: rgb(255 255 255 / 34%);
+  box-shadow: none;
+  color: #ffffff;
+}
+
+.voice-nav .header-link:hover {
+  background: rgb(255 255 255 / 16%);
 }
 
 .voice-grid {
   align-items: start;
   display: grid;
   gap: 16px;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   grid-template-areas:
-    "state state state state state state controls"
-    "instructor instructor conversation conversation conversation conversation conversation"
-    "transcript transcript transcript transcript transcript transcript transcript";
+    "state state state state state state state state state state state state"
+    "instructor instructor instructor instructor controls controls controls conversation conversation conversation conversation conversation"
+    "transcript transcript transcript transcript transcript transcript transcript transcript transcript transcript transcript transcript";
   margin: 0 auto;
   max-width: 1440px;
   padding: 0 24px 24px;
@@ -1206,7 +1214,7 @@ h1 {
 
 .voice-instructor-card {
   grid-area: instructor;
-  padding: 14px;
+  padding: 16px;
 }
 
 .voice-chat-card {
@@ -1253,32 +1261,106 @@ h1 {
 .voice-control-card {
   align-self: start;
   grid-area: controls;
-  padding: 10px;
+  padding: 16px;
 }
 
-.voice-instructor-card .cue-grid,
+.control-panel-heading {
+  align-items: start;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.control-panel-heading h2 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.instructor-control-grid,
 .voice-control-grid {
-  gap: 6px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.voice-instructor-card .cue-grid {
-  margin-top: 10px;
-}
-
-.voice-instructor-card .control-button,
-.voice-control-card .control-button {
+.control-tile {
   align-items: center;
-  display: inline-flex;
-  font-size: 0.78rem;
+  background: #ffffff;
+  border: 1px solid #cfdbe7;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #18212f;
+  cursor: pointer;
+  display: grid;
   gap: 6px;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  min-height: 58px;
+  padding: 9px;
+  text-align: left;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    transform 140ms ease;
+}
+
+.control-tile:hover:not(:disabled) {
+  border-color: #008391;
+  box-shadow: 0 8px 18px rgb(24 33 47 / 10%);
+  transform: translateY(-1px);
+}
+
+.control-tile:disabled {
+  background: #f4f6f9;
+  color: #8a95a5;
+  cursor: not-allowed;
+}
+
+.control-tile-symbol {
+  align-items: center;
+  background: #e7f6f4;
+  border: 1px solid #bee4df;
+  border-radius: 8px;
+  color: #00606d;
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  height: 36px;
   justify-content: center;
-  line-height: 1.05;
-  max-width: 100%;
+  line-height: 1;
+  width: 36px;
+}
+
+.control-tile-label {
+  font-size: 0.86rem;
+  font-weight: 900;
+  line-height: 1.15;
   min-width: 0;
-  min-height: 30px;
-  overflow: hidden;
-  padding: 5px 7px;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+}
+
+.control-tile-secondary .control-tile-symbol {
+  background: #eef2f7;
+  border-color: #d5dde7;
+  color: #273a56;
+}
+
+.control-tile-success .control-tile-symbol {
+  background: #e8f5eb;
+  border-color: #b9dec6;
+  color: #1f6b37;
+}
+
+.control-tile-warning .control-tile-symbol {
+  background: #fff7e6;
+  border-color: #efd08a;
+  color: #9a5b00;
+}
+
+.control-tile-danger .control-tile-symbol {
+  background: #fdecec;
+  border-color: #f2c4c4;
+  color: #9b1c1c;
 }
 
 .button-spinner {
@@ -1310,7 +1392,7 @@ h1 {
 .voice-state-grid {
   display: grid;
   gap: 8px;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .voice-state-item {
@@ -1481,17 +1563,6 @@ h1 {
   grid-area: transcript;
 }
 
-.voice-control-grid {
-  align-items: start;
-  display: grid;
-  gap: 6px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.voice-control-card .control-button {
-  width: 100%;
-}
-
 .voice-session-grid {
   background: #f7f8fb;
   border: 1px solid #dbe2ea;
@@ -1503,9 +1574,75 @@ h1 {
   padding: 12px;
 }
 
-.voice-control-card .voice-session-grid,
+.audio-setup-panel {
+  background: #f7fbfb;
+  border: 1px solid #cde8e4;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+}
+
+.audio-setup-panel label {
+  color: #00606d;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.audio-device-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.audio-device-row select {
+  background: #ffffff;
+  border: 1px solid #b9d8d4;
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: #18212f;
+  font-size: 0.84rem;
+  font-weight: 800;
+  min-height: 36px;
+  min-width: 0;
+  padding: 7px 9px;
+}
+
+.audio-device-row select:focus {
+  border-color: #006f7b;
+  outline: 3px solid #d9f3f0;
+}
+
+.audio-device-row button {
+  background: #ffffff;
+  border: 1px solid #008391;
+  border-radius: 6px;
+  color: #00606d;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 900;
+  min-height: 36px;
+  padding: 7px 10px;
+}
+
+.audio-device-row button:hover {
+  background: #e7f6f4;
+}
+
+.audio-setup-message {
+  color: #435166;
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin: 0;
+}
+
 .voice-control-card .dashboard-note {
-  display: none;
+  background: #eef5ff;
+  border: 1px solid #c8dcff;
+  border-radius: 6px;
+  color: #244f8f;
+  padding: 10px;
 }
 
 .voice-session-grid dt {
@@ -1727,9 +1864,14 @@ h1 {
   }
 
   .session-action-grid,
+  .instructor-control-grid,
   .voice-control-grid,
   .voice-grid,
   .report-section-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .audio-device-row {
     grid-template-columns: 1fr;
   }
 
@@ -1754,6 +1896,15 @@ h1 {
 @media (min-width: 641px) and (max-width: 1100px) {
   .persona-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .voice-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-areas:
+      "state state state state state state"
+      "instructor instructor instructor controls controls controls"
+      "conversation conversation conversation conversation conversation conversation"
+      "transcript transcript transcript transcript transcript transcript";
   }
 
   .persona-brief-card:nth-child(1),

@@ -246,6 +246,83 @@ event timeline should live inside the voice room, close to instructor controls.
 - Gender is also in-memory for this prototype and resets when the backend server
   restarts. Production should persist persona settings per scenario/session.
 
+## 2026-07-17 - Step UI-5: Voice Room Control Redesign
+
+### What Changed
+
+- Redesigned the Voice Room navigation as a full-width top bar.
+- Added the full voice-room title stack:
+  - Student voice room
+  - AI Patient Voice: COPD/SOB
+  - Sim-room interface for speaking
+- Redesigned instructor controls into compact symbol tiles.
+- Instructor controls now show:
+  - Reset patient state
+  - SpO2 dropped
+  - HR increased
+  - Breathing worsened
+  - Oxygen applied
+  - Bronchodilator given
+  - Patient improving
+- Redesigned voice controls into compact symbol tiles.
+- Voice controls now show:
+  - Connect
+  - Disconnect
+  - Mute / Unmute
+  - Refresh
+  - Pause AI
+  - Resume AI
+  - Takeover
+  - Release
+- Added an Audio Setup section with:
+  - Microphone selector
+  - Test Mic button
+  - Speaker selector
+  - Test Speaker button
+  - Audio setup status message
+- Expanded the Voice Room grid so patient state spans the top and control panels
+  have more room.
+
+### Why It Changed
+
+- The previous controls worked but were visually too compressed.
+- Instructors need fast, visible controls during a live sim without searching.
+- Voice setup should be visible in the room where the student microphone and
+  patient speaker are selected.
+- The full-width navigation makes the live session feel like the primary app
+  workspace, not a small embedded panel.
+
+### How It Changed
+
+- Added symbols to each instructor cue definition.
+- Added a reusable `ControlTile` component for consistent icon-style controls.
+- Kept the existing state, voice, cue, pause/resume, and takeover handlers.
+- Added frontend audio-device state using browser media-device APIs.
+- The selected microphone is used when connecting the Realtime voice session.
+- The selected speaker is applied to the patient audio element when the browser
+  supports `setSinkId`.
+- Added desktop, tablet, and mobile CSS layouts for the redesigned voice room.
+
+### Files Changed
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Added control tile metadata and rendering.
+  - Added microphone/speaker device loading.
+  - Added microphone test and speaker test handlers.
+  - Applies selected microphone during voice connection.
+  - Applies selected speaker when supported by the browser.
+
+- `codes/frontend/src/styles.css`
+  - Redesigned full-width voice navigation.
+  - Added control tile styles.
+  - Added audio setup styles.
+  - Expanded the voice room grid and responsive layouts.
+
+### Current Limitation
+
+- Speaker routing depends on browser support for audio output selection APIs.
+  Chrome or Edge is recommended for the demo.
+
 ## 2026-07-17 - Step UI-5: Limit Gender Options
 
 ### What Changed
