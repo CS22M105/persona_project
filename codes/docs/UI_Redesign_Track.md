@@ -187,6 +187,66 @@ event timeline should live inside the voice room, close to instructor controls.
   server restarts. A production version should persist persona settings in the
   database per scenario/session.
 
+## 2026-07-17 - Step UI-4: Editable Persona Gender
+
+### What Changed
+
+- Added gender as an editable COPD/SOB persona setting.
+- Added a compact gender dropdown on the Persona Page.
+- Added gender to the Patient Summary display.
+- Backend now returns and accepts gender through the same persona settings API
+  used for age.
+- Scenario loading now injects the current gender and pronouns into the patient
+  profile used by text chat and Realtime voice instructions.
+
+### Why It Changed
+
+- Gender is a persona-level attribute, similar to age.
+- Instructors should be able to adjust the patient profile before starting the
+  voice room.
+- The AI should receive the selected gender in its scenario context so responses
+  remain consistent with the persona shown to the instructor.
+
+### How It Changed
+
+- Extended the existing in-memory persona settings service to store gender.
+- Added validation for supported gender values:
+  - `female`
+  - `male`
+  - `nonbinary`
+- Updated the scenario settings API so age and gender can be updated separately.
+- Added a frontend gender update API call.
+- Added a small select control in the Patient Summary card.
+
+### Files Changed
+
+- `codes/backend/app/services/persona_settings.py`
+  - Added current gender storage.
+  - Added gender validation.
+  - Adds `gender`, `sex`, and `pronouns` into the loaded scenario profile.
+
+- `codes/backend/app/api/scenarios.py`
+  - Added `gender` to the persona settings response.
+  - Allows partial settings updates for age and/or gender.
+
+- `codes/frontend/src/api/scenarios.ts`
+  - Added `PatientGender`.
+  - Added `updateCopdSobPersonaGender`.
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Displays selected gender.
+  - Adds an editable gender dropdown.
+  - Saves gender to the backend.
+
+- `codes/frontend/src/styles.css`
+  - Renamed the age editor styling to generic persona-setting editor styling.
+  - Added select styling for gender.
+
+### Current Limitation
+
+- Gender is also in-memory for this prototype and resets when the backend server
+  restarts. Production should persist persona settings per scenario/session.
+
 ## 2026-07-17 - Step UI-3: Edge-Aligned Navigation Bars
 
 ### What Changed

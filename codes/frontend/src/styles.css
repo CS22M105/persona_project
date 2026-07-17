@@ -625,7 +625,7 @@ h1 {
   margin: 0;
 }
 
-.age-editor {
+.persona-setting-editor {
   background: #f7fbfb;
   border: 1px solid #cde8e4;
   border-radius: 8px;
@@ -635,19 +635,21 @@ h1 {
   padding: 12px;
 }
 
-.age-editor label {
+.persona-setting-editor label {
   color: #00606d;
   font-size: 0.82rem;
   font-weight: 900;
 }
 
-.age-editor-row {
+.persona-setting-row {
   display: grid;
   gap: 8px;
   grid-template-columns: minmax(88px, 120px) auto;
 }
 
-.age-editor input {
+.persona-setting-editor input,
+.persona-setting-editor select {
+  background: #ffffff;
   border: 1px solid #b9d8d4;
   border-radius: 6px;
   box-sizing: border-box;
@@ -658,12 +660,13 @@ h1 {
   width: 100%;
 }
 
-.age-editor input:focus {
+.persona-setting-editor input:focus,
+.persona-setting-editor select:focus {
   border-color: #006f7b;
   outline: 3px solid #d9f3f0;
 }
 
-.age-editor button {
+.persona-setting-editor button {
   background: #006f7b;
   border: 1px solid #006f7b;
   border-radius: 6px;
@@ -674,13 +677,13 @@ h1 {
   padding: 8px 12px;
 }
 
-.age-editor button:disabled {
+.persona-setting-editor button:disabled {
   background: #90a7a1;
   border-color: #90a7a1;
   cursor: not-allowed;
 }
 
-.age-editor-status {
+.persona-setting-status {
   color: #435166;
   font-size: 0.82rem;
   font-weight: 800;

@@ -3,7 +3,9 @@ import { FormEvent, useEffect, useState } from "react";
 import { getHealth } from "../api/client";
 import {
   getCopdSobPersonaSettings,
+  PatientGender,
   updateCopdSobPersonaAge,
+  updateCopdSobPersonaGender,
 } from "../api/scenarios";
 
 type BackendStatus = "checking" | "connected" | "unavailable";
@@ -27,9 +29,13 @@ export function PersonaPage() {
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("checking");
   const [patientName, setPatientName] = useState("Linda Thompson");
   const [patientAge, setPatientAge] = useState(68);
+  const [patientGender, setPatientGender] = useState<PatientGender>("female");
   const [ageInput, setAgeInput] = useState("68");
+  const [genderInput, setGenderInput] = useState<PatientGender>("female");
   const [isSavingAge, setIsSavingAge] = useState(false);
+  const [isSavingGender, setIsSavingGender] = useState(false);
   const [ageStatusMessage, setAgeStatusMessage] = useState("");
+  const [genderStatusMessage, setGenderStatusMessage] = useState("");
 
   useEffect(() => {
     getHealth()
@@ -40,11 +46,14 @@ export function PersonaPage() {
       .then((settings) => {
         setPatientName(settings.patient_name);
         setPatientAge(settings.age);
+        setPatientGender(settings.gender);
         setAgeInput(String(settings.age));
+        setGenderInput(settings.gender);
         setAgeStatusMessage("");
+        setGenderStatusMessage("");
       })
       .catch(() => {
-        setAgeStatusMessage("Age settings failed to load.");
+        setAgeStatusMessage("Persona settings failed to load.");
       });
   }, []);
 
@@ -65,12 +74,34 @@ export function PersonaPage() {
       const settings = await updateCopdSobPersonaAge(nextAge);
       setPatientName(settings.patient_name);
       setPatientAge(settings.age);
+      setPatientGender(settings.gender);
       setAgeInput(String(settings.age));
+      setGenderInput(settings.gender);
       setAgeStatusMessage("Saved. Chat and voice will use this age.");
     } catch {
       setAgeStatusMessage("Age could not be saved. Make sure the backend is running.");
     } finally {
       setIsSavingAge(false);
+    }
+  }
+
+  async function handleGenderSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSavingGender(true);
+    setGenderStatusMessage("");
+
+    try {
+      const settings = await updateCopdSobPersonaGender(genderInput);
+      setPatientName(settings.patient_name);
+      setPatientGender(settings.gender);
+      setGenderInput(settings.gender);
+      setGenderStatusMessage("Saved. Chat and voice will use this gender.");
+    } catch {
+      setGenderStatusMessage(
+        "Gender could not be saved. Make sure the backend is running.",
+      );
+    } finally {
+      setIsSavingGender(false);
     }
   }
 
@@ -111,13 +142,14 @@ export function PersonaPage() {
                 <h2 id="patient-summary-title">{patientName}</h2>
                 <dl className="persona-fact-list">
                   <PersonaFact label="Age" value={String(patientAge)} />
+                  <PersonaFact label="Gender" value={formatGender(patientGender)} />
                   <PersonaFact label="Chief complaint" value="Shortness of breath" />
                   <PersonaFact label="Scenario" value="COPD exacerbation" />
                   <PersonaFact label="Affect" value="Anxious, tired, breathless" />
                 </dl>
-                <form className="age-editor" onSubmit={handleAgeSave}>
+                <form className="persona-setting-editor" onSubmit={handleAgeSave}>
                   <label htmlFor="patient-age">Adjust age</label>
-                  <div className="age-editor-row">
+                  <div className="persona-setting-row">
                     <input
                       id="patient-age"
                       inputMode="numeric"
@@ -132,7 +164,29 @@ export function PersonaPage() {
                     </button>
                   </div>
                   {ageStatusMessage ? (
-                    <p className="age-editor-status">{ageStatusMessage}</p>
+                    <p className="persona-setting-status">{ageStatusMessage}</p>
+                  ) : null}
+                </form>
+                <form className="persona-setting-editor" onSubmit={handleGenderSave}>
+                  <label htmlFor="patient-gender">Adjust gender</label>
+                  <div className="persona-setting-row">
+                    <select
+                      id="patient-gender"
+                      onChange={(event) =>
+                        setGenderInput(event.target.value as PatientGender)
+                      }
+                      value={genderInput}
+                    >
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                      <option value="nonbinary">Nonbinary</option>
+                    </select>
+                    <button disabled={isSavingGender} type="submit">
+                      {isSavingGender ? "Saving..." : "Save"}
+                    </button>
+                  </div>
+                  {genderStatusMessage ? (
+                    <p className="persona-setting-status">{genderStatusMessage}</p>
                   ) : null}
                 </form>
               </div>
@@ -223,4 +277,12 @@ function formatBackendStatus(status: BackendStatus): string {
   }
 
   return "Checking";
+}
+
+function formatGender(gender: PatientGender): string {
+  if (gender === "nonbinary") {
+    return "Nonbinary";
+  }
+
+  return gender.charAt(0).toUpperCase() + gender.slice(1);
 }

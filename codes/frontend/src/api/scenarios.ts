@@ -4,7 +4,10 @@ export type PersonaSettings = {
   scenario_id: string;
   patient_name: string;
   age: number;
+  gender: PatientGender;
 };
+
+export type PatientGender = "female" | "male" | "nonbinary";
 
 export async function getCopdSobPersonaSettings(): Promise<PersonaSettings> {
   const response = await fetch(`${API_BASE_URL}/scenarios/copd-sob/persona-settings`);
@@ -27,6 +30,24 @@ export async function updateCopdSobPersonaAge(age: number): Promise<PersonaSetti
 
   if (!response.ok) {
     throw new Error(`Persona age update failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateCopdSobPersonaGender(
+  gender: PatientGender,
+): Promise<PersonaSettings> {
+  const response = await fetch(`${API_BASE_URL}/scenarios/copd-sob/persona-settings`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ gender }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Persona gender update failed with status ${response.status}`);
   }
 
   return response.json();
