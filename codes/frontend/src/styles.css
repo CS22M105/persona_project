@@ -681,10 +681,10 @@ h1 {
 }
 
 .persona-setting-editor button {
-  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 48%, #f05252 100%);
+  background: linear-gradient(135deg, #007f8c 0%, #006f7b 48%, #005d67 100%);
   border: 0;
   border-radius: 6px;
-  box-shadow: 0 8px 16px rgb(37 99 235 / 20%);
+  box-shadow: 0 8px 16px rgb(0 111 123 / 20%);
   color: #ffffff;
   cursor: pointer;
   font-weight: 900;
@@ -693,17 +693,17 @@ h1 {
 }
 
 .persona-setting-editor button:hover {
-  box-shadow: 0 10px 20px rgb(124 58 237 / 24%);
-  filter: saturate(1.08);
+  box-shadow: 0 10px 20px rgb(0 111 123 / 26%);
+  filter: brightness(1.04);
 }
 
 .persona-setting-editor button:focus-visible {
-  outline: 3px solid #d8b4fe;
+  outline: 3px solid #b9ece7;
   outline-offset: 2px;
 }
 
 .persona-setting-editor button:disabled {
-  background: #aab4c2;
+  background: linear-gradient(135deg, #aab4c2 0%, #9faabb 100%);
   box-shadow: none;
   cursor: not-allowed;
   filter: none;
