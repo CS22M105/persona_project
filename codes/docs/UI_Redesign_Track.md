@@ -213,7 +213,6 @@ event timeline should live inside the voice room, close to instructor controls.
 - Added validation for supported gender values:
   - `female`
   - `male`
-  - `nonbinary`
 - Updated the scenario settings API so age and gender can be updated separately.
 - Added a frontend gender update API call.
 - Added a small select control in the Patient Summary card.
@@ -246,6 +245,40 @@ event timeline should live inside the voice room, close to instructor controls.
 
 - Gender is also in-memory for this prototype and resets when the backend server
   restarts. Production should persist persona settings per scenario/session.
+
+## 2026-07-17 - Step UI-5: Limit Gender Options
+
+### What Changed
+
+- Removed the nonbinary gender option from the COPD/SOB persona settings.
+- Gender can now be set only to:
+  - `female`
+  - `male`
+- Removed nonbinary from backend validation, frontend TypeScript types, and the
+  Persona Page dropdown.
+
+### Why It Changed
+
+- The current project requirement is to keep the gender control limited to female
+  and male.
+- Keeping frontend and backend options identical prevents invalid saved settings
+  and inconsistent AI context.
+
+### How It Changed
+
+- Updated backend allowed gender values.
+- Updated the API request type.
+- Updated the frontend gender union type.
+- Removed the Nonbinary option from the selector.
+- Removed nonbinary-specific pronoun handling.
+
+### Files Changed
+
+- `codes/backend/app/services/persona_settings.py`
+- `codes/backend/app/api/scenarios.py`
+- `codes/frontend/src/api/scenarios.ts`
+- `codes/frontend/src/pages/PersonaPage.tsx`
+- `codes/docs/UI_Redesign_Track.md`
 
 ## 2026-07-17 - Step UI-5: Persona Page Layout Polish
 

@@ -181,7 +181,6 @@ export function PersonaPage() {
                         >
                           <option value="female">Female</option>
                           <option value="male">Male</option>
-                          <option value="nonbinary">Nonbinary</option>
                         </select>
                         <button disabled={isSavingGender} type="submit">
                           {isSavingGender ? "Saving..." : "Save"}
@@ -287,9 +286,5 @@ function formatBackendStatus(status: BackendStatus): string {
 }
 
 function formatGender(gender: PatientGender): string {
-  if (gender === "nonbinary") {
-    return "Nonbinary";
-  }
-
   return gender.charAt(0).toUpperCase() + gender.slice(1);
 }

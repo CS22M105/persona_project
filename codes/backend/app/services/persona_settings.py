@@ -7,7 +7,7 @@ DEFAULT_COPD_SOB_AGE = 68
 DEFAULT_COPD_SOB_GENDER = "female"
 MIN_PATIENT_AGE = 18
 MAX_PATIENT_AGE = 110
-ALLOWED_PATIENT_GENDERS = ("female", "male", "nonbinary")
+ALLOWED_PATIENT_GENDERS = ("female", "male")
 
 _settings_lock = Lock()
 _copd_sob_patient_age = DEFAULT_COPD_SOB_AGE
@@ -62,8 +62,5 @@ def apply_copd_sob_persona_settings(scenario: dict[str, Any]) -> dict[str, Any]:
 def _pronouns_for_gender(gender: str) -> str:
     if gender == "male":
         return "he/him"
-
-    if gender == "nonbinary":
-        return "they/them"
 
     return "she/her"

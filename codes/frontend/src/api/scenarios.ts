@@ -7,7 +7,7 @@ export type PersonaSettings = {
   gender: PatientGender;
 };
 
-export type PatientGender = "female" | "male" | "nonbinary";
+export type PatientGender = "female" | "male";
 
 export async function getCopdSobPersonaSettings(): Promise<PersonaSettings> {
   const response = await fetch(`${API_BASE_URL}/scenarios/copd-sob/persona-settings`);

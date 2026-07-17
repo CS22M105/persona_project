@@ -25,7 +25,7 @@ class PersonaSettingsResponse(BaseModel):
 
 class PersonaSettingsUpdate(BaseModel):
     age: int | None = Field(default=None, ge=MIN_PATIENT_AGE, le=MAX_PATIENT_AGE)
-    gender: Literal["female", "male", "nonbinary"] | None = None
+    gender: Literal["female", "male"] | None = None
 
 
 @router.get("/copd-sob")
