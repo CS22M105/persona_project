@@ -667,8 +667,11 @@ export function VoiceRoom() {
             <h1 id="voice-title">AI Patient Voice: COPD/SOB</h1>
           </div>
           <div className="voice-nav-actions">
+            <a className="header-link" href="/personas/copd-sob">
+              Persona page
+            </a>
             <a className="header-link" href="/">
-              Instructor dashboard
+              Dashboard
             </a>
             <span className={`voice-status voice-status-${status}`}>
               {statusLabel}

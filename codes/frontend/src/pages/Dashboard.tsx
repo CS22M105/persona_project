@@ -108,7 +108,10 @@ export function Dashboard() {
                 <span className="persona-chip">{persona.duration}</span>
               </div>
               {persona.isAvailable ? (
-                <a className="persona-action persona-action-primary" href="/voice">
+                <a
+                  className="persona-action persona-action-primary"
+                  href="/personas/copd-sob"
+                >
                   Open Persona
                   <span aria-hidden="true">&gt;</span>
                 </a>

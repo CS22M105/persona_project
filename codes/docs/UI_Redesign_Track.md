@@ -63,6 +63,71 @@ Create the persona-specific page for COPD/SOB. That page should sit between the
 dashboard and the voice room, showing a concise patient briefing and a Start
 Voice Room button.
 
+## 2026-07-17 - Step UI-2: COPD/SOB Persona Briefing Page
+
+### What Changed
+
+- Created a new persona-specific briefing page for COPD / Shortness of Breath.
+- Added a new frontend route: `/personas/copd-sob`.
+- Updated the dashboard's Open Persona action so it opens the persona briefing
+  page instead of going directly to the voice room.
+- Updated the voice room navigation so the instructor can return to the persona
+  page or the dashboard.
+- Added concise briefing sections:
+  - Patient summary
+  - Starting condition
+  - Available instructor cues
+  - Learning goals
+  - Start Voice Room action
+
+### Why It Changed
+
+- The instructor needs a simple page to understand the selected scenario before
+  entering the live voice room.
+- The persona page should explain the scenario but should not contain live
+  session controls, transcripts, reports, or event timeline.
+- This keeps the product flow clear:
+  - Dashboard = choose persona
+  - Persona page = review scenario
+  - Voice room = run live session
+
+### How It Changed
+
+- Added a dedicated `PersonaPage` React component.
+- Used static COPD/SOB briefing content for the current single-persona product.
+- Added a simple route in `App.tsx` using the existing pathname-based routing
+  style.
+- Reused the backend health check to show connection status in the persona page
+  top bar.
+- Added responsive styles for the persona page so briefing cards stack on small
+  screens.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - New page component for the COPD/SOB persona briefing.
+  - Contains patient summary, baseline state, cues, learning goals, and Start
+    Voice Room navigation.
+
+- `codes/frontend/src/App.tsx`
+  - Added route handling for `/personas/copd-sob`.
+
+- `codes/frontend/src/pages/Dashboard.tsx`
+  - Changed the available persona action from `/voice` to `/personas/copd-sob`.
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Added a Persona Page navigation link.
+  - Kept the Dashboard navigation link.
+
+- `codes/frontend/src/styles.css`
+  - Added persona page layout, top bar, briefing card, condition metric, cue
+    chip, footer, and responsive styles.
+
+### Next Recommended UI Step
+
+Refine the voice room layout so it visually matches the new page system. The
+event timeline should live inside the voice room, close to instructor controls.
+
 ## 2026-07-17 - Step UI-1B: Dashboard Webpage Layout
 
 ### What Changed
