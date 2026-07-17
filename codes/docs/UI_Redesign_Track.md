@@ -128,6 +128,65 @@ Voice Room button.
 Refine the voice room layout so it visually matches the new page system. The
 event timeline should live inside the voice room, close to instructor controls.
 
+## 2026-07-17 - Step UI-3: Editable Persona Age
+
+### What Changed
+
+- Made patient age configurable from the COPD/SOB persona page.
+- Added a compact age input and Save button inside the Patient Summary card.
+- Corrected the displayed patient name to match the backend scenario:
+  `Linda Thompson`.
+- Added backend endpoints to read and update the current COPD/SOB persona age.
+- Updated scenario loading so the selected age is injected into the scenario
+  context used by text chat and Realtime voice instructions.
+
+### Why It Changed
+
+- Age is a persona setting, not a live patient-state cue.
+- Instructors should be able to adjust age before starting the voice room without
+  editing code or JSON files.
+- The changed age must affect AI behavior, so it needs to be stored in the
+  backend scenario context, not only displayed in the frontend.
+
+### How It Changed
+
+- Added a small in-memory backend persona settings service for the current
+  prototype.
+- Added validation so age must stay between 18 and 110.
+- Added frontend API calls for loading and saving the persona age.
+- Connected the persona page age field to the backend settings API.
+- The scenario loader applies the latest saved age every time it loads the
+  COPD/SOB scenario, which keeps downstream prompt builders aligned.
+
+### Files Changed
+
+- `codes/backend/app/services/persona_settings.py`
+  - New service for current COPD/SOB persona settings.
+  - Stores and validates the adjustable patient age.
+
+- `codes/backend/app/services/scenario_loader.py`
+  - Applies the current persona age to the loaded scenario.
+
+- `codes/backend/app/api/scenarios.py`
+  - Added `GET /scenarios/copd-sob/persona-settings`.
+  - Added `PATCH /scenarios/copd-sob/persona-settings`.
+
+- `codes/frontend/src/api/scenarios.ts`
+  - New frontend API client for persona settings.
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Loads patient name and age from the backend.
+  - Adds editable age input and save action.
+
+- `codes/frontend/src/styles.css`
+  - Adds compact age editor styling.
+
+### Current Limitation
+
+- The age setting is in-memory for the prototype. It resets when the backend
+  server restarts. A production version should persist persona settings in the
+  database per scenario/session.
+
 ## 2026-07-17 - Step UI-3: Edge-Aligned Navigation Bars
 
 ### What Changed

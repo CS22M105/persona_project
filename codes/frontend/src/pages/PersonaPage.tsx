@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 
 import { getHealth } from "../api/client";
+import {
+  getCopdSobPersonaSettings,
+  updateCopdSobPersonaAge,
+} from "../api/scenarios";
 
 type BackendStatus = "checking" | "connected" | "unavailable";
 
@@ -21,12 +25,54 @@ const learningGoals = [
 
 export function PersonaPage() {
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("checking");
+  const [patientName, setPatientName] = useState("Linda Thompson");
+  const [patientAge, setPatientAge] = useState(68);
+  const [ageInput, setAgeInput] = useState("68");
+  const [isSavingAge, setIsSavingAge] = useState(false);
+  const [ageStatusMessage, setAgeStatusMessage] = useState("");
 
   useEffect(() => {
     getHealth()
       .then(() => setBackendStatus("connected"))
       .catch(() => setBackendStatus("unavailable"));
+
+    getCopdSobPersonaSettings()
+      .then((settings) => {
+        setPatientName(settings.patient_name);
+        setPatientAge(settings.age);
+        setAgeInput(String(settings.age));
+        setAgeStatusMessage("");
+      })
+      .catch(() => {
+        setAgeStatusMessage("Age settings failed to load.");
+      });
   }, []);
+
+  async function handleAgeSave(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const nextAge = Number(ageInput);
+
+    if (!Number.isInteger(nextAge) || nextAge < 18 || nextAge > 110) {
+      setAgeStatusMessage("Enter an age from 18 to 110.");
+      return;
+    }
+
+    setIsSavingAge(true);
+    setAgeStatusMessage("");
+
+    try {
+      const settings = await updateCopdSobPersonaAge(nextAge);
+      setPatientName(settings.patient_name);
+      setPatientAge(settings.age);
+      setAgeInput(String(settings.age));
+      setAgeStatusMessage("Saved. Chat and voice will use this age.");
+    } catch {
+      setAgeStatusMessage("Age could not be saved. Make sure the backend is running.");
+    } finally {
+      setIsSavingAge(false);
+    }
+  }
 
   return (
     <main className="app-shell persona-shell">
@@ -62,13 +108,33 @@ export function PersonaPage() {
               </div>
               <div>
                 <p className="eyebrow">Patient summary</p>
-                <h2 id="patient-summary-title">Maria Thompson</h2>
+                <h2 id="patient-summary-title">{patientName}</h2>
                 <dl className="persona-fact-list">
-                  <PersonaFact label="Age" value="68" />
+                  <PersonaFact label="Age" value={String(patientAge)} />
                   <PersonaFact label="Chief complaint" value="Shortness of breath" />
                   <PersonaFact label="Scenario" value="COPD exacerbation" />
                   <PersonaFact label="Affect" value="Anxious, tired, breathless" />
                 </dl>
+                <form className="age-editor" onSubmit={handleAgeSave}>
+                  <label htmlFor="patient-age">Adjust age</label>
+                  <div className="age-editor-row">
+                    <input
+                      id="patient-age"
+                      inputMode="numeric"
+                      max="110"
+                      min="18"
+                      onChange={(event) => setAgeInput(event.target.value)}
+                      type="number"
+                      value={ageInput}
+                    />
+                    <button disabled={isSavingAge} type="submit">
+                      {isSavingAge ? "Saving..." : "Save"}
+                    </button>
+                  </div>
+                  {ageStatusMessage ? (
+                    <p className="age-editor-status">{ageStatusMessage}</p>
+                  ) : null}
+                </form>
               </div>
             </section>
 

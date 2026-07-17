@@ -625,6 +625,68 @@ h1 {
   margin: 0;
 }
 
+.age-editor {
+  background: #f7fbfb;
+  border: 1px solid #cde8e4;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px;
+}
+
+.age-editor label {
+  color: #00606d;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.age-editor-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(88px, 120px) auto;
+}
+
+.age-editor input {
+  border: 1px solid #b9d8d4;
+  border-radius: 6px;
+  box-sizing: border-box;
+  color: #18212f;
+  font-weight: 900;
+  min-height: 38px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.age-editor input:focus {
+  border-color: #006f7b;
+  outline: 3px solid #d9f3f0;
+}
+
+.age-editor button {
+  background: #006f7b;
+  border: 1px solid #006f7b;
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 900;
+  min-height: 38px;
+  padding: 8px 12px;
+}
+
+.age-editor button:disabled {
+  background: #90a7a1;
+  border-color: #90a7a1;
+  cursor: not-allowed;
+}
+
+.age-editor-status {
+  color: #435166;
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin: 0;
+}
+
 .condition-grid {
   display: grid;
   gap: 12px;
