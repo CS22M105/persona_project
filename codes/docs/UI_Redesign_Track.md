@@ -62,3 +62,39 @@ to understand and review.
 Create the persona-specific page for COPD/SOB. That page should sit between the
 dashboard and the voice room, showing a concise patient briefing and a Start
 Voice Room button.
+
+## 2026-07-17 - Step UI-1B: Dashboard Webpage Layout
+
+### What Changed
+
+- Converted the dashboard from a large card-like container into a normal webpage
+  layout.
+- Made the navigation bar span the full page width.
+- Removed the outer white bordered container around the hero and persona grid.
+- Kept persona cards as individual cards inside the page body.
+
+### Why It Changed
+
+- The previous dashboard looked like all content was placed inside one large
+  card, with persona cards nested inside it.
+- A product dashboard should feel like a webpage: navigation first, then page
+  content, then independent cards.
+- This structure will scale better when more personas, filters, or admin actions
+  are added later.
+
+### How It Changed
+
+- Updated only CSS layout rules.
+- Set the dashboard shell to behave like a full page instead of a centered panel.
+- Changed the top navigation to full width.
+- Constrained the hero and persona grid content with a max-width while keeping
+  the page background visible.
+- Removed border, radius, shadow, and white background from the outer dashboard
+  body sections.
+
+### Files Changed
+
+- `codes/frontend/src/styles.css`
+  - Updated `.dashboard-shell`, `.dashboard-page`, `.dashboard-topbar`,
+    `.dashboard-hero`, and `.persona-grid`.
+  - Adjusted mobile spacing so the webpage layout remains clean on small screens.

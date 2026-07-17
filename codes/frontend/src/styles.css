@@ -212,27 +212,28 @@ h1 {
 .dashboard-shell {
   align-items: stretch;
   box-sizing: border-box;
-  justify-content: center;
+  display: block;
+  padding: 0;
 }
 
 .dashboard-page {
   box-sizing: border-box;
-  max-width: 1440px;
+  min-height: 100vh;
   width: 100%;
 }
 
 .dashboard-topbar {
   align-items: center;
   background: #00606d;
-  border-radius: 8px 8px 0 0;
-  box-shadow: 0 14px 30px rgb(24 33 47 / 10%);
+  box-shadow: 0 6px 18px rgb(24 33 47 / 12%);
   box-sizing: border-box;
   color: #ffffff;
   display: flex;
   gap: 16px;
   justify-content: space-between;
   min-height: 72px;
-  padding: 18px 22px;
+  padding: 18px max(24px, calc((100vw - 1200px) / 2));
+  width: 100%;
 }
 
 .dashboard-brand {
@@ -281,11 +282,10 @@ h1 {
 }
 
 .dashboard-hero {
-  background: #ffffff;
-  border: 1px solid #dbe2ea;
-  border-top: 0;
   box-sizing: border-box;
-  padding: 32px 22px 24px;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 42px 24px 24px;
 }
 
 .dashboard-hero h1 {
@@ -299,16 +299,13 @@ h1 {
 }
 
 .persona-grid {
-  background: #ffffff;
-  border: 1px solid #dbe2ea;
-  border-radius: 0 0 8px 8px;
-  border-top: 0;
-  box-shadow: 0 16px 36px rgb(24 33 47 / 8%);
   box-sizing: border-box;
   display: grid;
   gap: 18px;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  padding: 0 22px 28px;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 0 24px 48px;
 }
 
 .persona-select-card {
@@ -1184,7 +1181,7 @@ h1 {
   }
 
   .dashboard-hero {
-    padding: 24px 16px 18px;
+    padding: 28px 16px 18px;
   }
 
   .dashboard-hero h1 {
@@ -1193,7 +1190,7 @@ h1 {
 
   .persona-grid {
     grid-template-columns: 1fr;
-    padding: 0 16px 22px;
+    padding: 0 16px 28px;
   }
 
   .persona-select-card {
