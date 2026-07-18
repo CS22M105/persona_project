@@ -49,6 +49,8 @@ type AudioDeviceOption = {
   label: string;
 };
 
+type AudioDeviceType = "built_in" | "external";
+
 type AudioContextWithSink = AudioContext & {
   setSinkId?: (sinkId: string) => Promise<void>;
 };
@@ -184,8 +186,10 @@ export function VoiceRoom() {
   >([]);
   const [audioInputDevices, setAudioInputDevices] = useState<AudioDeviceOption[]>([]);
   const [audioOutputDevices, setAudioOutputDevices] = useState<AudioDeviceOption[]>([]);
-  const [selectedMicrophoneId, setSelectedMicrophoneId] = useState("");
-  const [selectedSpeakerId, setSelectedSpeakerId] = useState("");
+  const [selectedMicrophoneType, setSelectedMicrophoneType] =
+    useState<AudioDeviceType>("built_in");
+  const [selectedSpeakerType, setSelectedSpeakerType] =
+    useState<AudioDeviceType>("built_in");
   const [audioSetupMessage, setAudioSetupMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
@@ -222,7 +226,7 @@ export function VoiceRoom() {
     if (status === "ready") {
       applySelectedSpeaker();
     }
-  }, [selectedSpeakerId, status]);
+  }, [audioOutputDevices, selectedSpeakerType, status]);
 
   async function refreshPatientState(
     options: { syncVoiceInstructions?: boolean } = {},
@@ -272,10 +276,22 @@ export function VoiceRoom() {
     try {
       const sessionResponse = await createRealtimeVoiceSession();
       setStatus("requesting_microphone");
+      const microphoneDeviceId = resolveSelectedAudioDeviceId(
+        audioInputDevices,
+        selectedMicrophoneType,
+      );
+
+      if (selectedMicrophoneType === "external" && !microphoneDeviceId) {
+        setAudioSetupMessage(
+          "Pair or connect an external microphone to this laptop first.",
+        );
+        throw new Error("External microphone is not available.");
+      }
+
       const microphoneStream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          ...(selectedMicrophoneId
-            ? { deviceId: { exact: selectedMicrophoneId } }
+          ...(microphoneDeviceId
+            ? { deviceId: { exact: microphoneDeviceId } }
             : {}),
           echoCancellation: true,
           noiseSuppression: true,
@@ -285,8 +301,8 @@ export function VoiceRoom() {
 
       setStatus("connecting");
       await connectRealtimeWebRtc(sessionResponse, microphoneStream, remoteAudioRef);
-      await applySelectedSpeaker();
       await loadAudioDevices();
+      await applySelectedSpeaker();
       setVoiceSession(toPublicRealtimeSession(sessionResponse));
       setIsMuted(false);
       setStatus("ready");
@@ -332,10 +348,6 @@ export function VoiceRoom() {
 
       setAudioInputDevices(microphones);
       setAudioOutputDevices(speakers);
-      setSelectedMicrophoneId((currentId) =>
-        currentId || microphones[0]?.deviceId || "",
-      );
-      setSelectedSpeakerId((currentId) => currentId || speakers[0]?.deviceId || "");
     } catch {
       setAudioSetupMessage("Audio devices could not be loaded.");
     }
@@ -345,9 +357,21 @@ export function VoiceRoom() {
     setAudioSetupMessage("");
 
     try {
+      const microphoneDeviceId = resolveSelectedAudioDeviceId(
+        audioInputDevices,
+        selectedMicrophoneType,
+      );
+
+      if (selectedMicrophoneType === "external" && !microphoneDeviceId) {
+        setAudioSetupMessage(
+          "Pair or connect an external microphone to this laptop first.",
+        );
+        return;
+      }
+
       const testStream = await navigator.mediaDevices.getUserMedia({
-        audio: selectedMicrophoneId
-          ? { deviceId: { exact: selectedMicrophoneId } }
+        audio: microphoneDeviceId
+          ? { deviceId: { exact: microphoneDeviceId } }
           : true,
       });
       testStream.getTracks().forEach((track) => track.stop());
@@ -373,9 +397,21 @@ export function VoiceRoom() {
       }
 
       const audioContext = new AudioContextConstructor() as AudioContextWithSink;
+      const speakerDeviceId = resolveSelectedAudioDeviceId(
+        audioOutputDevices,
+        selectedSpeakerType,
+      );
 
-      if (selectedSpeakerId && audioContext.setSinkId) {
-        await audioContext.setSinkId(selectedSpeakerId);
+      if (selectedSpeakerType === "external" && !speakerDeviceId) {
+        setAudioSetupMessage(
+          "Pair or connect an external speaker to this laptop first.",
+        );
+        await audioContext.close();
+        return;
+      }
+
+      if (speakerDeviceId && audioContext.setSinkId) {
+        await audioContext.setSinkId(speakerDeviceId);
       }
 
       const oscillator = audioContext.createOscillator();
@@ -397,13 +433,22 @@ export function VoiceRoom() {
 
   async function applySelectedSpeaker() {
     const remoteAudio = remoteAudioRef.current as AudioElementWithSink | null;
+    const speakerDeviceId = resolveSelectedAudioDeviceId(
+      audioOutputDevices,
+      selectedSpeakerType,
+    );
 
-    if (!remoteAudio || !selectedSpeakerId || !remoteAudio.setSinkId) {
+    if (selectedSpeakerType === "external" && !speakerDeviceId) {
+      setAudioSetupMessage("Pair or connect an external speaker to this laptop first.");
+      return;
+    }
+
+    if (!remoteAudio || !speakerDeviceId || !remoteAudio.setSinkId) {
       return;
     }
 
     try {
-      await remoteAudio.setSinkId(selectedSpeakerId);
+      await remoteAudio.setSinkId(speakerDeviceId);
     } catch {
       setAudioSetupMessage("Speaker selection could not be applied.");
     }
@@ -944,16 +989,22 @@ export function VoiceRoom() {
               <div>
                 <h2 id="voice-instructor-title">Patient State Controls</h2>
               </div>
+              <button
+                className="heading-reset-button"
+                disabled={activeInstructorAction === "reset"}
+                onClick={handleResetState}
+                type="button"
+              >
+                <span className="heading-reset-icon" aria-hidden="true">
+                  <ControlIcon name="reset" />
+                </span>
+                <span>Reset patient state</span>
+                {activeInstructorAction === "reset" ? (
+                  <span className="button-spinner" aria-hidden="true" />
+                ) : null}
+              </button>
             </div>
             <div className="instructor-control-grid">
-              <ControlTile
-                disabled={activeInstructorAction === "reset"}
-                icon="reset"
-                isLoading={activeInstructorAction === "reset"}
-                label="Reset patient state"
-                onClick={handleResetState}
-                tone="secondary"
-              />
               {cueButtons.map((cue) => (
                 <ControlTile
                   disabled={activeInstructorAction === cue.cueId}
@@ -998,18 +1049,13 @@ export function VoiceRoom() {
               <div className="audio-device-row">
                 <select
                   id="voice-microphone"
-                  onChange={(event) => setSelectedMicrophoneId(event.target.value)}
-                  value={selectedMicrophoneId}
+                  onChange={(event) =>
+                    setSelectedMicrophoneType(event.target.value as AudioDeviceType)
+                  }
+                  value={selectedMicrophoneType}
                 >
-                  {audioInputDevices.length > 0 ? (
-                    audioInputDevices.map((device) => (
-                      <option key={device.deviceId} value={device.deviceId}>
-                        {device.label}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="">Default microphone</option>
-                  )}
+                  <option value="built_in">Built-in</option>
+                  <option value="external">External Bluetooth / USB</option>
                 </select>
                 <button onClick={handleTestMicrophone} type="button">
                   Test Mic
@@ -1020,24 +1066,23 @@ export function VoiceRoom() {
               <div className="audio-device-row">
                 <select
                   id="voice-speaker"
-                  onChange={(event) => setSelectedSpeakerId(event.target.value)}
-                  value={selectedSpeakerId}
+                  onChange={(event) =>
+                    setSelectedSpeakerType(event.target.value as AudioDeviceType)
+                  }
+                  value={selectedSpeakerType}
                 >
-                  {audioOutputDevices.length > 0 ? (
-                    audioOutputDevices.map((device) => (
-                      <option key={device.deviceId} value={device.deviceId}>
-                        {device.label}
-                      </option>
-                    ))
-                  ) : (
-                    <option value="">Default speaker</option>
-                  )}
+                  <option value="built_in">Built-in</option>
+                  <option value="external">External Bluetooth / USB</option>
                 </select>
                 <button onClick={handleTestSpeaker} type="button">
                   Test Speaker
                 </button>
               </div>
 
+              <p className="audio-setup-hint">
+                External devices must be paired or connected to this laptop before
+                starting the voice session.
+              </p>
               {audioSetupMessage ? (
                 <p className="audio-setup-message">{audioSetupMessage}</p>
               ) : null}
@@ -1423,6 +1468,41 @@ function deepMergePatientState<T extends Record<string, unknown>>(
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+
+function resolveSelectedAudioDeviceId(
+  devices: AudioDeviceOption[],
+  selectedType: AudioDeviceType,
+): string {
+  if (devices.length === 0) {
+    return "";
+  }
+
+  if (selectedType === "external") {
+    return devices.find((device) => !isBuiltInAudioDevice(device))?.deviceId ?? "";
+  }
+
+  return (
+    devices.find(isBuiltInAudioDevice)?.deviceId ??
+    devices.find((device) => device.deviceId === "default")?.deviceId ??
+    devices[0]?.deviceId ??
+    ""
+  );
+}
+
+
+function isBuiltInAudioDevice(device: AudioDeviceOption): boolean {
+  const label = device.label.toLowerCase();
+
+  return (
+    device.deviceId === "default" ||
+    label.includes("built-in") ||
+    label.includes("builtin") ||
+    label.includes("macbook") ||
+    label.includes("internal") ||
+    label.includes("default")
+  );
 }
 
 

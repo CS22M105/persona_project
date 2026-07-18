@@ -323,6 +323,83 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-18 - Step UI-6: Simplified Built-In / External Audio Selection
+
+### What Changed
+
+- Simplified Voice Room microphone selection to two instructor-facing options:
+  - Built-in
+  - External Bluetooth / USB
+- Simplified Voice Room speaker selection to two instructor-facing options:
+  - Built-in
+  - External Bluetooth / USB
+- Added a short hint explaining that external devices must already be paired or
+  connected to the laptop before starting the voice session.
+- Kept Test Mic and Test Speaker buttons.
+
+### Why It Changed
+
+- The previous device dropdown exposed every browser device name, which is too
+  technical for the instructor workflow.
+- The instructor only needs to decide whether the sim-room laptop should use its
+  built-in audio or an external lab mic/speaker.
+- Bluetooth pairing is handled by the operating system, not the web app, so the
+  UI should guide the instructor without implying the browser can pair devices.
+
+### How It Changed
+
+- Voice Room now stores audio choices as `built_in` or `external`.
+- The app resolves those choices to actual browser audio devices internally.
+- Built-in selection prefers default, built-in, MacBook, or internal device
+  labels.
+- External selection uses the first visible non-built-in audio device.
+- If External is selected but no external device is visible, the app shows a
+  clear connection message.
+
+### Files Changed
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Replaced raw audio device dropdown values with built-in/external choices.
+  - Added audio device resolution helpers.
+  - Updated microphone test, speaker test, voice connection, and speaker routing
+    to use the selected audio type.
+
+- `codes/frontend/src/styles.css`
+  - Added hint styling for the simplified audio setup section.
+
+## 2026-07-18 - Step UI-6: Reset Button Header Placement
+
+### What Changed
+
+- Moved `Reset patient state` out of the instructor cue grid.
+- Placed it beside the `Patient State Controls` heading.
+- Kept the same reset handler and loading spinner behavior.
+- Added compact styling so reset reads as a header-level action, not a clinical
+  cue.
+
+### Why It Changed
+
+- Reset is a session/state utility action, while the other buttons are clinical
+  patient-state cues.
+- Placing reset next to the section title makes the cue grid cleaner and easier
+  to scan during a live simulation.
+
+### How It Changed
+
+- Updated the Voice Room JSX to render a `heading-reset-button` inside the
+  control panel heading.
+- Removed the reset tile from the instructor control grid.
+- Added responsive CSS so the heading and reset button stack on small screens.
+
+### Files Changed
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Moved reset action into the Patient State Controls heading.
+
+- `codes/frontend/src/styles.css`
+  - Added compact header reset button styles.
+  - Added mobile stacking behavior for control panel headings.
+
 ## 2026-07-17 - Step UI-6: Smaller Patient State Control Buttons
 
 ### What Changed
