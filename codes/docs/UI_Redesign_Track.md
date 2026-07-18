@@ -768,3 +768,44 @@ event timeline should live inside the voice room, close to instructor controls.
   - Updated `.dashboard-shell`, `.dashboard-page`, `.dashboard-topbar`,
     `.dashboard-hero`, and `.persona-grid`.
   - Adjusted mobile spacing so the webpage layout remains clean on small screens.
+
+## 2026-07-18 - Step UI-5A: Move Voice Session Status
+
+### What Changed
+
+- Moved the voice session status details from the Voice Controls card to below
+  the Patient State Controls card.
+- Kept the same live data fields:
+  - Connection
+  - Microphone
+  - State sync
+  - AI paused
+  - Takeover
+  - Realtime model
+  - Voice
+  - Session
+- Made the status details more compact with a two-column label/value layout.
+
+### Why It Changed
+
+- The Voice Controls card needs to stay focused on audio setup and action
+  buttons.
+- Moving session status under Patient State Controls makes more information
+  visible on one screen without pushing the voice controls downward.
+- The status block is still connected to the same voice room state, so no
+  behavior changed.
+
+### How It Changed
+
+- Moved the existing `voice-session-grid` JSX from the Voice Controls section
+  into the Instructor/Patient State Controls section.
+- Added a small `Voice Session Status` heading above the moved details.
+- Added compact CSS scoped to `.voice-session-status-block`.
+
+### Files Changed
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Moved the session details block below instructor cue controls.
+
+- `codes/frontend/src/styles.css`
+  - Added compact styling for the moved session status block.

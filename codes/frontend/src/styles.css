@@ -1699,14 +1699,37 @@ h1 {
 }
 
 .voice-session-grid {
-  background: linear-gradient(90deg, #f7fbfb 0%, #f7f8fb 100%);
-  border: 1px solid #cde8e4;
+  background: #f7f8fb;
+  border: 1px solid #dbe2ea;
   border-radius: 6px;
   display: grid;
+  gap: 8px 14px;
+  grid-template-columns: 1fr;
+  margin: 14px 0 0;
+  padding: 12px;
+}
+
+.voice-session-status-block {
+  margin-top: 12px;
+}
+
+.voice-session-status-block h3 {
+  color: #18212f;
+  font-size: 0.88rem;
+  margin: 0 0 8px;
+}
+
+.voice-session-status-block .voice-session-grid {
   gap: 6px 10px;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  margin: 10px 0 0;
-  padding: 8px 10px;
+  grid-template-columns: minmax(94px, auto) minmax(0, 1fr);
+  margin: 0;
+  padding: 10px;
+}
+
+.voice-session-status-block .voice-session-grid dt,
+.voice-session-status-block .voice-session-grid dd {
+  font-size: 0.76rem;
+  line-height: 1.15;
 }
 
 .audio-setup-panel {
@@ -1789,17 +1812,14 @@ h1 {
 }
 
 .voice-session-grid dt {
-  color: #00606d;
-  font-size: 0.68rem;
-  font-weight: 900;
-  line-height: 1.1;
+  color: #667085;
+  font-size: 0.82rem;
+  font-weight: 700;
 }
 
 .voice-session-grid dd {
-  color: #18212f;
-  font-size: 0.76rem;
-  font-weight: 900;
-  line-height: 1.15;
+  font-weight: 700;
+  line-height: 1.25;
   margin: 0;
   overflow-wrap: anywhere;
 }
@@ -2040,10 +2060,6 @@ h1 {
       "transcript";
   }
 
-  .voice-session-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .chat-card {
     padding: 0;
   }
@@ -2065,10 +2081,6 @@ h1 {
       "instructor instructor instructor controls controls controls"
       "conversation conversation conversation conversation conversation conversation"
       "transcript transcript transcript transcript transcript transcript";
-  }
-
-  .voice-session-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .persona-brief-card:nth-child(1),

@@ -978,38 +978,6 @@ export function VoiceRoom() {
             ) : (
               <p className="dashboard-note">Patient state has not loaded yet.</p>
             )}
-            <dl className="voice-session-grid">
-              <VoiceDetail label="Connection" value={statusLabel} />
-              <VoiceDetail label="Microphone" value={isMuted ? "Muted" : "Ready"} />
-              <VoiceDetail
-                label="State sync"
-                value={lastInstructionSyncAt ?? "Waiting"}
-              />
-              <VoiceDetail
-                label="AI paused"
-                value={patientState ? formatBoolean(patientState.safety.ai_paused) : "Unknown"}
-              />
-              <VoiceDetail
-                label="Takeover"
-                value={
-                  patientState
-                    ? formatBoolean(patientState.safety.instructor_takeover)
-                    : "Unknown"
-                }
-              />
-              <VoiceDetail
-                label="Realtime model"
-                value={voiceSession?.model ?? "Not connected"}
-              />
-              <VoiceDetail
-                label="Voice"
-                value={voiceSession?.voice ?? "Not connected"}
-              />
-              <VoiceDetail
-                label="Session"
-                value={voiceSession?.session_id ?? "Not connected"}
-              />
-            </dl>
           </section>
 
           <section
@@ -1047,6 +1015,42 @@ export function VoiceRoom() {
                   icon={cue.icon}
                 />
               ))}
+            </div>
+            <div className="voice-session-status-block">
+              <h3>Voice Session Status</h3>
+              <dl className="voice-session-grid">
+                <VoiceDetail label="Connection" value={statusLabel} />
+                <VoiceDetail label="Microphone" value={isMuted ? "Muted" : "Ready"} />
+                <VoiceDetail
+                  label="State sync"
+                  value={lastInstructionSyncAt ?? "Waiting"}
+                />
+                <VoiceDetail
+                  label="AI paused"
+                  value={
+                    patientState
+                      ? formatBoolean(patientState.safety.ai_paused)
+                      : "Unknown"
+                  }
+                />
+                <VoiceDetail
+                  label="Takeover"
+                  value={
+                    patientState
+                      ? formatBoolean(patientState.safety.instructor_takeover)
+                      : "Unknown"
+                  }
+                />
+                <VoiceDetail
+                  label="Realtime model"
+                  value={voiceSession?.model ?? "Not connected"}
+                />
+                <VoiceDetail label="Voice" value={voiceSession?.voice ?? "Not connected"} />
+                <VoiceDetail
+                  label="Session"
+                  value={voiceSession?.session_id ?? "Not connected"}
+                />
+              </dl>
             </div>
           </section>
 
