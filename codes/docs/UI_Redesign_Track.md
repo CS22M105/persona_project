@@ -323,6 +323,40 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-17 - Step UI-6: Heart ECG Icons
+
+### What Changed
+
+- Added a heart icon with an ECG wave inside it to the Persona Page Baseline
+  State card.
+- Added the same heart ECG icon to the Dashboard cards for:
+  - Post-op Pain
+  - Chest Pain
+
+### Why It Changed
+
+- The baseline condition section now has a clearer clinical visual signal.
+- Post-op Pain and Chest Pain are cardiac/pain-related persona cards, so the
+  heart ECG icon communicates the scenario category better than text initials.
+
+### How It Changed
+
+- Added a small inline SVG heart ECG icon in the relevant React components.
+- Styled the icon with the existing clinical color system.
+- Kept the change visual-only; no route, API, or session behavior changed.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Added the heart ECG icon to the Baseline State card header.
+
+- `codes/frontend/src/pages/Dashboard.tsx`
+  - Uses the heart ECG icon for Post-op Pain and Chest Pain persona cards.
+
+- `codes/frontend/src/styles.css`
+  - Added reusable heart ECG icon styling.
+  - Added Baseline State icon container styling.
+
 ## 2026-07-17 - Step UI-5: Limit Gender Options
 
 ### What Changed

@@ -94,7 +94,11 @@ export function Dashboard() {
               key={persona.id}
             >
               <div className="persona-card-mark" aria-hidden="true">
-                {getPersonaInitials(persona.name)}
+                {shouldUseHeartEcgIcon(persona.id) ? (
+                  <HeartEcgIcon />
+                ) : (
+                  getPersonaInitials(persona.name)
+                )}
               </div>
               <div>
                 <h2>{persona.name}</h2>
@@ -151,4 +155,22 @@ function getPersonaInitials(name: string): string {
 
 function getDifficultyClass(difficulty: PersonaCard["difficulty"]): string {
   return `persona-chip-${difficulty.toLowerCase()}`;
+}
+
+function shouldUseHeartEcgIcon(personaId: string): boolean {
+  return personaId === "post-op-pain" || personaId === "chest-pain";
+}
+
+function HeartEcgIcon() {
+  return (
+    <svg
+      className="heart-ecg-icon"
+      fill="none"
+      viewBox="0 0 48 48"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M24 40s-15-8.9-18.4-20.2C3.4 12.5 7.7 7 14.2 7c3.8 0 7.1 2.1 9.8 5.7C26.7 9.1 30 7 33.8 7c6.5 0 10.8 5.5 8.6 12.8C39 31.1 24 40 24 40Z" />
+      <path d="M10 23h7l3-6 5.5 13 4-8h8.5" />
+    </svg>
+  );
 }

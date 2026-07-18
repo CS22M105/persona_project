@@ -349,6 +349,15 @@ h1 {
   width: 48px;
 }
 
+.heart-ecg-icon {
+  height: 30px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  width: 30px;
+}
+
 .persona-select-card h2 {
   color: #18212f;
   font-size: 1.24rem;
@@ -731,6 +740,31 @@ h1 {
   gap: 12px;
   justify-content: space-between;
   margin-bottom: 12px;
+}
+
+.condition-title-row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+
+.condition-title-icon {
+  align-items: center;
+  background: #fff0f3;
+  border: 1px solid #f3bdc8;
+  border-radius: 999px;
+  color: #b4233f;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 42px;
+  justify-content: center;
+  width: 42px;
+}
+
+.condition-title-icon .heart-ecg-icon {
+  height: 28px;
+  width: 28px;
 }
 
 .condition-card-header h2 {
