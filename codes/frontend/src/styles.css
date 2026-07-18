@@ -786,6 +786,7 @@ h1 {
   grid-template-rows: auto 1fr;
   min-height: 86px;
   padding: 12px;
+  position: relative;
 }
 
 .condition-label {
@@ -802,7 +803,9 @@ h1 {
   display: grid;
   justify-items: end;
   justify-self: end;
+  position: relative;
   text-align: right;
+  z-index: 1;
 }
 
 .condition-value strong {
@@ -820,6 +823,20 @@ h1 {
 .condition-metric-heart {
   background: #fff0f3;
   border-color: #f3bdc8;
+}
+
+.condition-metric-center-icon {
+  color: #b4233f;
+  left: 50%;
+  opacity: 0.18;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.condition-metric-center-icon .heart-ecg-icon {
+  height: 58px;
+  width: 58px;
 }
 
 .condition-metric-heart strong {
@@ -1425,17 +1442,18 @@ h1 {
 
 .voice-state-card {
   grid-area: state;
-  padding: 12px 14px;
+  padding: 8px 10px;
 }
 
 .voice-state-card h2 {
-  margin-bottom: 10px;
+  font-size: 0.92rem;
+  margin-bottom: 6px;
 }
 
 .voice-state-grid {
   display: grid;
-  gap: 8px;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+  grid-template-columns: repeat(14, minmax(0, 1fr));
 }
 
 .voice-state-item {
@@ -1446,8 +1464,8 @@ h1 {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 54px;
-  padding: 8px 10px;
+  min-height: 42px;
+  padding: 6px 8px;
   position: relative;
   transition:
     background 140ms ease,
@@ -1484,10 +1502,10 @@ h1 {
   border-radius: 999px;
   color: #ffffff;
   display: block;
-  font-size: 0.64rem;
+  font-size: 0.56rem;
   font-weight: 900;
   line-height: 1;
-  padding: 4px 6px;
+  padding: 3px 5px;
   position: absolute;
   right: 6px;
   text-transform: uppercase;
@@ -1552,10 +1570,10 @@ h1 {
   align-self: flex-start;
   color: #4b5563;
   display: block;
-  font-size: 0.76rem;
+  font-size: 0.68rem;
   font-weight: 800;
   line-height: 1.1;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   max-width: 100%;
 }
 
@@ -1563,7 +1581,7 @@ h1 {
   align-self: flex-end;
   color: #18212f;
   display: block;
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   font-weight: 800;
   line-height: 1.15;
   overflow-wrap: anywhere;
@@ -1575,7 +1593,7 @@ h1 {
 }
 
 .voice-state-item-emphasized .voice-state-value {
-  font-size: 1rem;
+  font-size: 0.86rem;
 }
 
 .voice-state-item-status .voice-state-value {
@@ -1939,6 +1957,10 @@ h1 {
 @media (min-width: 641px) and (max-width: 1100px) {
   .persona-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .voice-state-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   .voice-grid {
