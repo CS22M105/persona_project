@@ -323,6 +323,69 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-17 - Step UI-6: Smaller Patient State Control Buttons
+
+### What Changed
+
+- Made the instructor patient-state control tiles smaller.
+- Replaced text badges such as `RST`, `HR`, and `O2` with inline SVG line icons.
+- Kept the existing instructor cue behavior unchanged.
+
+### Why It Changed
+
+- The patient-state controls were taking too much space in the Voice Room.
+- Letter badges did not look like true icons.
+- Instructors need fast scanning during a live scenario, so compact icon buttons
+  are easier to read.
+
+### How It Changed
+
+- Added icon names to the existing cue button definitions.
+- Added a reusable `ControlIcon` renderer inside `VoiceRoom.tsx`.
+- Updated `ControlTile` so it can show either an SVG icon or a text symbol.
+- Scoped smaller sizing to `.voice-instructor-card` so voice controls remain
+  large enough for important connection and safety actions.
+
+### Files Changed
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Adds icon metadata for patient-state controls.
+  - Adds inline SVG icon rendering.
+  - Uses icons for Reset, SpO2 dropped, HR increased, Breathing worsened,
+    Oxygen applied, Bronchodilator given, and Patient improving.
+
+- `codes/frontend/src/styles.css`
+  - Adds SVG icon sizing.
+  - Shrinks patient-state control tiles only inside the instructor control card.
+
+## 2026-07-17 - Step UI-6: HR Baseline ECG Icon
+
+### What Changed
+
+- Added a heart ECG icon inside the HR card in the Persona Page Baseline State
+  section.
+
+### Why It Changed
+
+- The HR card should be visually recognizable at a glance.
+- The ECG symbol makes the heart-rate card easier to identify without adding
+  extra text.
+
+### How It Changed
+
+- Reused the existing `HeartEcgIcon` component.
+- Rendered the ECG symbol only for the HR metric card.
+- Styled the icon as a centered, low-opacity visual mark so the HR value remains
+  readable.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Added the ECG icon inside the HR condition metric.
+
+- `codes/frontend/src/styles.css`
+  - Added centered icon styling for the HR condition card.
+
 ## 2026-07-17 - Step UI-6: Heart ECG Icons
 
 ### What Changed

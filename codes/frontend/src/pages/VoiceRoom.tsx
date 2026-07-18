@@ -57,11 +57,25 @@ type AudioElementWithSink = HTMLAudioElement & {
   setSinkId?: (sinkId: string) => Promise<void>;
 };
 
-const cueButtons = [
+type ControlIconName =
+  | "activity"
+  | "air"
+  | "heart"
+  | "oxygen"
+  | "reset"
+  | "therapy"
+  | "trendUp";
+
+const cueButtons: {
+  cueId: string;
+  icon: ControlIconName;
+  label: string;
+  stateUpdates: Record<string, unknown>;
+}[] = [
   {
     cueId: "spo2_dropped",
     label: "SpO2 dropped",
-    symbol: "O2",
+    icon: "oxygen",
     stateUpdates: {
       vitals: { spo2: 88 },
       symptoms: { breathing_effort: "severe" },
@@ -75,7 +89,7 @@ const cueButtons = [
   {
     cueId: "hr_increased",
     label: "HR increased",
-    symbol: "HR",
+    icon: "heart",
     stateUpdates: {
       vitals: { heart_rate: 128 },
       emotion: { anxiety: "high" },
@@ -84,7 +98,7 @@ const cueButtons = [
   {
     cueId: "breathing_worsened",
     label: "Breathing worsened",
-    symbol: "RR",
+    icon: "air",
     stateUpdates: {
       stage: "worsening",
       symptoms: {
@@ -100,7 +114,7 @@ const cueButtons = [
   {
     cueId: "oxygen_applied",
     label: "Oxygen applied",
-    symbol: "O2+",
+    icon: "activity",
     stateUpdates: {
       interventions: { oxygen_applied: true },
     },
@@ -108,7 +122,7 @@ const cueButtons = [
   {
     cueId: "bronchodilator_given",
     label: "Bronchodilator given",
-    symbol: "Rx",
+    icon: "therapy",
     stateUpdates: {
       interventions: { bronchodilator_given: true },
     },
@@ -116,7 +130,7 @@ const cueButtons = [
   {
     cueId: "patient_improving",
     label: "Patient improving",
-    symbol: "OK",
+    icon: "trendUp",
     stateUpdates: {
       stage: "partial_improvement",
       vitals: {
@@ -928,17 +942,16 @@ export function VoiceRoom() {
           >
             <div className="control-panel-heading">
               <div>
-                <p className="eyebrow">Instructor</p>
                 <h2 id="voice-instructor-title">Patient State Controls</h2>
               </div>
             </div>
             <div className="instructor-control-grid">
               <ControlTile
                 disabled={activeInstructorAction === "reset"}
+                icon="reset"
                 isLoading={activeInstructorAction === "reset"}
                 label="Reset patient state"
                 onClick={handleResetState}
-                symbol="RST"
                 tone="secondary"
               />
               {cueButtons.map((cue) => (
@@ -948,7 +961,7 @@ export function VoiceRoom() {
                   key={cue.cueId}
                   label={cue.label}
                   onClick={() => handleCueClick(cue.cueId)}
-                  symbol={cue.symbol}
+                  icon={cue.icon}
                 />
               ))}
             </div>
@@ -1181,17 +1194,19 @@ function toPublicRealtimeSession(
 
 function ControlTile({
   disabled,
+  icon,
   isLoading = false,
   label,
   onClick,
-  symbol,
+  symbol = "",
   tone = "default",
 }: {
   disabled: boolean;
+  icon?: ControlIconName;
   isLoading?: boolean;
   label: string;
   onClick: () => void;
-  symbol: string;
+  symbol?: string;
   tone?: "default" | "danger" | "secondary" | "success" | "warning";
 }) {
   return (
@@ -1202,11 +1217,85 @@ function ControlTile({
       type="button"
     >
       <span className="control-tile-symbol" aria-hidden="true">
-        {symbol}
+        {icon ? <ControlIcon name={icon} /> : symbol}
       </span>
       <span className="control-tile-label">{label}</span>
       {isLoading ? <span className="button-spinner" aria-hidden="true" /> : null}
     </button>
+  );
+}
+
+
+function ControlIcon({ name }: { name: ControlIconName }) {
+  const commonProps = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    strokeWidth: 2,
+    viewBox: "0 0 24 24",
+  };
+
+  if (name === "reset") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M4 7v5h5" />
+        <path d="M5.7 16.4A7 7 0 1 0 6 7.8L4 12" />
+      </svg>
+    );
+  }
+
+  if (name === "oxygen") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <circle cx="9" cy="12" r="4" />
+        <path d="M16 9h4l-4 6h4" />
+      </svg>
+    );
+  }
+
+  if (name === "heart") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 0 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1Z" />
+      </svg>
+    );
+  }
+
+  if (name === "air") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M4 8h10a3 3 0 1 0-3-3" />
+        <path d="M4 12h15" />
+        <path d="M4 16h10a3 3 0 1 1-3 3" />
+      </svg>
+    );
+  }
+
+  if (name === "activity") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M4 12h4l2-6 4 12 2-6h4" />
+      </svg>
+    );
+  }
+
+  if (name === "therapy") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M10 21h4" />
+        <path d="M12 17v4" />
+        <path d="M8 3h8v8a4 4 0 0 1-8 0Z" />
+        <path d="M8 8h8" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="control-tile-icon" {...commonProps}>
+      <path d="M4 17 10 11l4 4 6-8" />
+      <path d="M15 7h5v5" />
+    </svg>
   );
 }
 

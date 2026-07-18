@@ -1391,6 +1391,11 @@ h1 {
   width: 36px;
 }
 
+.control-tile-icon {
+  height: 20px;
+  width: 20px;
+}
+
 .control-tile-label {
   font-size: 0.86rem;
   font-weight: 900;
@@ -1423,6 +1428,33 @@ h1 {
   color: #9b1c1c;
 }
 
+.voice-instructor-card .instructor-control-grid {
+  gap: 8px;
+}
+
+.voice-instructor-card .control-tile {
+  gap: 5px;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  min-height: 44px;
+  padding: 6px 7px;
+}
+
+.voice-instructor-card .control-tile-symbol {
+  border-radius: 7px;
+  height: 28px;
+  width: 28px;
+}
+
+.voice-instructor-card .control-tile-icon {
+  height: 17px;
+  width: 17px;
+}
+
+.voice-instructor-card .control-tile-label {
+  font-size: 0.78rem;
+  line-height: 1.08;
+}
+
 .button-spinner {
   animation: spin 700ms linear infinite;
   border: 2px solid currentColor;
@@ -1442,18 +1474,17 @@ h1 {
 
 .voice-state-card {
   grid-area: state;
-  padding: 8px 10px;
+  padding: 12px 14px;
 }
 
 .voice-state-card h2 {
-  font-size: 0.92rem;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .voice-state-grid {
   display: grid;
-  gap: 6px;
-  grid-template-columns: repeat(14, minmax(0, 1fr));
+  gap: 8px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .voice-state-item {
@@ -1464,8 +1495,8 @@ h1 {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 42px;
-  padding: 6px 8px;
+  min-height: 54px;
+  padding: 8px 10px;
   position: relative;
   transition:
     background 140ms ease,
@@ -1502,10 +1533,10 @@ h1 {
   border-radius: 999px;
   color: #ffffff;
   display: block;
-  font-size: 0.56rem;
+  font-size: 0.64rem;
   font-weight: 900;
   line-height: 1;
-  padding: 3px 5px;
+  padding: 4px 6px;
   position: absolute;
   right: 6px;
   text-transform: uppercase;
@@ -1570,10 +1601,10 @@ h1 {
   align-self: flex-start;
   color: #4b5563;
   display: block;
-  font-size: 0.68rem;
+  font-size: 0.76rem;
   font-weight: 800;
   line-height: 1.1;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
   max-width: 100%;
 }
 
@@ -1581,7 +1612,7 @@ h1 {
   align-self: flex-end;
   color: #18212f;
   display: block;
-  font-size: 0.78rem;
+  font-size: 0.92rem;
   font-weight: 800;
   line-height: 1.15;
   overflow-wrap: anywhere;
@@ -1593,7 +1624,7 @@ h1 {
 }
 
 .voice-state-item-emphasized .voice-state-value {
-  font-size: 0.86rem;
+  font-size: 1rem;
 }
 
 .voice-state-item-status .voice-state-value {
@@ -1957,10 +1988,6 @@ h1 {
 @media (min-width: 641px) and (max-width: 1100px) {
   .persona-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .voice-state-grid {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   .voice-grid {
