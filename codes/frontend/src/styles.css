@@ -1663,7 +1663,6 @@ h1 {
 }
 
 .voice-state-label {
-  align-self: flex-start;
   color: #4b5563;
   display: block;
   font-size: 0.76rem;
@@ -1671,6 +1670,31 @@ h1 {
   line-height: 1.1;
   margin-bottom: 4px;
   max-width: 100%;
+}
+
+.voice-state-topline {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.voice-state-icon {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 7px;
+  color: #4b5563;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.voice-state-icon .control-tile-icon {
+  height: 15px;
+  width: 15px;
 }
 
 .voice-state-value {
@@ -1696,7 +1720,19 @@ h1 {
   color: #273a56;
 }
 
+.voice-state-item-status .voice-state-icon {
+  background: #ffffff;
+  border-color: #c8d4e3;
+  color: #273a56;
+}
+
 .voice-state-item-vital .voice-state-value {
+  color: #1f5f4f;
+}
+
+.voice-state-item-vital .voice-state-icon {
+  background: #ffffff;
+  border-color: #b9dec6;
   color: #1f5f4f;
 }
 
@@ -1704,7 +1740,19 @@ h1 {
   color: #704a00;
 }
 
+.voice-state-item-symptom .voice-state-icon {
+  background: #ffffff;
+  border-color: #efd08a;
+  color: #9a5b00;
+}
+
 .voice-state-item-emotion .voice-state-value {
+  color: #8f263a;
+}
+
+.voice-state-item-emotion .voice-state-icon {
+  background: #ffffff;
+  border-color: #f3bdc8;
   color: #8f263a;
 }
 
@@ -1712,7 +1760,19 @@ h1 {
   color: #244f8f;
 }
 
+.voice-state-item-voice .voice-state-icon {
+  background: #ffffff;
+  border-color: #c8dcff;
+  color: #244f8f;
+}
+
 .voice-state-item-intervention .voice-state-value {
+  color: #3e6d2d;
+}
+
+.voice-state-item-intervention .voice-state-icon {
+  background: #ffffff;
+  border-color: #cbe2bd;
   color: #3e6d2d;
 }
 

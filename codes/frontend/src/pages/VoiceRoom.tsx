@@ -62,10 +62,26 @@ type AudioElementWithSink = HTMLAudioElement & {
 type ControlIconName =
   | "activity"
   | "air"
+  | "anxiety"
+  | "chest"
+  | "fatigue"
   | "heart"
+  | "mic"
+  | "micOff"
   | "oxygen"
+  | "pause"
+  | "play"
+  | "plug"
+  | "plugOff"
+  | "pressure"
+  | "refresh"
   | "reset"
+  | "shield"
+  | "speech"
+  | "stage"
+  | "status"
   | "therapy"
+  | "tone"
   | "trendUp";
 
 const cueButtons: {
@@ -886,12 +902,14 @@ export function VoiceRoom() {
               <div className="voice-state-grid">
                 <StateMetric
                   highlighted={highlightedStateKeys.includes("status")}
+                  icon="status"
                   label="Status"
                   tone="status"
                   value={patientState.status}
                 />
                 <StateMetric
                   highlighted={highlightedStateKeys.includes("stage")}
+                  icon="stage"
                   label="Stage"
                   tone="status"
                   value={patientState.stage}
@@ -899,6 +917,7 @@ export function VoiceRoom() {
                 <StateMetric
                   emphasized
                   highlighted={highlightedStateKeys.includes("heart_rate")}
+                  icon="heart"
                   label="HR"
                   tone="vital"
                   value={`${patientState.vitals.heart_rate} bpm`}
@@ -906,6 +925,7 @@ export function VoiceRoom() {
                 <StateMetric
                   emphasized
                   highlighted={highlightedStateKeys.includes("spo2")}
+                  icon="oxygen"
                   label="SpO2"
                   tone="vital"
                   value={`${patientState.vitals.spo2}%`}
@@ -913,12 +933,14 @@ export function VoiceRoom() {
                 <StateMetric
                   emphasized
                   highlighted={highlightedStateKeys.includes("respiratory_rate")}
+                  icon="air"
                   label="RR"
                   tone="vital"
                   value={`${patientState.vitals.respiratory_rate}/min`}
                 />
                 <StateMetric
                   highlighted={highlightedStateKeys.includes("blood_pressure")}
+                  icon="pressure"
                   label="BP"
                   tone="vital"
                   value={patientState.vitals.blood_pressure}
@@ -926,48 +948,56 @@ export function VoiceRoom() {
                 <StateMetric
                   emphasized
                   highlighted={highlightedStateKeys.includes("breathing_effort")}
+                  icon="air"
                   label="Breathing effort"
                   tone="symptom"
                   value={patientState.symptoms.breathing_effort}
                 />
                 <StateMetric
                   highlighted={highlightedStateKeys.includes("chest_tightness")}
+                  icon="chest"
                   label="Chest tightness"
                   tone="symptom"
                   value={patientState.symptoms.chest_tightness}
                 />
                 <StateMetric
                   highlighted={highlightedStateKeys.includes("anxiety")}
+                  icon="anxiety"
                   label="Anxiety"
                   tone="emotion"
                   value={patientState.emotion.anxiety}
                 />
                 <StateMetric
                   highlighted={highlightedStateKeys.includes("fatigue")}
+                  icon="fatigue"
                   label="Fatigue"
                   tone="emotion"
                   value={patientState.emotion.fatigue}
                 />
                 <StateMetric
                   highlighted={highlightedStateKeys.includes("speech_pattern")}
+                  icon="speech"
                   label="Speech"
                   tone="voice"
                   value={patientState.voice_behavior.speech_pattern}
                 />
                 <StateMetric
                   highlighted={highlightedStateKeys.includes("tone")}
+                  icon="tone"
                   label="Tone"
                   tone="voice"
                   value={patientState.voice_behavior.tone}
                 />
                 <StateMetric
                   highlighted={highlightedStateKeys.includes("oxygen_applied")}
+                  icon="oxygen"
                   label="Oxygen"
                   tone="intervention"
                   value={formatBoolean(patientState.interventions.oxygen_applied)}
                 />
                 <StateMetric
                   highlighted={highlightedStateKeys.includes("bronchodilator_given")}
+                  icon="therapy"
                   label="Bronchodilator"
                   tone="intervention"
                   value={formatBoolean(patientState.interventions.bronchodilator_given)}
@@ -1128,60 +1158,60 @@ export function VoiceRoom() {
             <div className="voice-control-grid">
               <ControlTile
                 disabled={!canConnect}
+                icon="plug"
                 label={
                   status === "connecting" || status === "requesting_microphone"
                     ? "Connecting"
                     : "Connect"
                 }
                 onClick={handleConnectVoice}
-                symbol="ON"
                 tone="success"
               />
               <ControlTile
                 disabled={!canDisconnect}
+                icon="plugOff"
                 label="Disconnect"
                 onClick={handleDisconnectVoice}
-                symbol="OFF"
                 tone="danger"
               />
               <ControlTile
                 disabled={!canDisconnect}
+                icon={isMuted ? "mic" : "micOff"}
                 label={isMuted ? "Unmute" : "Mute"}
                 onClick={handleToggleMute}
-                symbol={isMuted ? "MIC" : "MUT"}
               />
               <ControlTile
                 disabled={status === "connecting" || status === "requesting_microphone"}
+                icon="refresh"
                 label="Refresh"
                 onClick={() => refreshPatientState({ syncVoiceInstructions: true })}
-                symbol="REF"
               />
               <ControlTile
                 disabled={!canUseSafetyControls || aiIsPaused}
+                icon="pause"
                 label="Pause AI"
                 onClick={handlePauseAi}
-                symbol="PAU"
                 tone="warning"
               />
               <ControlTile
                 disabled={!canUseSafetyControls || !aiIsPaused || takeoverIsActive}
+                icon="play"
                 label="Resume AI"
                 onClick={handleResumeAi}
-                symbol="RES"
                 tone="success"
               />
               <ControlTile
                 disabled={!canUseSafetyControls || takeoverIsActive}
+                icon="shield"
                 label="Takeover"
                 onClick={handleStartTakeover}
-                symbol="CTL"
                 tone="warning"
               />
               <ControlTile
                 disabled={!canUseSafetyControls || !takeoverIsActive}
+                icon="reset"
                 label="Release"
                 onClick={handleEndTakeover}
-                symbol="REL"
               />
             </div>
 
@@ -1283,6 +1313,171 @@ function ControlIcon({ name }: { name: ControlIconName }) {
     );
   }
 
+  if (name === "plug") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M9 7V3" />
+        <path d="M15 7V3" />
+        <path d="M7 7h10v4a5 5 0 0 1-10 0Z" />
+        <path d="M12 16v5" />
+      </svg>
+    );
+  }
+
+  if (name === "plugOff") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M9 7V3" />
+        <path d="M15 7V3" />
+        <path d="M7 7h10v4a5 5 0 0 1-1.4 3.5" />
+        <path d="M12 16v5" />
+        <path d="M4 4l16 16" />
+      </svg>
+    );
+  }
+
+  if (name === "mic") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <rect x="9" y="3" width="6" height="11" rx="3" />
+        <path d="M5 11a7 7 0 0 0 14 0" />
+        <path d="M12 18v3" />
+      </svg>
+    );
+  }
+
+  if (name === "micOff") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M9.5 4.5A3 3 0 0 1 15 6v5" />
+        <path d="M9 9v2a3 3 0 0 0 4.4 2.7" />
+        <path d="M5 11a7 7 0 0 0 10.4 6.1" />
+        <path d="M12 18v3" />
+        <path d="M4 4l16 16" />
+      </svg>
+    );
+  }
+
+  if (name === "refresh") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M20 11a8 8 0 0 0-14.7-4" />
+        <path d="M5 3v4h4" />
+        <path d="M4 13a8 8 0 0 0 14.7 4" />
+        <path d="M19 21v-4h-4" />
+      </svg>
+    );
+  }
+
+  if (name === "pause") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M8 5v14" />
+        <path d="M16 5v14" />
+      </svg>
+    );
+  }
+
+  if (name === "play") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="m8 5 11 7-11 7Z" />
+      </svg>
+    );
+  }
+
+  if (name === "shield") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+        <path d="M9 12h6" />
+      </svg>
+    );
+  }
+
+  if (name === "status") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <circle cx="12" cy="12" r="8" />
+        <path d="M12 8v4l3 2" />
+      </svg>
+    );
+  }
+
+  if (name === "stage") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M4 6h16" />
+        <path d="M4 12h10" />
+        <path d="M4 18h6" />
+      </svg>
+    );
+  }
+
+  if (name === "pressure") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M5 19a8 8 0 1 1 14 0" />
+        <path d="m12 13 4-4" />
+        <path d="M12 19v-2" />
+      </svg>
+    );
+  }
+
+  if (name === "chest") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M8 20V9a4 4 0 0 1 8 0v11" />
+        <path d="M8 12H5" />
+        <path d="M16 12h3" />
+        <path d="M12 9v11" />
+      </svg>
+    );
+  }
+
+  if (name === "anxiety") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <circle cx="12" cy="12" r="8" />
+        <path d="M9 10h.01" />
+        <path d="M15 10h.01" />
+        <path d="M9 16c1.5-1 4.5-1 6 0" />
+      </svg>
+    );
+  }
+
+  if (name === "fatigue") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M4 14c2-4 14-4 16 0" />
+        <path d="M7 17h10" />
+        <path d="M9 7h6" />
+      </svg>
+    );
+  }
+
+  if (name === "speech") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M5 5h14v10H8l-3 3Z" />
+        <path d="M8 9h8" />
+        <path d="M8 12h5" />
+      </svg>
+    );
+  }
+
+  if (name === "tone") {
+    return (
+      <svg className="control-tile-icon" {...commonProps}>
+        <path d="M4 14v-4" />
+        <path d="M8 17V7" />
+        <path d="M12 20V4" />
+        <path d="M16 17V7" />
+        <path d="M20 14v-4" />
+      </svg>
+    );
+  }
+
   if (name === "air") {
     return (
       <svg className="control-tile-icon" {...commonProps}>
@@ -1334,12 +1529,14 @@ function VoiceDetail({ label, value }: { label: string; value: string }) {
 function StateMetric({
   emphasized = false,
   highlighted = false,
+  icon,
   label,
   tone = "default",
   value,
 }: {
   emphasized?: boolean;
   highlighted?: boolean;
+  icon: ControlIconName;
   label: string;
   tone?: "default" | "emotion" | "intervention" | "status" | "symptom" | "vital" | "voice";
   value: string;
@@ -1351,7 +1548,12 @@ function StateMetric({
       }${highlighted ? " voice-state-item-highlighted" : ""
       }`}
     >
-      <span className="voice-state-label">{label}</span>
+      <span className="voice-state-topline">
+        <span className="voice-state-icon" aria-hidden="true">
+          <ControlIcon name={icon} />
+        </span>
+        <span className="voice-state-label">{label}</span>
+      </span>
       <span className="voice-state-value">{value}</span>
       {highlighted ? <span className="voice-state-updated-badge">Updated</span> : null}
     </div>

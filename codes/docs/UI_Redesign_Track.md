@@ -323,6 +323,65 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-18 - Step UI-6: Voice Room Icons
+
+### What Changed
+
+- Replaced voice-control text abbreviations with real icon buttons.
+- Added icons to Current Patient State subcards.
+- Patient-state icons now appear for:
+  - Status
+  - Stage
+  - HR
+  - SpO2
+  - RR
+  - BP
+  - Breathing effort
+  - Chest tightness
+  - Anxiety
+  - Fatigue
+  - Speech
+  - Tone
+  - Oxygen
+  - Bronchodilator
+- Voice-control icons now appear for:
+  - Connect
+  - Disconnect
+  - Mute / Unmute
+  - Refresh
+  - Pause AI
+  - Resume AI
+  - Takeover
+  - Release
+
+### Why It Changed
+
+- The previous voice controls used text abbreviations such as `ON`, `OFF`, and
+  `REF`, which were less intuitive.
+- Patient-state subcards are easier to scan during a live simulation when each
+  clinical value has a matching visual cue.
+- Icons make the voice room feel more polished and closer to a production
+  clinical simulation interface.
+
+### How It Changed
+
+- Extended the existing local `ControlIcon` SVG component.
+- Passed icon names into `ControlTile` for voice-control buttons.
+- Added an icon prop to `StateMetric`.
+- Added state-card icon styling in CSS while preserving existing highlight and
+  color behavior.
+
+### Files Changed
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Added icon names for voice controls and patient-state subcards.
+  - Extended the local icon component with additional SVG icons.
+  - Updated `StateMetric` to render icons.
+
+- `codes/frontend/src/styles.css`
+  - Added patient-state icon badge styles.
+  - Kept icon colors aligned with existing state-card tones.
+
 ## 2026-07-18 - Step UI-6: Transcripts and Timeline Page
 
 ### What Changed
