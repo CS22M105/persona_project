@@ -110,15 +110,15 @@ export function PersonaPage() {
       <section className="persona-page" aria-labelledby="persona-page-title">
         <header className="persona-topbar">
           <div className="persona-topbar-left">
-            <a className="header-link persona-back-link" href="/">
-              Dashboard
-            </a>
             <div className="persona-title-block">
               <p className="eyebrow">Patient persona</p>
               <h1 id="persona-page-title">COPD / Shortness of Breath</h1>
             </div>
           </div>
           <div className="persona-topbar-actions">
+            <a className="header-link persona-back-link" href="/">
+              Dashboard
+            </a>
             <span className={`connection-pill connection-pill-${backendStatus}`}>
               {formatBackendStatus(backendStatus)}
             </span>
