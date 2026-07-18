@@ -1561,7 +1561,7 @@ h1 {
   flex-direction: column;
   justify-content: space-between;
   min-height: 54px;
-  padding: 8px 10px;
+  padding: 8px 30px 8px 10px;
   position: relative;
   transition:
     background 140ms ease,
@@ -1603,7 +1603,7 @@ h1 {
   line-height: 1;
   padding: 4px 6px;
   position: absolute;
-  right: 6px;
+  right: 28px;
   text-transform: uppercase;
   top: 5px;
 }
@@ -1673,28 +1673,23 @@ h1 {
 }
 
 .voice-state-topline {
-  align-items: center;
-  display: flex;
-  gap: 6px;
+  display: block;
   min-width: 0;
 }
 
 .voice-state-icon {
-  align-items: center;
-  background: #ffffff;
-  border: 1px solid #dbe2ea;
-  border-radius: 7px;
   color: #4b5563;
-  display: inline-flex;
-  flex: 0 0 auto;
-  height: 24px;
-  justify-content: center;
-  width: 24px;
+  display: block;
+  line-height: 0;
+  opacity: 0.9;
+  position: absolute;
+  right: 8px;
+  top: 8px;
 }
 
 .voice-state-icon .control-tile-icon {
-  height: 15px;
-  width: 15px;
+  height: 17px;
+  width: 17px;
 }
 
 .voice-state-value {
@@ -1721,8 +1716,6 @@ h1 {
 }
 
 .voice-state-item-status .voice-state-icon {
-  background: #ffffff;
-  border-color: #c8d4e3;
   color: #273a56;
 }
 
@@ -1731,8 +1724,6 @@ h1 {
 }
 
 .voice-state-item-vital .voice-state-icon {
-  background: #ffffff;
-  border-color: #b9dec6;
   color: #1f5f4f;
 }
 
@@ -1741,8 +1732,6 @@ h1 {
 }
 
 .voice-state-item-symptom .voice-state-icon {
-  background: #ffffff;
-  border-color: #efd08a;
   color: #9a5b00;
 }
 
@@ -1751,8 +1740,6 @@ h1 {
 }
 
 .voice-state-item-emotion .voice-state-icon {
-  background: #ffffff;
-  border-color: #f3bdc8;
   color: #8f263a;
 }
 
@@ -1761,8 +1748,6 @@ h1 {
 }
 
 .voice-state-item-voice .voice-state-icon {
-  background: #ffffff;
-  border-color: #c8dcff;
   color: #244f8f;
 }
 
@@ -1771,8 +1756,6 @@ h1 {
 }
 
 .voice-state-item-intervention .voice-state-icon {
-  background: #ffffff;
-  border-color: #cbe2bd;
   color: #3e6d2d;
 }
 
