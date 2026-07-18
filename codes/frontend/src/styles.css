@@ -1321,7 +1321,7 @@ h1 {
 .voice-control-card {
   align-self: start;
   grid-area: controls;
-  padding: 16px;
+  padding: 14px;
 }
 
 .control-panel-heading {
@@ -1719,6 +1719,18 @@ h1 {
   margin: 0 0 8px;
 }
 
+.voice-session-guidance {
+  background: #eef5ff;
+  border: 1px solid #c8dcff;
+  border-radius: 6px;
+  color: #244f8f;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 8px;
+  padding: 7px 8px;
+}
+
 .voice-session-status-block .voice-session-grid {
   gap: 6px 10px;
   grid-template-columns: minmax(94px, auto) minmax(0, 1fr);
@@ -1737,9 +1749,9 @@ h1 {
   border: 1px solid #cde8e4;
   border-radius: 8px;
   display: grid;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding: 12px;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 10px;
 }
 
 .audio-setup-panel label {
@@ -1750,7 +1762,7 @@ h1 {
 
 .audio-device-row {
   display: grid;
-  gap: 8px;
+  gap: 6px;
   grid-template-columns: minmax(0, 1fr) auto;
 }
 
@@ -1760,11 +1772,11 @@ h1 {
   border-radius: 6px;
   box-sizing: border-box;
   color: #18212f;
-  font-size: 0.84rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  min-height: 36px;
+  min-height: 32px;
   min-width: 0;
-  padding: 7px 9px;
+  padding: 6px 8px;
 }
 
 .audio-device-row select:focus {
@@ -1778,10 +1790,10 @@ h1 {
   border-radius: 6px;
   color: #00606d;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 900;
-  min-height: 36px;
-  padding: 7px 10px;
+  min-height: 32px;
+  padding: 6px 8px;
 }
 
 .audio-device-row button:hover {
@@ -1797,18 +1809,33 @@ h1 {
 
 .audio-setup-hint {
   color: #667085;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  line-height: 1.35;
+  line-height: 1.25;
   margin: 0;
 }
 
-.voice-control-card .dashboard-note {
-  background: #eef5ff;
-  border: 1px solid #c8dcff;
-  border-radius: 6px;
-  color: #244f8f;
-  padding: 10px;
+.voice-control-card .voice-control-grid {
+  gap: 7px;
+}
+
+.voice-control-card .control-tile {
+  gap: 5px;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  min-height: 42px;
+  padding: 6px 7px;
+}
+
+.voice-control-card .control-tile-symbol {
+  border-radius: 7px;
+  font-size: 0.68rem;
+  height: 28px;
+  width: 28px;
+}
+
+.voice-control-card .control-tile-label {
+  font-size: 0.76rem;
+  line-height: 1.08;
 }
 
 .voice-session-grid dt {

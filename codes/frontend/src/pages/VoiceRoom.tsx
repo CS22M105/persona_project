@@ -1018,6 +1018,10 @@ export function VoiceRoom() {
             </div>
             <div className="voice-session-status-block">
               <h3>Voice Session Status</h3>
+              <p className="voice-session-guidance">
+                Use the room microphone for student speech and the room speaker for
+                patient voice playback.
+              </p>
               <dl className="voice-session-grid">
                 <VoiceDetail label="Connection" value={statusLabel} />
                 <VoiceDetail label="Microphone" value={isMuted ? "Muted" : "Ready"} />
@@ -1183,10 +1187,6 @@ export function VoiceRoom() {
               />
             </div>
 
-            <p className="dashboard-note">
-              Use the room microphone for student speech and the room speaker for
-              patient voice playback.
-            </p>
             <audio
               ref={remoteAudioRef}
               autoPlay

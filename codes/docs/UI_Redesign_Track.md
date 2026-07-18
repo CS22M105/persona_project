@@ -323,6 +323,47 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-18 - Step UI-6: Compact Voice Controls and Status Guidance
+
+### What Changed
+
+- Moved the guidance text into the Voice Session Status card:
+  `Use the room microphone for student speech and the room speaker for patient voice playback.`
+- Removed the separate guidance note from the Voice Controls card.
+- Compacted the Voice Controls panel:
+  - Smaller control tiles
+  - Smaller symbols
+  - Reduced button height
+  - Tighter audio setup spacing
+  - Smaller Test Mic and Test Speaker controls
+
+### Why It Changed
+
+- The Voice Room needs to show more information on one screen without forcing the
+  instructor to scroll.
+- Guidance about room audio belongs with session status because it describes the
+  live voice setup, not a separate action.
+- Compact controls preserve all functions while improving visible space.
+
+### How It Changed
+
+- Kept all existing voice control behavior and handlers unchanged.
+- Moved only the instructional text in `VoiceRoom.tsx`.
+- Added `voice-session-guidance` styling inside the status block.
+- Added voice-control-specific compact CSS so instructor controls are not
+  affected.
+
+### Files Changed
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Moved room microphone/speaker guidance into the Voice Session Status block.
+  - Removed the standalone Voice Controls note.
+
+- `codes/frontend/src/styles.css`
+  - Added compact Voice Controls tile sizing.
+  - Reduced audio setup spacing.
+  - Added Voice Session Status guidance styling.
+
 ## 2026-07-18 - Step UI-6: Simplified Built-In / External Audio Selection
 
 ### What Changed
