@@ -323,6 +323,65 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-18 - Step UI-6: Transcripts and Timeline Page
+
+### What Changed
+
+- Added a dedicated Transcripts page at `/transcripts`.
+- Added a `Transcripts` button to the Voice Room navigation bar.
+- Moved the visible voice transcript section out of the Voice Room.
+- The new page shows:
+  - Current session summary
+  - Conversation transcript
+  - Event timeline
+  - Refresh button
+  - Navigation back to Voice Room, Persona Page, and Dashboard
+
+### Why It Changed
+
+- The Voice Room should stay focused on live simulation actions:
+  - patient state
+  - instructor controls
+  - voice controls
+  - patient conversation
+- Transcript and timeline review is a session-record task, so it belongs on a
+  separate page.
+- Moving transcript/timeline away from the live controls reduces visual overload
+  during the simulation.
+
+### How It Changed
+
+- Added a new React page that loads the current session using the existing
+  session APIs.
+- The page fetches persisted transcript messages and timeline events from the
+  backend.
+- Voice Room still saves Realtime transcript events to the backend, but no longer
+  keeps a separate visual transcript section at the bottom of the page.
+- Updated the Voice Room grid so it no longer reserves space for the transcript
+  row.
+
+### Files Changed
+
+- `codes/frontend/src/pages/TranscriptsPage.tsx`
+  - New page for session transcript and event timeline review.
+
+- `codes/frontend/src/App.tsx`
+  - Added route handling for `/transcripts`.
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Added Transcripts navigation button.
+  - Removed bottom Voice Transcript display section.
+  - Kept backend transcript-saving behavior.
+
+- `codes/frontend/src/styles.css`
+  - Added Transcripts page layout and responsive styles.
+  - Removed Voice Room transcript grid area usage.
+
+### Current Limitation
+
+- The Transcripts page shows the current active session record. A later product
+  version should add a session-history selector for reviewing older sessions.
+
 ## 2026-07-18 - Step UI-6: Voice Room Compact Layout
 
 ### What Changed

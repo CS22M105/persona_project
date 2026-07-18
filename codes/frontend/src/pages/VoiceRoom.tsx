@@ -181,9 +181,6 @@ export function VoiceRoom() {
   const [textConversationMessages, setTextConversationMessages] = useState<
     ChatMessage[]
   >([]);
-  const [voiceTranscriptMessages, setVoiceTranscriptMessages] = useState<
-    TranscriptMessageResponse[]
-  >([]);
   const [audioInputDevices, setAudioInputDevices] = useState<AudioDeviceOption[]>([]);
   const [audioOutputDevices, setAudioOutputDevices] = useState<AudioDeviceOption[]>([]);
   const [selectedMicrophoneType, setSelectedMicrophoneType] =
@@ -479,7 +476,6 @@ export function VoiceRoom() {
       const response = await resetPatientState();
       setPatientState(response.state);
       setTextConversationMessages([]);
-      setVoiceTranscriptMessages([]);
       await syncVoiceInstructions({ force: true });
       await refreshTextConversation();
     } catch {
@@ -816,13 +812,11 @@ export function VoiceRoom() {
     }
 
     try {
-      const savedMessage = await saveVoiceTranscriptMessage({
+      await saveVoiceTranscriptMessage({
         speaker,
         text: text.trim(),
         realtime_event_type: event.type ?? null,
       });
-
-      setVoiceTranscriptMessages((messages) => [...messages, savedMessage]);
     } catch {
       setErrorMessage("Voice transcript could not be saved.");
     }
@@ -869,6 +863,9 @@ export function VoiceRoom() {
             </a>
             <a className="header-link" href="/">
               Dashboard
+            </a>
+            <a className="header-link" href="/transcripts">
+              Transcripts
             </a>
             <span className={`voice-status voice-status-${status}`}>
               {statusLabel}
@@ -1195,31 +1192,6 @@ export function VoiceRoom() {
             />
           </section>
 
-          <section className="dashboard-card voice-transcript-card" aria-labelledby="voice-transcript-title">
-            <h2 id="voice-transcript-title">Voice Transcript</h2>
-            {voiceTranscriptMessages.length > 0 ? (
-              <ol className="event-list">
-                {voiceTranscriptMessages.map((message) => (
-                  <li key={message.message_id}>
-                    <strong>{formatLabel(message.speaker)}:</strong> {message.text}
-                    <span className="report-entry-meta">
-                      Source: {formatLabel(message.source)}
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            ) : (
-              <ol className="event-list">
-                <li>
-                  <strong>Waiting for voice transcript</strong>
-                  <span className="report-entry-meta">
-                    Transcript messages will appear here when Realtime transcript
-                    events are received.
-                  </span>
-                </li>
-              </ol>
-            )}
-          </section>
         </div>
       </section>
     </main>

@@ -1265,8 +1265,7 @@ h1 {
   grid-template-columns: repeat(12, minmax(0, 1fr));
   grid-template-areas:
     "state state state state state state state state state state state state"
-    "instructor instructor instructor instructor controls controls controls conversation conversation conversation conversation conversation"
-    "transcript transcript transcript transcript transcript transcript transcript transcript transcript transcript transcript transcript";
+    "instructor instructor instructor instructor controls controls controls conversation conversation conversation conversation conversation";
   margin: 0 auto;
   max-width: 1440px;
   padding: 0 24px 24px;
@@ -1705,10 +1704,6 @@ h1 {
   color: #3e6d2d;
 }
 
-.voice-transcript-card {
-  grid-area: transcript;
-}
-
 .voice-session-grid {
   background: #f7f8fb;
   border: 1px solid #dbe2ea;
@@ -1913,6 +1908,174 @@ h1 {
   width: 1px;
 }
 
+.transcript-shell {
+  align-items: stretch;
+  box-sizing: border-box;
+  display: block;
+  padding: 0;
+}
+
+.transcript-page {
+  box-sizing: border-box;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.transcript-content {
+  box-sizing: border-box;
+  margin: 0 auto;
+  max-width: 1440px;
+  padding: 0 24px 24px;
+}
+
+.transcript-summary-strip {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
+.transcript-summary-item {
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+}
+
+.transcript-summary-item span {
+  color: #667085;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.transcript-summary-item strong {
+  color: #18212f;
+  font-size: 0.98rem;
+  line-height: 1.2;
+}
+
+.transcript-record-grid {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.8fr);
+}
+
+.transcript-panel {
+  max-height: calc(100vh - 180px);
+  overflow: hidden;
+}
+
+.transcript-panel-heading {
+  align-items: start;
+  border-bottom: 1px solid #dbe2ea;
+  display: flex;
+  justify-content: space-between;
+  margin: -18px -18px 0;
+  padding: 16px 18px 12px;
+}
+
+.transcript-panel-heading h2 {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.transcript-message-list,
+.timeline-record-list {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  max-height: calc(100vh - 270px);
+  overflow-y: auto;
+  padding: 14px 0 0;
+}
+
+.transcript-message {
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.transcript-message-student {
+  background: #eef5ff;
+  border-color: #c8dcff;
+}
+
+.transcript-message-patient {
+  background: #edf7f3;
+  border-color: #c7e1d7;
+}
+
+.transcript-message-system,
+.transcript-message-instructor {
+  background: #fff7e6;
+  border-color: #efd08a;
+}
+
+.transcript-message-meta {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.transcript-message-meta strong {
+  color: #18212f;
+}
+
+.transcript-message-meta span {
+  color: #667085;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.transcript-message p {
+  line-height: 1.42;
+  margin: 0;
+}
+
+.timeline-record-item {
+  align-items: start;
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 88px minmax(0, 1fr);
+  padding: 12px;
+}
+
+.timeline-record-time {
+  color: #00606d;
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.timeline-vitals {
+  color: #435166;
+  font-size: 0.84rem;
+  font-weight: 800;
+  margin: 6px 0 0;
+}
+
+.transcript-empty-card p {
+  color: #4b5563;
+  font-weight: 700;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.transcript-refresh-button {
+  cursor: pointer;
+}
+
 .sr-only {
   height: 1px;
   margin: -1px;
@@ -2092,6 +2255,28 @@ h1 {
     flex-direction: column;
   }
 
+  .transcript-content {
+    padding: 0 12px 16px;
+  }
+
+  .transcript-summary-strip,
+  .transcript-record-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .transcript-panel {
+    max-height: none;
+  }
+
+  .transcript-message-list,
+  .timeline-record-list {
+    max-height: 520px;
+  }
+
+  .timeline-record-item {
+    grid-template-columns: 1fr;
+  }
+
   .heading-reset-button {
     justify-content: center;
     width: 100%;
@@ -2102,8 +2287,7 @@ h1 {
       "state"
       "instructor"
       "conversation"
-      "controls"
-      "transcript";
+      "controls";
   }
 
   .voice-session-status-block {
@@ -2129,8 +2313,19 @@ h1 {
     grid-template-areas:
       "state state state state state state"
       "instructor instructor instructor controls controls controls"
-      "conversation conversation conversation conversation conversation conversation"
-      "transcript transcript transcript transcript transcript transcript";
+      "conversation conversation conversation conversation conversation conversation";
+  }
+
+  .transcript-summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .transcript-record-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .transcript-panel {
+    max-height: none;
   }
 
   .voice-session-status-block {
