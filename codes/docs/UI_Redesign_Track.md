@@ -323,6 +323,42 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-18 - Step UI-6: Persona Baseline State Icons
+
+### What Changed
+
+- Added matching center icons to every Baseline State card on the Persona Page.
+- HR keeps the heart/ECG icon.
+- SpO2 now shows an oxygen-style icon.
+- RR now shows a lungs/respiratory icon.
+- Breathing now shows an airflow/effort icon.
+
+### Why It Changed
+
+- The baseline state cards should be scannable before the instructor starts the
+  voice room.
+- Icons make HR, oxygen saturation, respiratory rate, and breathing effort easier
+  to recognize quickly.
+- The Persona Page now visually matches the style already used for the HR card.
+
+### How It Changed
+
+- Updated the `ConditionMetric` component to accept an icon.
+- Added small inline SVG icon components for oxygen, respiratory rate, and
+  breathing effort.
+- Extended the existing condition-card CSS so each icon inherits the card's
+  clinical color tone.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Added icon support to baseline condition cards.
+  - Added oxygen, respiratory rate, and breathing effort icons.
+
+- `codes/frontend/src/styles.css`
+  - Added shared baseline-state icon styling.
+  - Added color-specific icon rules for each condition card tone.
+
 ## 2026-07-18 - Step UI-6: Voice Room Icons
 
 ### What Changed

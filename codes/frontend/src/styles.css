@@ -826,7 +826,6 @@ h1 {
 }
 
 .condition-metric-center-icon {
-  color: #b4233f;
   left: 50%;
   opacity: 0.18;
   position: absolute;
@@ -834,9 +833,14 @@ h1 {
   transform: translate(-50%, -50%);
 }
 
-.condition-metric-center-icon .heart-ecg-icon {
+.condition-metric-center-icon .heart-ecg-icon,
+.condition-metric-center-icon .baseline-state-icon {
   height: 58px;
   width: 58px;
+}
+
+.condition-metric-heart .condition-metric-center-icon {
+  color: #b4233f;
 }
 
 .condition-metric-heart strong {
@@ -848,6 +852,10 @@ h1 {
   border-color: #c8dcff;
 }
 
+.condition-metric-oxygen .condition-metric-center-icon {
+  color: #2458a6;
+}
+
 .condition-metric-oxygen strong {
   color: #2458a6;
 }
@@ -857,6 +865,10 @@ h1 {
   border-color: #c7e1d7;
 }
 
+.condition-metric-breathing .condition-metric-center-icon {
+  color: #1f6b37;
+}
+
 .condition-metric-breathing strong {
   color: #1f6b37;
 }
@@ -864,6 +876,10 @@ h1 {
 .condition-metric-warning {
   background: #fff7e6;
   border-color: #efd08a;
+}
+
+.condition-metric-warning .condition-metric-center-icon {
+  color: #b45309;
 }
 
 .condition-metric-warning strong {

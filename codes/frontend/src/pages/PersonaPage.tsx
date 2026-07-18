@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useState } from "react";
 
 import { getHealth } from "../api/client";
 import {
@@ -219,10 +219,34 @@ export function PersonaPage() {
                 </a>
               </div>
               <div className="condition-grid">
-                <ConditionMetric label="HR" value="104" unit="bpm" tone="heart" />
-                <ConditionMetric label="SpO2" value="91" unit="%" tone="oxygen" />
-                <ConditionMetric label="RR" value="24" unit="/min" tone="breathing" />
-                <ConditionMetric label="Breathing" value="Labored" unit="" tone="warning" />
+                <ConditionMetric
+                  icon={<HeartEcgIcon />}
+                  label="HR"
+                  value="104"
+                  unit="bpm"
+                  tone="heart"
+                />
+                <ConditionMetric
+                  icon={<OxygenIcon />}
+                  label="SpO2"
+                  value="91"
+                  unit="%"
+                  tone="oxygen"
+                />
+                <ConditionMetric
+                  icon={<RespiratoryRateIcon />}
+                  label="RR"
+                  value="24"
+                  unit="/min"
+                  tone="breathing"
+                />
+                <ConditionMetric
+                  icon={<BreathingEffortIcon />}
+                  label="Breathing"
+                  value="Labored"
+                  unit=""
+                  tone="warning"
+                />
               </div>
             </section>
 
@@ -265,11 +289,13 @@ function PersonaFact({ label, value }: { label: string; value: string }) {
 }
 
 function ConditionMetric({
+  icon,
   label,
   value,
   unit,
   tone,
 }: {
+  icon: ReactNode;
   label: string;
   value: string;
   unit: string;
@@ -278,11 +304,9 @@ function ConditionMetric({
   return (
     <div className={`condition-metric condition-metric-${tone}`}>
       <span className="condition-label">{label}</span>
-      {tone === "heart" ? (
-        <span className="condition-metric-center-icon" aria-hidden="true">
-          <HeartEcgIcon />
-        </span>
-      ) : null}
+      <span className="condition-metric-center-icon" aria-hidden="true">
+        {icon}
+      </span>
       <div className="condition-value">
         <strong>{value}</strong>
         {unit ? <span className="condition-unit">{unit}</span> : null}
@@ -301,6 +325,55 @@ function HeartEcgIcon() {
     >
       <path d="M24 40s-15-8.9-18.4-20.2C3.4 12.5 7.7 7 14.2 7c3.8 0 7.1 2.1 9.8 5.7C26.7 9.1 30 7 33.8 7c6.5 0 10.8 5.5 8.6 12.8C39 31.1 24 40 24 40Z" />
       <path d="M10 23h7l3-6 5.5 13 4-8h8.5" />
+    </svg>
+  );
+}
+
+function OxygenIcon() {
+  return (
+    <svg
+      className="baseline-state-icon"
+      fill="none"
+      viewBox="0 0 48 48"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="18" cy="28" r="8" />
+      <path d="M30 36h9" />
+      <path d="M34.5 20v16" />
+      <path d="M30 20h9" />
+      <path d="M30 28h7" />
+    </svg>
+  );
+}
+
+function RespiratoryRateIcon() {
+  return (
+    <svg
+      className="baseline-state-icon"
+      fill="none"
+      viewBox="0 0 48 48"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M24 10v27" />
+      <path d="M22 21c-6-8-13-7-15 0-1.8 6.4.4 14 8 15 4.3.6 6.6-2.3 7-7V21Z" />
+      <path d="M26 21c6-8 13-7 15 0 1.8 6.4-.4 14-8 15-4.3.6-6.6-2.3-7-7V21Z" />
+      <path d="M15 16c2-3 5-5 9-6 4 1 7 3 9 6" />
+    </svg>
+  );
+}
+
+function BreathingEffortIcon() {
+  return (
+    <svg
+      className="baseline-state-icon"
+      fill="none"
+      viewBox="0 0 48 48"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M7 30c5-8 10-8 15 0s10 8 15 0" />
+      <path d="M7 20c5-8 10-8 15 0s10 8 15 0" />
+      <path d="M37 15l4 5-4 5" />
+      <path d="M37 25l4 5-4 5" />
     </svg>
   );
 }
