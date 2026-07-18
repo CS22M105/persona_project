@@ -323,6 +323,74 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-18 - Step UI-6: Persona Page Baseline Card Polish
+
+### What Changed
+
+- Made the Starting Condition baseline subcards smaller.
+- Reduced baseline subcard height, padding, icon size, label size, and value size.
+- Changed the desktop baseline grid from two larger columns to four compact
+  columns.
+- Removed the circular visual containers around persona and baseline icons.
+
+### Why It Changed
+
+- The baseline cards were taking too much visual space on the persona page.
+- The circle wrappers made the icons feel heavier than the surrounding clinical
+  content.
+- The persona page should stay lightweight and easy to scan before entering the
+  voice room.
+
+### How It Changed
+
+- Updated only CSS styles; no behavior, API, or data model changed.
+- Kept the icons themselves, but removed the background, border, and circular
+  radius from their containers.
+- Kept responsive behavior so smaller screens can still stack the baseline
+  cards.
+
+### Files Changed
+
+- `codes/frontend/src/styles.css`
+  - Updated `.persona-section-mark`.
+  - Updated `.condition-title-icon`.
+  - Updated `.condition-grid`.
+  - Updated `.condition-metric`.
+  - Updated `.condition-metric-center-icon`.
+
+## 2026-07-18 - Step UI-6: Persona Page Baseline Card Polish
+
+### What Changed
+
+- Moved the Dashboard navigation button to the right side of the Persona Page
+  top bar beside the connection status.
+- Updated baseline state subcards so each metric has a visible centered icon.
+- Made the baseline icons consistent across HR, SpO2, RR, and Breathing.
+
+### Why It Changed
+
+- The top bar navigation should keep page actions together on the right.
+- Baseline state cards are easier to scan when each metric has a clear visual
+  marker in the center of the card.
+- The visual treatment now matches the icon-forward style used elsewhere in the
+  redesigned app.
+
+### How It Changed
+
+- Moved the Dashboard link inside the existing `persona-topbar-actions` group.
+- Changed condition metric styling from faint background icons to centered icon
+  marks.
+- Added tone-specific icon backgrounds and borders for heart, oxygen,
+  respiratory rate, and breathing effort.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Moved Dashboard link into the right-side top bar actions.
+
+- `codes/frontend/src/styles.css`
+  - Updated baseline state card layout and centered icon styles.
+
 ## 2026-07-18 - Step UI-6: Persona Baseline State Icons
 
 ### What Changed
