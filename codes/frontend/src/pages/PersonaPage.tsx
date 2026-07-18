@@ -278,6 +278,11 @@ function ConditionMetric({
   return (
     <div className={`condition-metric condition-metric-${tone}`}>
       <span className="condition-label">{label}</span>
+      {tone === "heart" ? (
+        <span className="condition-metric-center-icon" aria-hidden="true">
+          <HeartEcgIcon />
+        </span>
+      ) : null}
       <div className="condition-value">
         <strong>{value}</strong>
         {unit ? <span className="condition-unit">{unit}</span> : null}

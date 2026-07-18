@@ -129,6 +129,11 @@ export function Chat({
 
   const chatPanel = (
     <section className="chat-panel" aria-labelledby="chat-title">
+      {embedded ? (
+        <h1 className="sr-only" id="chat-title">
+          Patient Conversation
+        </h1>
+      ) : (
         <header className="chat-header">
           <div>
             <p className="eyebrow">COPD/SOB scenario</p>
@@ -136,6 +141,7 @@ export function Chat({
           </div>
           <span className="scenario-badge">{statusLabel}</span>
         </header>
+      )}
 
         <div className="conversation" aria-live="polite" ref={conversationRef}>
           {messages.map((message) => (
