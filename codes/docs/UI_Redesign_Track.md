@@ -323,6 +323,43 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-18 - Step UI-6: Voice Room Compact Layout
+
+### What Changed
+
+- Moved the room microphone/speaker guidance into the Voice Session Status card
+  as part of a side-by-side status layout on desktop.
+- Reduced the Patient Conversation panel height so the conversation stays inside
+  a compact scrollable card.
+- Tightened embedded chat header, message area, and input padding.
+- Restored the Voice Room navigation subtitle: `Sim-room interface for speaking`.
+
+### Why It Changed
+
+- The Voice Room needs to show more information on one visible screen during a
+  simulation.
+- The conversation should scroll internally instead of pushing other live
+  controls down the page.
+- The microphone/speaker guidance belongs with session status because it is
+  operational setup information.
+
+### How It Changed
+
+- Updated CSS for `.voice-instructor-chat .chat-panel` to use a smaller fixed
+  height.
+- Updated the Voice Session Status block to use a two-column desktop layout.
+- Added responsive rules so the status block stacks on tablet and mobile.
+
+### Files Changed
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Added the navigation subtitle under the Voice Room title.
+
+- `codes/frontend/src/styles.css`
+  - Compacted the embedded conversation card.
+  - Styled Voice Session Status as a compact side-by-side status card.
+  - Added responsive stacking for smaller screens.
+
 ## 2026-07-18 - Step UI-6: Compact Voice Controls and Status Guidance
 
 ### What Changed
