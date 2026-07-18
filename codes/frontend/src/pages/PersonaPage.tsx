@@ -132,7 +132,15 @@ export function PersonaPage() {
               aria-labelledby="patient-summary-title"
             >
               <div className="persona-section-mark" aria-hidden="true">
-                MT
+                <svg
+                  className="persona-section-icon"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle cx="24" cy="16" r="8" />
+                  <path d="M10 40c2.5-8.5 8-13 14-13s11.5 4.5 14 13" />
+                </svg>
               </div>
               <div>
                 <p className="eyebrow">Patient summary</p>

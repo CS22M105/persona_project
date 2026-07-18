@@ -613,6 +613,15 @@ h1 {
   width: 60px;
 }
 
+.persona-section-icon {
+  height: 36px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  width: 36px;
+}
+
 .persona-fact-list {
   display: grid;
   gap: 7px 12px;
