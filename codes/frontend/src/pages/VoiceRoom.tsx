@@ -802,7 +802,6 @@ export function VoiceRoom() {
           <div className="voice-nav-brand">
             <p className="eyebrow">Student voice room</p>
             <h1 id="voice-title">AI Patient Voice: COPD/SOB</h1>
-            <p>Sim-room interface for speaking</p>
           </div>
           <div className="voice-nav-actions">
             <a className="header-link" href="/personas/copd-sob">
