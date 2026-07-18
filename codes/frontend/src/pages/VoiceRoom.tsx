@@ -977,7 +977,6 @@ export function VoiceRoom() {
           >
             <div className="control-panel-heading">
               <div>
-                <p className="eyebrow">Audio and safety</p>
                 <h2 id="voice-controls-title">Voice Controls</h2>
               </div>
             </div>
