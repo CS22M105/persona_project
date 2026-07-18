@@ -946,3 +946,34 @@ event timeline should live inside the voice room, close to instructor controls.
 
 - `codes/frontend/src/styles.css`
   - Added compact styling for the moved session status block.
+
+## 2026-07-18 - Step UI-5B: Align Voice Room Card Bottoms
+
+### What Changed
+
+- Aligned the bottoms of the main Voice Room cards in the live-session row.
+- The Patient State Controls card, Voice Controls card, and Patient Conversation
+  card now stretch to the same row height.
+- The embedded conversation area now flexes inside the conversation card so the
+  input stays anchored while the card fills the row.
+
+### Why It Changed
+
+- The cards had different natural heights, which made the Voice Room look
+  uneven.
+- Aligning the card bottoms improves visual polish and makes the live-session
+  workspace easier to scan.
+
+### How It Changed
+
+- Changed the Voice Room grid alignment from `start` to `stretch`.
+- Made the main row cards full-height flex columns.
+- Let the embedded chat wrapper and chat panel flex within the conversation
+  card.
+
+### Files Changed
+
+- `codes/frontend/src/styles.css`
+  - Updated `.voice-grid`, `.voice-instructor-card`, `.voice-control-card`,
+    `.voice-chat-card`, `.voice-instructor-chat`, and the embedded chat panel
+    rules.

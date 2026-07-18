@@ -1259,7 +1259,7 @@ h1 {
 }
 
 .voice-grid {
-  align-items: start;
+  align-items: stretch;
   display: grid;
   gap: 16px;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -1272,16 +1272,25 @@ h1 {
 }
 
 .voice-instructor-card {
+  display: flex;
+  flex-direction: column;
   grid-area: instructor;
+  height: 100%;
   padding: 16px;
 }
 
 .voice-chat-card {
+  display: flex;
+  flex-direction: column;
   grid-area: conversation;
+  height: 100%;
   padding: 14px;
 }
 
 .voice-instructor-chat {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   min-height: 0;
 }
 
@@ -1291,6 +1300,7 @@ h1 {
 
 .voice-instructor-chat .chat-panel {
   border-radius: 6px;
+  flex: 1;
   height: 360px;
   min-height: 0;
   max-width: none;
@@ -1329,8 +1339,10 @@ h1 {
 }
 
 .voice-control-card {
-  align-self: start;
+  display: flex;
+  flex-direction: column;
   grid-area: controls;
+  height: 100%;
   padding: 14px;
 }
 
