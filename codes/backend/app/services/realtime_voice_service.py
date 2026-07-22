@@ -5,7 +5,10 @@ import httpx
 from app.core.config import Settings, get_settings
 from app.schemas.state import PatientState, StateEvent
 from app.schemas.voice import RealtimeSessionResponse, VoiceInstructionsResponse
-from app.services.persona_settings import get_copd_sob_persona_settings_updated_at
+from app.services.persona_settings import (
+    get_copd_sob_patient_voice,
+    get_copd_sob_persona_settings_updated_at,
+)
 from app.services.scenario_loader import load_copd_sob_scenario
 from app.services.state_manager import get_current_state, get_state_events
 from app.services.voice_instruction_builder import build_realtime_voice_instructions
@@ -30,6 +33,7 @@ def build_current_voice_instructions() -> VoiceInstructionsResponse:
             state_events,
         ),
         scenario_id=scenario["scenario_id"],
+        voice=get_copd_sob_patient_voice(),
         patient_state_updated_at=patient_state.last_updated_at.isoformat(),
         persona_settings_updated_at=get_copd_sob_persona_settings_updated_at().isoformat(),
         recent_cue_count=recent_cue_count,
@@ -47,11 +51,13 @@ def create_realtime_voice_session(
     scenario = load_copd_sob_scenario()
     patient_state = get_current_state()
     state_events = get_state_events()
+    voice = get_copd_sob_patient_voice()
     request_payload = _build_client_secret_payload(
         scenario=scenario,
         patient_state=patient_state,
         state_events=state_events,
         settings=settings,
+        voice=voice,
     )
 
     try:
@@ -86,7 +92,7 @@ def create_realtime_voice_session(
         expires_at=data["expires_at"],
         session_id=session.get("id"),
         model=settings.openai_realtime_model,
-        voice=settings.openai_realtime_voice,
+        voice=voice,
         scenario_id=scenario["scenario_id"],
         connect_url=settings.openai_realtime_connect_url,
     )
@@ -97,6 +103,7 @@ def _build_client_secret_payload(
     patient_state: PatientState,
     state_events: list[StateEvent],
     settings: Settings,
+    voice: str,
 ) -> dict[str, Any]:
     return {
         "session": {
@@ -121,7 +128,7 @@ def _build_client_secret_payload(
                     },
                 },
                 "output": {
-                    "voice": settings.openai_realtime_voice,
+                    "voice": voice,
                     "speed": 1.0,
                 },
             },

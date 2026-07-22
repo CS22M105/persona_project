@@ -30,6 +30,7 @@ export function PersonaPage() {
   const [patientName, setPatientName] = useState("Linda Thompson");
   const [patientAge, setPatientAge] = useState(68);
   const [patientGender, setPatientGender] = useState<PatientGender>("female");
+  const [patientVoice, setPatientVoice] = useState("marin");
   const [ageInput, setAgeInput] = useState("68");
   const [genderInput, setGenderInput] = useState<PatientGender>("female");
   const [isSavingAge, setIsSavingAge] = useState(false);
@@ -47,6 +48,7 @@ export function PersonaPage() {
         setPatientName(settings.patient_name);
         setPatientAge(settings.age);
         setPatientGender(settings.gender);
+        setPatientVoice(settings.voice);
         setAgeInput(String(settings.age));
         setGenderInput(settings.gender);
         setAgeStatusMessage("");
@@ -75,6 +77,7 @@ export function PersonaPage() {
       setPatientName(settings.patient_name);
       setPatientAge(settings.age);
       setPatientGender(settings.gender);
+      setPatientVoice(settings.voice);
       setAgeInput(String(settings.age));
       setGenderInput(settings.gender);
       setAgeStatusMessage("Saved. Chat and voice will use this age.");
@@ -94,8 +97,9 @@ export function PersonaPage() {
       const settings = await updateCopdSobPersonaGender(genderInput);
       setPatientName(settings.patient_name);
       setPatientGender(settings.gender);
+      setPatientVoice(settings.voice);
       setGenderInput(settings.gender);
-      setGenderStatusMessage("Saved. Chat and voice will use this gender.");
+      setGenderStatusMessage("Saved. Reconnect voice to hear the selected voice.");
     } catch {
       setGenderStatusMessage(
         "Gender could not be saved. Make sure the backend is running.",
@@ -149,6 +153,7 @@ export function PersonaPage() {
                   <dl className="persona-fact-list">
                     <PersonaFact label="Age" value={String(patientAge)} />
                     <PersonaFact label="Gender" value={formatGender(patientGender)} />
+                    <PersonaFact label="Voice" value={formatVoiceName(patientVoice)} />
                     <PersonaFact label="Chief complaint" value="Shortness of breath" />
                     <PersonaFact label="Scenario" value="COPD exacerbation" />
                     <PersonaFact label="Affect" value="Anxious, tired, breathless" />
@@ -392,4 +397,8 @@ function formatBackendStatus(status: BackendStatus): string {
 
 function formatGender(gender: PatientGender): string {
   return gender.charAt(0).toUpperCase() + gender.slice(1);
+}
+
+function formatVoiceName(voice: string): string {
+  return voice.charAt(0).toUpperCase() + voice.slice(1);
 }

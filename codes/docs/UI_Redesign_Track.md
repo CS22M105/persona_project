@@ -1212,3 +1212,73 @@ event timeline should live inside the voice room, close to instructor controls.
   - Updated `.voice-grid`, `.voice-instructor-card`, `.voice-control-card`,
     `.voice-chat-card`, `.voice-instructor-chat`, and the embedded chat panel
     rules.
+
+## 2026-07-21 - Step UI-5C: Gender-Based Realtime Voice Selection
+
+### What Changed
+
+- Connected the saved persona gender to the Realtime voice selected at session
+  creation.
+- Female persona now uses the `marin` Realtime voice.
+- Male persona now uses the `cedar` Realtime voice.
+- Persona settings response now includes the selected voice.
+- Persona Page now displays the selected voice in the Patient Summary.
+- Voice instructions response now includes the selected voice.
+- Voice Room now warns the instructor to disconnect and reconnect if the
+  selected persona voice changes during an already-connected voice session.
+
+### Why It Changed
+
+- Previously, gender changed the AI instructions, but the audio output voice was
+  still hardcoded to one voice.
+- Realtime voice tone is controlled by the Realtime session voice setting, not
+  only by prompt instructions.
+- OpenAI Realtime voice cannot reliably be changed after the model has already
+  responded with audio in the active session, so the selected voice should be
+  applied when a new voice session is created.
+
+### How It Changed
+
+- Added a gender-to-voice mapping in the backend persona settings service.
+- Realtime session creation now reads the selected persona voice instead of the
+  static config voice.
+- The frontend displays the selected voice and tells the instructor to reconnect
+  when needed.
+- Existing age, gender, state, cue, and voice connection behavior remains in
+  place.
+
+### Files Changed
+
+- `codes/backend/app/services/persona_settings.py`
+  - Added `GENDER_VOICE_MAP`.
+  - Added `get_copd_sob_patient_voice`.
+
+- `codes/backend/app/services/realtime_voice_service.py`
+  - Uses the persona-selected voice when creating a Realtime session.
+  - Returns the selected voice in current voice instructions.
+
+- `codes/backend/app/api/scenarios.py`
+  - Added `voice` to the persona settings response.
+
+- `codes/backend/app/schemas/voice.py`
+  - Added `voice` to `VoiceInstructionsResponse`.
+
+- `codes/frontend/src/api/scenarios.ts`
+  - Added `voice` to the persona settings type.
+
+- `codes/frontend/src/api/voice.ts`
+  - Added `voice` to the voice instructions type.
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Displays selected voice.
+  - Updates selected voice after saving age or gender.
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Includes selected voice in instruction versioning.
+  - Shows reconnect guidance if the selected voice changes while connected.
+
+### Current Limitation
+
+- The gender-to-voice mapping is practical for the demo, but OpenAI built-in
+  voices are not formal clinical gender identities. A production system should
+  let instructors preview and choose a specific voice per persona/session.

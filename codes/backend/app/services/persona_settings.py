@@ -9,6 +9,10 @@ DEFAULT_COPD_SOB_GENDER = "female"
 MIN_PATIENT_AGE = 18
 MAX_PATIENT_AGE = 110
 ALLOWED_PATIENT_GENDERS = ("female", "male")
+GENDER_VOICE_MAP = {
+    "female": "marin",
+    "male": "cedar",
+}
 
 _settings_lock = Lock()
 _copd_sob_patient_age = DEFAULT_COPD_SOB_AGE
@@ -24,6 +28,11 @@ def get_copd_sob_patient_age() -> int:
 def get_copd_sob_patient_gender() -> str:
     with _settings_lock:
         return _copd_sob_patient_gender
+
+
+def get_copd_sob_patient_voice() -> str:
+    with _settings_lock:
+        return GENDER_VOICE_MAP.get(_copd_sob_patient_gender, "marin")
 
 
 def get_copd_sob_persona_settings_updated_at() -> datetime:

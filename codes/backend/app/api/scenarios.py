@@ -8,6 +8,7 @@ from app.services.persona_settings import (
     MIN_PATIENT_AGE,
     get_copd_sob_patient_age,
     get_copd_sob_patient_gender,
+    get_copd_sob_patient_voice,
     update_copd_sob_patient_age,
     update_copd_sob_patient_gender,
 )
@@ -21,6 +22,7 @@ class PersonaSettingsResponse(BaseModel):
     patient_name: str
     age: int
     gender: str
+    voice: str
 
 
 class PersonaSettingsUpdate(BaseModel):
@@ -43,6 +45,7 @@ async def get_copd_sob_persona_settings() -> PersonaSettingsResponse:
         patient_name=patient_profile.get("name", "Patient"),
         age=get_copd_sob_patient_age(),
         gender=get_copd_sob_patient_gender(),
+        voice=get_copd_sob_patient_voice(),
     )
 
 

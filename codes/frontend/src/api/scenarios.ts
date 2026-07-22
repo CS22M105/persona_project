@@ -5,6 +5,7 @@ export type PersonaSettings = {
   patient_name: string;
   age: number;
   gender: PatientGender;
+  voice: string;
 };
 
 export type PatientGender = "female" | "male";

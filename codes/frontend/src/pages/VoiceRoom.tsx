@@ -753,6 +753,17 @@ export function VoiceRoom() {
     const instructionVersion = buildInstructionVersion(instructionsResponse);
 
     if (
+      voiceSession?.voice &&
+      voiceSession.voice !== instructionsResponse.voice
+    ) {
+      setAudioSetupMessage(
+        `Voice changed to ${formatVoiceName(
+          instructionsResponse.voice,
+        )}. Disconnect and reconnect to hear it.`,
+      );
+    }
+
+    if (
       !options.force &&
       instructionVersion === lastInstructionVersionRef.current
     ) {
@@ -1588,6 +1599,11 @@ function formatLabel(value: string): string {
 }
 
 
+function formatVoiceName(voice: string): string {
+  return voice.charAt(0).toUpperCase() + voice.slice(1);
+}
+
+
 function toChatMessages(messages: TranscriptMessageResponse[]): ChatMessage[] {
   return messages
     .filter(
@@ -1708,6 +1724,7 @@ function buildInstructionVersion(
   instructionsResponse: VoiceInstructionsResponse,
 ): string {
   return [
+    instructionsResponse.voice,
     instructionsResponse.patient_state_updated_at,
     instructionsResponse.persona_settings_updated_at,
     String(instructionsResponse.recent_cue_count),
