@@ -1766,15 +1766,18 @@ h1 {
   align-self: flex-end;
   color: #18212f;
   display: block;
-  font-size: 0.92rem;
+  font-size: clamp(0.72rem, 0.72vw, 0.92rem);
   font-weight: 800;
   line-height: 1.15;
-  overflow-wrap: anywhere;
+  max-width: 100%;
+  overflow: hidden;
   text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .voice-state-item-emphasized .voice-state-value {
-  font-size: 1rem;
+  font-size: clamp(0.82rem, 0.82vw, 1rem);
 }
 
 .voice-state-item-status .voice-state-value {
