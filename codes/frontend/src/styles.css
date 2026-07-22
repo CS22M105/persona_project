@@ -2090,6 +2090,11 @@ h1 {
   overflow: hidden;
 }
 
+.transcript-debrief-panel {
+  grid-column: 1 / -1;
+  max-height: none;
+}
+
 .transcript-panel-heading {
   align-items: start;
   border-bottom: 1px solid #dbe2ea;
@@ -2195,6 +2200,35 @@ h1 {
 
 .transcript-refresh-button {
   cursor: pointer;
+}
+
+.transcript-download-button {
+  background: #006f7b;
+  border: 1px solid #006f7b;
+  border-radius: 6px;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 900;
+  min-height: 36px;
+  padding: 8px 12px;
+}
+
+.transcript-download-button:hover:not(:disabled) {
+  background: #005d67;
+}
+
+.transcript-download-button:disabled {
+  background: #eef2f7;
+  border-color: #d5dde7;
+  color: #667085;
+  cursor: not-allowed;
+}
+
+.debrief-placeholder {
+  color: #435166;
+  font-weight: 800;
+  line-height: 1.45;
+  margin: 14px 0 0;
 }
 
 .sr-only {

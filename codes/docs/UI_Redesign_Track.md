@@ -1672,3 +1672,47 @@ event timeline should live inside the voice room, close to instructor controls.
   - Added centered red dot styling.
   - Added twinkle and pulse-ring keyframe animations.
   - Removed old text-badge positioning behavior.
+
+## 2026-07-22 - Step UI-6: Minimal Downloadable Debriefing Draft
+
+### What Changed
+
+- Added a Debriefing section to the Transcripts and Timeline page.
+- Added a Download button that creates a `.txt` debriefing draft from the current
+  session record.
+- The draft currently includes:
+  - Session metadata
+  - Transcript lines
+  - Event timeline lines
+  - Placeholder note for the future debriefing algorithm
+
+### Why It Changed
+
+- The instructor needs an obvious place to access debriefing output from the
+  transcript page.
+- The debriefing algorithm has not been selected yet, so the current version is a
+  minimal export foundation rather than a final structured debrief.
+- This keeps the feature useful without inventing clinical/debriefing logic too
+  early.
+
+### How It Changed
+
+- Added a frontend-only download function using a browser `Blob`.
+- The download button is disabled until transcript or timeline data exists.
+- Added a short placeholder explanation in the UI so the current limitation is
+  clear.
+
+### Files Changed
+
+- `codes/frontend/src/pages/TranscriptsPage.tsx`
+  - Added debriefing draft download logic.
+  - Added a Debriefing section below transcript and timeline.
+
+- `codes/frontend/src/styles.css`
+  - Added styling for the debriefing panel, download button, and placeholder
+    note.
+
+### Current Limitation
+
+- This is not the final debriefing algorithm. The selected debriefing structure
+  will be added later when the algorithm is provided.

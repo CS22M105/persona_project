@@ -49,6 +49,23 @@ export function TranscriptsPage() {
     }
   }
 
+  function handleDownloadDebriefingDraft() {
+    if (!session) {
+      return;
+    }
+
+    const draftText = buildDebriefingDraft(session, messages, events);
+    const fileBlob = new Blob([draftText], { type: "text/plain;charset=utf-8" });
+    const downloadUrl = URL.createObjectURL(fileBlob);
+    const downloadLink = document.createElement("a");
+    downloadLink.href = downloadUrl;
+    downloadLink.download = `debriefing-draft-${session.session_id}.txt`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+    URL.revokeObjectURL(downloadUrl);
+  }
+
   return (
     <main className="app-shell transcript-shell">
       <section className="transcript-page" aria-labelledby="transcript-page-title">
@@ -59,14 +76,14 @@ export function TranscriptsPage() {
             <p>Review student messages, patient responses, and instructor events</p>
           </div>
           <div className="voice-nav-actions">
-            <a className="header-link" href="/voice">
-              Voice room
+            <a className="header-link" href="/">
+              Dashboard
             </a>
             <a className="header-link" href="/personas/copd-sob">
               Persona page
             </a>
-            <a className="header-link" href="/">
-              Dashboard
+            <a className="header-link" href="/voice">
+              Voice room
             </a>
             <button className="header-link transcript-refresh-button" onClick={loadSessionRecord} type="button">
               Refresh
@@ -171,6 +188,30 @@ export function TranscriptsPage() {
                   <p className="dashboard-note">No timeline events yet.</p>
                 )}
               </section>
+
+              <section
+                className="dashboard-card transcript-panel transcript-debrief-panel"
+                aria-labelledby="debriefing-draft-title"
+              >
+                <div className="transcript-panel-heading">
+                  <div>
+                    <p className="eyebrow">Debriefing</p>
+                    <h2 id="debriefing-draft-title">Downloadable Debriefing Draft</h2>
+                  </div>
+                  <button
+                    className="transcript-download-button"
+                    disabled={messages.length === 0 && events.length === 0}
+                    onClick={handleDownloadDebriefingDraft}
+                    type="button"
+                  >
+                    Download
+                  </button>
+                </div>
+                <p className="debrief-placeholder">
+                  This is a minimal draft export based on the current transcript and
+                  timeline. The structured debriefing algorithm will be added later.
+                </p>
+              </section>
             </div>
           ) : null}
         </div>
@@ -186,6 +227,50 @@ function TranscriptSummaryItem({ label, value }: { label: string; value: string 
       <strong>{value}</strong>
     </div>
   );
+}
+
+function buildDebriefingDraft(
+  session: SessionResponse,
+  messages: TranscriptMessageResponse[],
+  events: TimelineEventResponse[],
+): string {
+  const transcriptLines =
+    messages.length > 0
+      ? messages.map(
+          (message) =>
+            `- ${formatTime(message.timestamp)} | ${formatLabel(message.speaker)}: ${message.text}`,
+        )
+      : ["- No transcript messages recorded."];
+
+  const eventLines =
+    events.length > 0
+      ? events.map(
+          (event) =>
+            `- ${formatTime(event.timestamp)} | ${event.label ?? formatLabel(event.event_type)}`,
+        )
+      : ["- No timeline events recorded."];
+
+  return [
+    "AI Patient Voice - Debriefing Draft",
+    "",
+    "Note: This is a basic export placeholder. The selected debriefing algorithm will be added later.",
+    "",
+    "Session",
+    `- Session ID: ${session.session_id}`,
+    `- Scenario ID: ${session.scenario_id}`,
+    `- Status: ${session.status}`,
+    `- Started: ${formatDateTime(session.started_at)}`,
+    session.ended_at ? `- Ended: ${formatDateTime(session.ended_at)}` : "- Ended: Not ended",
+    "",
+    "Transcript",
+    ...transcriptLines,
+    "",
+    "Event Timeline",
+    ...eventLines,
+    "",
+    "Debriefing Algorithm",
+    "- Pending instructor-selected algorithm.",
+  ].join("\n");
 }
 
 function formatTimelineVitals(event: TimelineEventResponse) {
