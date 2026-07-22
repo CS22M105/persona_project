@@ -72,8 +72,7 @@ export function TranscriptsPage() {
         <nav className="voice-nav transcript-nav" aria-label="Transcript navigation">
           <div className="voice-nav-brand">
             <p className="eyebrow">Session record</p>
-            <h1 id="transcript-page-title">Transcripts and Timeline</h1>
-            <p>Review student messages, patient responses, and instructor events</p>
+            <h1 id="transcript-page-title">Transcripts, Timeline and Debriefing</h1>
           </div>
           <div className="voice-nav-actions">
             <a className="header-link" href="/">
