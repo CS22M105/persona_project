@@ -323,6 +323,49 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-22 - Step UI-6: Live Persona Summary for Voice Settings
+
+### What Changed
+
+- Patient Summary now updates immediately when a persona dropdown changes.
+- Gender selection is reflected in the visible Patient Summary before saving.
+- Voice selection is reflected in the visible Patient Summary before saving.
+- Added a Voice type dropdown to the persona settings area.
+- Added Voice type to the visible Patient Summary.
+
+### Why It Changed
+
+- The visible Patient Summary should match what the instructor is currently
+  selecting.
+- The previous behavior made the dropdown feel disconnected because the summary
+  only changed after Save.
+- Voice type is a persona-level setting and should be visible before entering
+  the voice room.
+
+### How It Changed
+
+- Patient Summary now reads active input values for dropdown-based settings.
+- Added preset voice type options:
+  - Breathless, tired, anxious
+  - Calm but short of breath
+  - Very anxious and breathless
+  - Weak, tired, and slow
+  - Alert and cooperative
+- Connected the Voice type dropdown to the existing backend
+  `voice_style` setting API.
+- Save still persists the selected values so chat and Realtime voice can use
+  them.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Shows live dropdown selections in Patient Summary.
+  - Adds Voice type dropdown and save handler.
+  - Adds Voice type to the summary facts.
+
+- `codes/docs/UI_Redesign_Track.md`
+  - Records the summary/dropdown behavior change.
+
 ## 2026-07-22 - Step UI-6: Expanded Voice and Voice Style Options
 
 ### What Changed
