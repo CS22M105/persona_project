@@ -341,13 +341,13 @@ event timeline should live inside the voice room, close to instructor controls.
   - Verse
 - Kept Marin and Cedar labeled as recommended voices.
 - Added more voice-style presets:
-  - Older adult, breathless, tired, anxious
-  - Older adult, severe dyspnea, short broken phrases
-  - Older adult, mildly breathless, cooperative, reassuring
+  - Breathless, tired, anxious
+  - Severe dyspnea, short broken phrases
+  - Mildly breathless, cooperative, reassuring
   - Anxious adult, rapid breathing, fearful, needs reassurance
   - Tired adult, weak voice, slow responses, fatigued
   - Post-treatment, calmer, still breathless, mildly tired
-  - Confused older adult, breathless, worried, needs simple questions
+  - Confused, breathless, worried, needs simple questions
   - Guarded adult, chest tightness, uncomfortable, anxious
 
 ### Why It Changed
@@ -393,7 +393,7 @@ event timeline should live inside the voice room, close to instructor controls.
 - Added editable voice style to the COPD/SOB Persona Page.
 - Added explicit voice selection to the COPD/SOB Persona Page.
 - Default voice style is:
-  - `Older adult, breathless, tired, anxious`
+  - `Breathless, tired, anxious`
 - Voice options are:
   - `Marin`
   - `Cedar`
@@ -412,7 +412,7 @@ event timeline should live inside the voice room, close to instructor controls.
   session.
 - The selected voice controls the generated audio voice.
 - The selected style controls how the patient should sound clinically, for
-  example older adult, breathless, tired, and anxious.
+  example breathless, tired, and anxious.
 - Keeping these settings on the Persona Page helps the instructor prepare the
   patient before starting the Voice Room.
 
@@ -427,6 +427,34 @@ event timeline should live inside the voice room, close to instructor controls.
 - Added Persona Page form controls for selecting voice and editing voice style.
 - Added voice style into both text and Realtime prompt builders so patient
   responses reflect the selected style.
+
+## 2026-07-22 - Step UI-7: Remove Age-Specific Default Voice Style
+
+### What Changed
+
+- Removed the age-specific older-adult phrase from the active Voice Style
+  defaults.
+- Replaced it with `Breathless, tired, anxious`.
+- Removed age-specific wording from related voice-style presets.
+- Kept the `Custom voice style` option unchanged.
+
+### Why It Changed
+
+- Age is now instructor-editable, so the default voice style should not hard-code
+  an older adult persona.
+- The Voice Style field should describe speaking behavior and emotional tone,
+  while age should come from the separate age setting.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Updated the default voice style and preset labels.
+
+- `codes/backend/app/services/persona_settings.py`
+  - Updated the backend default voice style used by scenario context.
+
+- `codes/docs/UI_Redesign_Track.md`
+  - Updated the documented preset list and rationale.
 
 ### Files Changed
 

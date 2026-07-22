@@ -28,7 +28,7 @@ const learningGoals = [
   "Recognize deterioration and choose appropriate interventions.",
 ];
 
-const voiceStyleDefault = "Older adult, breathless, tired, anxious";
+const voiceStyleDefault = "Breathless, tired, anxious";
 
 const voiceOptions: { label: string; value: PatientVoice }[] = [
   { label: "Marin - recommended", value: "marin" },
@@ -45,12 +45,12 @@ const voiceOptions: { label: string; value: PatientVoice }[] = [
 
 const voiceStylePresets = [
   voiceStyleDefault,
-  "Older adult, severe dyspnea, short broken phrases",
-  "Older adult, mildly breathless, cooperative, reassuring",
+  "Severe dyspnea, short broken phrases",
+  "Mildly breathless, cooperative, reassuring",
   "Anxious adult, rapid breathing, fearful, needs reassurance",
   "Tired adult, weak voice, slow responses, fatigued",
   "Post-treatment, calmer, still breathless, mildly tired",
-  "Confused older adult, breathless, worried, needs simple questions",
+  "Confused, breathless, worried, needs simple questions",
   "Guarded adult, chest tightness, uncomfortable, anxious",
 ];
 

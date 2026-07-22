@@ -7,7 +7,7 @@ from typing import Any
 DEFAULT_COPD_SOB_AGE = 68
 DEFAULT_COPD_SOB_GENDER = "female"
 DEFAULT_COPD_SOB_VOICE = "marin"
-DEFAULT_COPD_SOB_VOICE_STYLE = "Older adult, breathless, tired, anxious"
+DEFAULT_COPD_SOB_VOICE_STYLE = "Breathless, tired, anxious"
 MIN_PATIENT_AGE = 18
 MAX_PATIENT_AGE = 110
 ALLOWED_PATIENT_GENDERS = ("female", "male")
