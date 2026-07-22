@@ -1276,10 +1276,18 @@ h1 {
 }
 
 .voice-nav .header-link {
+  align-items: center;
   background: rgb(255 255 255 / 10%);
   border-color: rgb(255 255 255 / 34%);
+  box-sizing: border-box;
   box-shadow: none;
   color: #ffffff;
+  display: inline-flex;
+  font-weight: 900;
+  justify-content: center;
+  min-height: 42px;
+  min-width: 132px;
+  padding: 0 14px;
 }
 
 .voice-nav .header-link:hover {
@@ -2056,9 +2064,12 @@ h1 {
 }
 
 .transcript-nav .header-link {
-  font-size: 0.78rem;
-  min-height: 32px;
-  padding: 6px 9px;
+  align-items: center;
+  display: inline-flex;
+  font-size: 0.95rem;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 14px;
 }
 
 .transcript-content {
@@ -2452,7 +2463,9 @@ h1 {
   }
 
   .voice-nav-actions .header-link {
+    min-width: 0;
     text-align: center;
+    width: 100%;
   }
 
   .dashboard-grid {
