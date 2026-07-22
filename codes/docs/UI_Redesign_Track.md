@@ -1450,3 +1450,34 @@ event timeline should live inside the voice room, close to instructor controls.
 - The gender-to-voice mapping is practical for the demo, but OpenAI built-in
   voices are not formal clinical gender identities. A production system should
   let instructors preview and choose a specific voice per persona/session.
+
+## 2026-07-22 - Step UI-5D: Clear Voice Style Card
+
+### What Changed
+
+- Removed the visible Voice Style editor from the Persona Page.
+- Removed the related frontend state and save handler from the Persona Page.
+- Removed the unused wide editor CSS rule that existed only for the Voice Style
+  control.
+
+### Why It Changed
+
+- The Persona Page was getting overloaded with too many adjustable fields.
+- For the current demo, age, gender, and voice are enough persona controls.
+- Keeping voice style out of the UI makes the page simpler while leaving backend
+  support available for later product work.
+
+### How It Changed
+
+- Deleted the Voice Style form from the Patient Summary settings grid.
+- Removed the unused frontend import for saving voice style.
+- Left the API client and backend voice-style support untouched so this feature
+  can return later without a backend rewrite.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Removed the Voice Style form, state, and save handler.
+
+- `codes/frontend/src/styles.css`
+  - Removed the unused `.persona-setting-editor-wide` rule.

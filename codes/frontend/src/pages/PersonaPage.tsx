@@ -8,7 +8,6 @@ import {
   updateCopdSobPersonaAge,
   updateCopdSobPersonaGender,
   updateCopdSobPersonaVoice,
-  updateCopdSobPersonaVoiceStyle,
 } from "../api/scenarios";
 
 type BackendStatus = "checking" | "connected" | "unavailable";
@@ -27,8 +26,6 @@ const learningGoals = [
   "Communicate clearly with a short-of-breath patient.",
   "Recognize deterioration and choose appropriate interventions.",
 ];
-
-const voiceStyleDefault = "Breathless, tired, anxious";
 
 const voiceOptions: { label: string; value: PatientVoice }[] = [
   { label: "Marin - recommended", value: "marin" },
@@ -49,19 +46,15 @@ export function PersonaPage() {
   const [patientAge, setPatientAge] = useState(68);
   const [patientGender, setPatientGender] = useState<PatientGender>("female");
   const [patientVoice, setPatientVoice] = useState<PatientVoice>("marin");
-  const [patientVoiceStyle, setPatientVoiceStyle] = useState(voiceStyleDefault);
   const [ageInput, setAgeInput] = useState("68");
   const [genderInput, setGenderInput] = useState<PatientGender>("female");
   const [voiceInput, setVoiceInput] = useState<PatientVoice>("marin");
-  const [voiceStyleInput, setVoiceStyleInput] = useState(voiceStyleDefault);
   const [isSavingAge, setIsSavingAge] = useState(false);
   const [isSavingGender, setIsSavingGender] = useState(false);
   const [isSavingVoice, setIsSavingVoice] = useState(false);
-  const [isSavingVoiceStyle, setIsSavingVoiceStyle] = useState(false);
   const [ageStatusMessage, setAgeStatusMessage] = useState("");
   const [genderStatusMessage, setGenderStatusMessage] = useState("");
   const [voiceStatusMessage, setVoiceStatusMessage] = useState("");
-  const [voiceStyleStatusMessage, setVoiceStyleStatusMessage] = useState("");
 
   useEffect(() => {
     getHealth()
@@ -74,15 +67,12 @@ export function PersonaPage() {
         setPatientAge(settings.age);
         setPatientGender(settings.gender);
         setPatientVoice(settings.voice);
-        setPatientVoiceStyle(settings.voice_style);
         setAgeInput(String(settings.age));
         setGenderInput(settings.gender);
         setVoiceInput(settings.voice);
-        setVoiceStyleInput(settings.voice_style);
         setAgeStatusMessage("");
         setGenderStatusMessage("");
         setVoiceStatusMessage("");
-        setVoiceStyleStatusMessage("");
       })
       .catch(() => {
         setAgeStatusMessage("Persona settings failed to load.");
@@ -108,11 +98,9 @@ export function PersonaPage() {
       setPatientAge(settings.age);
       setPatientGender(settings.gender);
       setPatientVoice(settings.voice);
-      setPatientVoiceStyle(settings.voice_style);
       setAgeInput(String(settings.age));
       setGenderInput(settings.gender);
       setVoiceInput(settings.voice);
-      setVoiceStyleInput(settings.voice_style);
       setAgeStatusMessage("Saved. Chat and voice will use this age.");
     } catch {
       setAgeStatusMessage("Age could not be saved. Make sure the backend is running.");
@@ -131,10 +119,8 @@ export function PersonaPage() {
       setPatientName(settings.patient_name);
       setPatientGender(settings.gender);
       setPatientVoice(settings.voice);
-      setPatientVoiceStyle(settings.voice_style);
       setGenderInput(settings.gender);
       setVoiceInput(settings.voice);
-      setVoiceStyleInput(settings.voice_style);
       setGenderStatusMessage("Saved. Chat and voice will use this gender.");
     } catch {
       setGenderStatusMessage(
@@ -154,42 +140,12 @@ export function PersonaPage() {
       const settings = await updateCopdSobPersonaVoice(voiceInput);
       setPatientName(settings.patient_name);
       setPatientVoice(settings.voice);
-      setPatientVoiceStyle(settings.voice_style);
       setVoiceInput(settings.voice);
-      setVoiceStyleInput(settings.voice_style);
       setVoiceStatusMessage("Saved. Reconnect voice to hear this voice.");
     } catch {
       setVoiceStatusMessage("Voice could not be saved. Make sure the backend is running.");
     } finally {
       setIsSavingVoice(false);
-    }
-  }
-
-  async function handleVoiceStyleSave(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!voiceStyleInput.trim()) {
-      setVoiceStyleStatusMessage("Voice style cannot be empty.");
-      return;
-    }
-
-    setIsSavingVoiceStyle(true);
-    setVoiceStyleStatusMessage("");
-
-    try {
-      const settings = await updateCopdSobPersonaVoiceStyle(voiceStyleInput);
-      setPatientName(settings.patient_name);
-      setPatientVoice(settings.voice);
-      setPatientVoiceStyle(settings.voice_style);
-      setVoiceInput(settings.voice);
-      setVoiceStyleInput(settings.voice_style);
-      setVoiceStyleStatusMessage("Saved. Chat and voice instructions will use this style.");
-    } catch {
-      setVoiceStyleStatusMessage(
-        "Voice style could not be saved. Keep it short and try again.",
-      );
-    } finally {
-      setIsSavingVoiceStyle(false);
     }
   }
 
@@ -311,29 +267,6 @@ export function PersonaPage() {
                       </div>
                       {voiceStatusMessage ? (
                         <p className="persona-setting-status">{voiceStatusMessage}</p>
-                      ) : null}
-                    </form>
-                    <form
-                      className="persona-setting-editor persona-setting-editor-wide"
-                      onSubmit={handleVoiceStyleSave}
-                    >
-                      <label htmlFor="patient-voice-style">Voice style</label>
-                      <div className="persona-setting-row">
-                        <input
-                          id="patient-voice-style"
-                          maxLength={120}
-                          onChange={(event) => setVoiceStyleInput(event.target.value)}
-                          type="text"
-                          value={voiceStyleInput}
-                        />
-                        <button disabled={isSavingVoiceStyle} type="submit">
-                          {isSavingVoiceStyle ? "Saving..." : "Save"}
-                        </button>
-                      </div>
-                      {voiceStyleStatusMessage ? (
-                        <p className="persona-setting-status">
-                          {voiceStyleStatusMessage}
-                        </p>
                       ) : null}
                     </form>
                   </div>
