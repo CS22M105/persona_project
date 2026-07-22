@@ -1606,3 +1606,34 @@ event timeline should live inside the voice room, close to instructor controls.
   - Updated Voice Room chat card sizing.
   - Updated embedded chat panel overflow behavior.
   - Added responsive chat heights for mobile and tablet.
+
+## 2026-07-22 - Step UI-5G: Twinkling Patient State Update Dot
+
+### What Changed
+
+- Replaced the `Updated` text badge on recently changed patient-state subcards.
+- Added a centered twinkling red dot inside each recently changed state subcard.
+- Kept the existing patient-state highlight behavior for reset and cue changes.
+
+### Why It Changed
+
+- The text badge was visually noisy and took attention away from the actual state
+  value.
+- A centered red dot gives a faster visual signal that a specific subcard changed.
+
+### How It Changed
+
+- Changed the highlighted state marker in `StateMetric` from text to a visual
+  status dot.
+- Added CSS animation for the dot and pulse ring.
+- Removed the old label-width adjustment that existed only for the text badge.
+
+### Files Changed
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Replaced the `Updated` badge span with an accessible twinkling dot marker.
+
+- `codes/frontend/src/styles.css`
+  - Added centered red dot styling.
+  - Added twinkle and pulse-ring keyframe animations.
+  - Removed old text-badge positioning behavior.
