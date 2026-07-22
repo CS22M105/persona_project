@@ -19,6 +19,7 @@ export type VoiceInstructionsResponse = {
   instructions: string;
   scenario_id: string;
   patient_state_updated_at: string;
+  persona_settings_updated_at: string;
   recent_cue_count: number;
 };
 

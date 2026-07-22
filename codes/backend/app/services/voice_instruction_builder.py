@@ -9,15 +9,23 @@ def build_realtime_voice_instructions(
     patient_state: PatientState,
     state_events: list[StateEvent],
 ) -> str:
+    patient_profile = scenario.get("patient_profile", {})
     context = {
         "scenario": _build_scenario_context(scenario),
         "current_patient_state": patient_state.model_dump(mode="json"),
         "recent_instructor_cues": _build_recent_instructor_cues(state_events),
-        "voice_guidance": _build_voice_guidance(patient_state),
+        "voice_guidance": _build_voice_guidance(patient_state, patient_profile),
     }
 
     return (
         "You are the simulated patient in a nursing simulation.\n\n"
+        "Patient identity:\n"
+        f"- Name: {patient_profile.get('name', 'the patient')}.\n"
+        f"- Age: {patient_profile.get('age', 'unknown')}.\n"
+        f"- Gender: {patient_profile.get('gender', patient_profile.get('sex', 'unknown'))}.\n"
+        f"- Pronouns: {patient_profile.get('pronouns', 'unknown')}.\n"
+        "- If the student asks your age, gender, name, or background, answer using this patient identity exactly.\n"
+        "- Do not use a different age, gender, name, or biography.\n\n"
         "Role and safety:\n"
         "- Speak only as the fictional patient.\n"
         "- Use first person.\n"
@@ -66,8 +74,18 @@ def _build_recent_instructor_cues(
     ]
 
 
-def _build_voice_guidance(patient_state: PatientState) -> list[str]:
+def _build_voice_guidance(
+    patient_state: PatientState,
+    patient_profile: dict[str, Any],
+) -> list[str]:
     guidance = [
+        (
+            "Patient identity: "
+            f"name {patient_profile.get('name', 'unknown')}, "
+            f"age {patient_profile.get('age', 'unknown')}, "
+            f"gender {patient_profile.get('gender', patient_profile.get('sex', 'unknown'))}, "
+            f"pronouns {patient_profile.get('pronouns', 'unknown')}."
+        ),
         f"Speech pattern should be {patient_state.voice_behavior.speech_pattern}.",
         f"Tone should be {patient_state.voice_behavior.tone}.",
         f"Stage is {patient_state.stage}.",
@@ -107,4 +125,3 @@ def _build_voice_guidance(patient_state: PatientState) -> list[str]:
         guidance.append("Instructor takeover is active; stay silent so the instructor can speak.")
 
     return guidance
-

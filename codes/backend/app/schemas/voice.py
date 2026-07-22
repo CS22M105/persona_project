@@ -19,6 +19,7 @@ class VoiceInstructionsResponse(BaseModel):
     instructions: str
     scenario_id: str
     patient_state_updated_at: str
+    persona_settings_updated_at: str
     recent_cue_count: int
 
 

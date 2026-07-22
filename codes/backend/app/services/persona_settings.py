@@ -1,4 +1,5 @@
 from copy import deepcopy
+from datetime import datetime, timezone
 from threading import Lock
 from typing import Any
 
@@ -12,6 +13,7 @@ ALLOWED_PATIENT_GENDERS = ("female", "male")
 _settings_lock = Lock()
 _copd_sob_patient_age = DEFAULT_COPD_SOB_AGE
 _copd_sob_patient_gender = DEFAULT_COPD_SOB_GENDER
+_copd_sob_settings_updated_at = datetime.now(timezone.utc)
 
 
 def get_copd_sob_patient_age() -> int:
@@ -24,15 +26,21 @@ def get_copd_sob_patient_gender() -> str:
         return _copd_sob_patient_gender
 
 
+def get_copd_sob_persona_settings_updated_at() -> datetime:
+    with _settings_lock:
+        return _copd_sob_settings_updated_at
+
+
 def update_copd_sob_patient_age(age: int) -> int:
     if age < MIN_PATIENT_AGE or age > MAX_PATIENT_AGE:
         raise ValueError(
             f"Patient age must be between {MIN_PATIENT_AGE} and {MAX_PATIENT_AGE}."
         )
 
-    global _copd_sob_patient_age
+    global _copd_sob_patient_age, _copd_sob_settings_updated_at
     with _settings_lock:
         _copd_sob_patient_age = age
+        _copd_sob_settings_updated_at = datetime.now(timezone.utc)
         return _copd_sob_patient_age
 
 
@@ -43,9 +51,10 @@ def update_copd_sob_patient_gender(gender: str) -> str:
         allowed_values = ", ".join(ALLOWED_PATIENT_GENDERS)
         raise ValueError(f"Patient gender must be one of: {allowed_values}.")
 
-    global _copd_sob_patient_gender
+    global _copd_sob_patient_gender, _copd_sob_settings_updated_at
     with _settings_lock:
         _copd_sob_patient_gender = normalized_gender
+        _copd_sob_settings_updated_at = datetime.now(timezone.utc)
         return _copd_sob_patient_gender
 
 

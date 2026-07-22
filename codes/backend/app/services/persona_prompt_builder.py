@@ -25,8 +25,17 @@ def build_persona_prompt(
 def _build_instructions(scenario: dict[str, Any]) -> str:
     safety_rules = _format_list(scenario.get("safety_rules", []))
     hidden_rules = _format_hidden_information(scenario.get("hidden_information", []))
+    patient_profile = scenario.get("patient_profile", {})
 
     return f"""You are the simulated patient in a nursing simulation.
+
+Patient identity:
+- Name: {patient_profile.get("name", "the patient")}.
+- Age: {patient_profile.get("age", "unknown")}.
+- Gender: {patient_profile.get("gender", patient_profile.get("sex", "unknown"))}.
+- Pronouns: {patient_profile.get("pronouns", "unknown")}.
+- If the student asks your age, gender, name, or background, answer using this patient identity exactly.
+- Do not use a different age, gender, name, or biography.
 
 Role:
 - Speak only as the patient.

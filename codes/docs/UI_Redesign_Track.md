@@ -323,6 +323,78 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-21 - Step UI-6: Voice Persona Identity Sync Fix
+
+### What Changed
+
+- Fixed Realtime voice instruction syncing for editable age and gender.
+- Added a backend persona-settings timestamp that changes whenever age or gender
+  is saved.
+- Added that timestamp to the `/voice/instructions` response.
+- Updated the Voice Room sync logic so it refreshes Realtime instructions when
+  either patient state or persona settings change.
+- Made voice and text prompts explicitly include patient identity:
+  - name
+  - age
+  - gender
+  - pronouns
+- Added direct prompt guidance that the AI must answer age/gender/name/background
+  questions using the selected patient identity.
+
+### Why It Changed
+
+- The previous voice sync only checked `patient_state_updated_at`.
+- Age and gender are persona settings, not patient state fields, so changing them
+  did not trigger a `session.update` for an already-connected Realtime session.
+- The AI also needed stronger identity instructions so it would not improvise a
+  different age or gender when asked directly.
+
+### How It Changed
+
+- The backend now stores `persona_settings_updated_at` in the in-memory persona
+  settings service.
+- The timestamp is refreshed whenever age or gender changes.
+- The voice instructions API returns both:
+  - `patient_state_updated_at`
+  - `persona_settings_updated_at`
+- The frontend builds a combined instruction version from patient-state timestamp,
+  persona-settings timestamp, and recent cue count.
+- If that combined version changes, the Voice Room sends a Realtime
+  `session.update`.
+
+### Files Changed
+
+- `codes/backend/app/services/persona_settings.py`
+  - Added persona settings timestamp.
+  - Updates timestamp after age/gender saves.
+
+- `codes/backend/app/schemas/voice.py`
+  - Added `persona_settings_updated_at` to `VoiceInstructionsResponse`.
+
+- `codes/backend/app/services/realtime_voice_service.py`
+  - Adds persona settings timestamp to voice instruction responses.
+
+- `codes/backend/app/services/voice_instruction_builder.py`
+  - Adds explicit patient identity block to Realtime instructions.
+  - Adds identity guidance into voice guidance.
+
+- `codes/backend/app/services/persona_prompt_builder.py`
+  - Adds explicit patient identity block to text chat instructions.
+
+- `codes/frontend/src/api/voice.ts`
+  - Adds `persona_settings_updated_at` to the frontend voice instruction type.
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Replaces patient-state-only sync tracking with a combined instruction
+    version.
+
+### Verification
+
+- Backend compile passed.
+- Frontend build passed.
+- API test confirmed that after setting age to `72` and gender to `male`, voice
+  instructions included `Age: 72`, `Gender: male`, and `he/him`.
+
 ## 2026-07-18 - Step UI-6: Persona Page Baseline Card Polish
 
 ### What Changed

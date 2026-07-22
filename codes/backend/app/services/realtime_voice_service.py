@@ -5,6 +5,7 @@ import httpx
 from app.core.config import Settings, get_settings
 from app.schemas.state import PatientState, StateEvent
 from app.schemas.voice import RealtimeSessionResponse, VoiceInstructionsResponse
+from app.services.persona_settings import get_copd_sob_persona_settings_updated_at
 from app.services.scenario_loader import load_copd_sob_scenario
 from app.services.state_manager import get_current_state, get_state_events
 from app.services.voice_instruction_builder import build_realtime_voice_instructions
@@ -30,6 +31,7 @@ def build_current_voice_instructions() -> VoiceInstructionsResponse:
         ),
         scenario_id=scenario["scenario_id"],
         patient_state_updated_at=patient_state.last_updated_at.isoformat(),
+        persona_settings_updated_at=get_copd_sob_persona_settings_updated_at().isoformat(),
         recent_cue_count=recent_cue_count,
     )
 

@@ -209,7 +209,7 @@ export function VoiceRoom() {
   const localStreamRef = useRef<MediaStream | null>(null);
   const dataChannelRef = useRef<RTCDataChannel | null>(null);
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
-  const lastInstructionStateUpdatedAtRef = useRef<string | null>(null);
+  const lastInstructionVersionRef = useRef<string | null>(null);
 
   useEffect(() => {
     refreshPatientState();
@@ -667,7 +667,7 @@ export function VoiceRoom() {
     peerConnectionRef.current = null;
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
     localStreamRef.current = null;
-    lastInstructionStateUpdatedAtRef.current = null;
+    lastInstructionVersionRef.current = null;
     setLastInstructionSyncAt(null);
 
     if (remoteAudioRef.current) {
@@ -750,11 +750,11 @@ export function VoiceRoom() {
 
   async function syncVoiceInstructions(options: { force?: boolean } = {}) {
     const instructionsResponse = await getCurrentVoiceInstructions();
+    const instructionVersion = buildInstructionVersion(instructionsResponse);
 
     if (
       !options.force &&
-      instructionsResponse.patient_state_updated_at ===
-        lastInstructionStateUpdatedAtRef.current
+      instructionVersion === lastInstructionVersionRef.current
     ) {
       return;
     }
@@ -762,8 +762,7 @@ export function VoiceRoom() {
     const updateWasSent = sendSessionUpdate(instructionsResponse);
 
     if (updateWasSent) {
-      lastInstructionStateUpdatedAtRef.current =
-        instructionsResponse.patient_state_updated_at;
+      lastInstructionVersionRef.current = instructionVersion;
       setLastInstructionSyncAt(new Date().toLocaleTimeString());
     }
   }
@@ -1702,6 +1701,17 @@ function buildCueReactionInstructions(
     "Describe only what you feel in the room.",
     "Do not mention the instructor, dashboard, cue, simulation, AI, or vital-sign numbers.",
   ].join(" ");
+}
+
+
+function buildInstructionVersion(
+  instructionsResponse: VoiceInstructionsResponse,
+): string {
+  return [
+    instructionsResponse.patient_state_updated_at,
+    instructionsResponse.persona_settings_updated_at,
+    String(instructionsResponse.recent_cue_count),
+  ].join("|");
 }
 
 
