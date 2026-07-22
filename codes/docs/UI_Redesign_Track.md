@@ -323,6 +323,41 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-22 - Step UI-6: State Update Icon Highlight
+
+### What Changed
+
+- Removed the separate red update dot from the center of highlighted patient
+  state subcards.
+- Reused the existing state icon as the update indicator.
+- The icon now twinkles red and shows a small pulse ring when that state field
+  changes.
+- The icon remains in its original top-right position.
+
+### Why It Changed
+
+- The center dot could cover the patient-state information.
+- The icon already identifies the type of state field, so animating it is clearer
+  and less intrusive.
+- Keeping the icon in its original position preserves the card layout.
+
+### How It Changed
+
+- Removed the `voice-state-updated-dot` element from the `StateMetric` component.
+- Replaced dot-specific CSS animations with icon-specific twinkle and ring
+  animations.
+- Applied the animation only when the subcard has the highlighted state class.
+
+### Files Changed
+
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+  - Removed the separate recently-updated dot markup.
+
+- `codes/frontend/src/styles.css`
+  - Removed center-dot styling.
+  - Added red twinkle and pulse-ring behavior to `.voice-state-icon` when its
+    parent state card is highlighted.
+
 ## 2026-07-22 - Step UI-6: Live Persona Summary for Voice Settings
 
 ### What Changed

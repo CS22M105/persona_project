@@ -1564,13 +1564,6 @@ function StateMetric({
         <span className="voice-state-label">{label}</span>
       </span>
       <span className="voice-state-value">{value}</span>
-      {highlighted ? (
-        <span
-          aria-label="Recently updated"
-          className="voice-state-updated-dot"
-          role="status"
-        />
-      ) : null}
     </div>
   );
 }
