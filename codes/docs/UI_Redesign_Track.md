@@ -1524,3 +1524,52 @@ event timeline should live inside the voice room, close to instructor controls.
 
 - `codes/frontend/src/styles.css`
   - Removed the unused `.persona-setting-editor-wide` rule.
+
+## 2026-07-22 - Step UI-5E: Rename Voice Type to Voice Affect
+
+### What Changed
+
+- Changed the Persona Page control label from `Voice type` to `Voice affect`.
+- Kept the dropdown options visible for selecting the patient's emotional vocal
+  affect.
+- Removed the old `Voice type` wording from the Patient Summary.
+- Patient Summary now shows `Voice affect` instead.
+- Text chat and Realtime voice instructions now describe the setting as voice
+  affect.
+
+### Why It Changed
+
+- Voice affect better describes what the instructor is choosing: the emotional
+  delivery of the patient voice.
+- Voice type sounded too similar to the Realtime voice selector, which chooses
+  the actual synthesized voice.
+- The Persona Page should stay understandable for instructors before they enter
+  the live voice room.
+
+### How It Changed
+
+- Renamed frontend variables and labels from voice style/type wording to voice
+  affect wording.
+- Kept the existing backend `voice_style` request field for compatibility.
+- Added `voice_affect` into the backend scenario patient profile while retaining
+  `voice_style`.
+- Updated prompt builders to say `Voice affect`.
+
+### Files Changed
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Renamed the dropdown to Voice affect.
+  - Updated save messages.
+  - Replaced the Patient Summary `Voice type` row with `Voice affect`.
+
+- `codes/frontend/src/api/scenarios.ts`
+  - Renamed the frontend update helper to `updateCopdSobPersonaVoiceAffect`.
+
+- `codes/backend/app/services/persona_settings.py`
+  - Adds `voice_affect` to the loaded patient profile.
+
+- `codes/backend/app/services/persona_prompt_builder.py`
+  - Uses Voice affect wording in text chat instructions.
+
+- `codes/backend/app/services/voice_instruction_builder.py`
+  - Uses Voice affect wording in Realtime voice instructions.

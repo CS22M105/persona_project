@@ -103,11 +103,11 @@ def update_copd_sob_voice_style(voice_style: str) -> str:
     normalized_voice_style = " ".join(voice_style.strip().split())
 
     if not normalized_voice_style:
-        raise ValueError("Voice style cannot be empty.")
+        raise ValueError("Voice affect cannot be empty.")
 
     if len(normalized_voice_style) > MAX_VOICE_STYLE_LENGTH:
         raise ValueError(
-            f"Voice style must be {MAX_VOICE_STYLE_LENGTH} characters or fewer."
+            f"Voice affect must be {MAX_VOICE_STYLE_LENGTH} characters or fewer."
         )
 
     global _copd_sob_voice_style, _copd_sob_settings_updated_at
@@ -125,6 +125,7 @@ def apply_copd_sob_persona_settings(scenario: dict[str, Any]) -> dict[str, Any]:
     patient_profile["sex"] = get_copd_sob_patient_gender()
     patient_profile["pronouns"] = _pronouns_for_gender(get_copd_sob_patient_gender())
     patient_profile["voice"] = get_copd_sob_patient_voice()
+    patient_profile["voice_affect"] = get_copd_sob_voice_style()
     patient_profile["voice_style"] = get_copd_sob_voice_style()
     return scenario_with_settings
 

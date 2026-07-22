@@ -84,19 +84,19 @@ export async function updateCopdSobPersonaVoice(
   return response.json();
 }
 
-export async function updateCopdSobPersonaVoiceStyle(
-  voiceStyle: string,
+export async function updateCopdSobPersonaVoiceAffect(
+  voiceAffect: string,
 ): Promise<PersonaSettings> {
   const response = await fetch(`${API_BASE_URL}/scenarios/copd-sob/persona-settings`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ voice_style: voiceStyle }),
+    body: JSON.stringify({ voice_style: voiceAffect }),
   });
 
   if (!response.ok) {
-    throw new Error(`Persona voice style update failed with status ${response.status}`);
+    throw new Error(`Persona voice affect update failed with status ${response.status}`);
   }
 
   return response.json();

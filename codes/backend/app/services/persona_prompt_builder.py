@@ -34,7 +34,7 @@ Patient identity:
 - Age: {patient_profile.get("age", "unknown")}.
 - Gender: {patient_profile.get("gender", patient_profile.get("sex", "unknown"))}.
 - Pronouns: {patient_profile.get("pronouns", "unknown")}.
-- Voice style: {patient_profile.get("voice_style", "natural simulated patient")}.
+- Voice affect: {patient_profile.get("voice_affect", patient_profile.get("voice_style", "natural simulated patient"))}.
 - If the student asks your age, gender, name, or background, answer using this patient identity exactly.
 - Do not use a different age, gender, name, or biography.
 

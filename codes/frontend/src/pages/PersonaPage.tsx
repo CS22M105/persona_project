@@ -8,7 +8,7 @@ import {
   updateCopdSobPersonaAge,
   updateCopdSobPersonaGender,
   updateCopdSobPersonaVoice,
-  updateCopdSobPersonaVoiceStyle,
+  updateCopdSobPersonaVoiceAffect,
 } from "../api/scenarios";
 
 type BackendStatus = "checking" | "connected" | "unavailable";
@@ -41,7 +41,7 @@ const voiceOptions: { label: string; value: PatientVoice }[] = [
   { label: "Verse", value: "verse" },
 ];
 
-const voiceStyleOptions = [
+const voiceAffectOptions = [
   "Breathless, tired, anxious",
   "Calm but short of breath",
   "Very anxious and breathless",
@@ -55,23 +55,23 @@ export function PersonaPage() {
   const [patientAge, setPatientAge] = useState(68);
   const [patientGender, setPatientGender] = useState<PatientGender>("female");
   const [patientVoice, setPatientVoice] = useState<PatientVoice>("marin");
-  const [patientVoiceStyle, setPatientVoiceStyle] = useState(
+  const [patientVoiceAffect, setPatientVoiceAffect] = useState(
     "Breathless, tired, anxious",
   );
   const [ageInput, setAgeInput] = useState("68");
   const [genderInput, setGenderInput] = useState<PatientGender>("female");
   const [voiceInput, setVoiceInput] = useState<PatientVoice>("marin");
-  const [voiceStyleInput, setVoiceStyleInput] = useState(
+  const [voiceAffectInput, setVoiceAffectInput] = useState(
     "Breathless, tired, anxious",
   );
   const [isSavingAge, setIsSavingAge] = useState(false);
   const [isSavingGender, setIsSavingGender] = useState(false);
   const [isSavingVoice, setIsSavingVoice] = useState(false);
-  const [isSavingVoiceStyle, setIsSavingVoiceStyle] = useState(false);
+  const [isSavingVoiceAffect, setIsSavingVoiceAffect] = useState(false);
   const [ageStatusMessage, setAgeStatusMessage] = useState("");
   const [genderStatusMessage, setGenderStatusMessage] = useState("");
   const [voiceStatusMessage, setVoiceStatusMessage] = useState("");
-  const [voiceStyleStatusMessage, setVoiceStyleStatusMessage] = useState("");
+  const [voiceAffectStatusMessage, setVoiceAffectStatusMessage] = useState("");
 
   useEffect(() => {
     getHealth()
@@ -84,15 +84,15 @@ export function PersonaPage() {
         setPatientAge(settings.age);
         setPatientGender(settings.gender);
         setPatientVoice(settings.voice);
-        setPatientVoiceStyle(settings.voice_style);
+        setPatientVoiceAffect(settings.voice_style);
         setAgeInput(String(settings.age));
         setGenderInput(settings.gender);
         setVoiceInput(settings.voice);
-        setVoiceStyleInput(settings.voice_style);
+        setVoiceAffectInput(settings.voice_style);
         setAgeStatusMessage("");
         setGenderStatusMessage("");
         setVoiceStatusMessage("");
-        setVoiceStyleStatusMessage("");
+        setVoiceAffectStatusMessage("");
       })
       .catch(() => {
         setAgeStatusMessage("Persona settings failed to load.");
@@ -118,11 +118,11 @@ export function PersonaPage() {
       setPatientAge(settings.age);
       setPatientGender(settings.gender);
       setPatientVoice(settings.voice);
-      setPatientVoiceStyle(settings.voice_style);
+      setPatientVoiceAffect(settings.voice_style);
       setAgeInput(String(settings.age));
       setGenderInput(settings.gender);
       setVoiceInput(settings.voice);
-      setVoiceStyleInput(settings.voice_style);
+      setVoiceAffectInput(settings.voice_style);
       setAgeStatusMessage("Saved. Chat and voice will use this age.");
     } catch {
       setAgeStatusMessage("Age could not be saved. Make sure the backend is running.");
@@ -142,11 +142,11 @@ export function PersonaPage() {
       setPatientAge(settings.age);
       setPatientGender(settings.gender);
       setPatientVoice(settings.voice);
-      setPatientVoiceStyle(settings.voice_style);
+      setPatientVoiceAffect(settings.voice_style);
       setAgeInput(String(settings.age));
       setGenderInput(settings.gender);
       setVoiceInput(settings.voice);
-      setVoiceStyleInput(settings.voice_style);
+      setVoiceAffectInput(settings.voice_style);
       setGenderStatusMessage("Saved. Chat and voice will use this gender.");
     } catch {
       setGenderStatusMessage(
@@ -168,11 +168,11 @@ export function PersonaPage() {
       setPatientAge(settings.age);
       setPatientGender(settings.gender);
       setPatientVoice(settings.voice);
-      setPatientVoiceStyle(settings.voice_style);
+      setPatientVoiceAffect(settings.voice_style);
       setAgeInput(String(settings.age));
       setGenderInput(settings.gender);
       setVoiceInput(settings.voice);
-      setVoiceStyleInput(settings.voice_style);
+      setVoiceAffectInput(settings.voice_style);
       setVoiceStatusMessage("Saved. Reconnect voice to hear this voice.");
     } catch {
       setVoiceStatusMessage("Voice could not be saved. Make sure the backend is running.");
@@ -181,29 +181,29 @@ export function PersonaPage() {
     }
   }
 
-  async function handleVoiceStyleSave(event: FormEvent<HTMLFormElement>) {
+  async function handleVoiceAffectSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsSavingVoiceStyle(true);
-    setVoiceStyleStatusMessage("");
+    setIsSavingVoiceAffect(true);
+    setVoiceAffectStatusMessage("");
 
     try {
-      const settings = await updateCopdSobPersonaVoiceStyle(voiceStyleInput);
+      const settings = await updateCopdSobPersonaVoiceAffect(voiceAffectInput);
       setPatientName(settings.patient_name);
       setPatientAge(settings.age);
       setPatientGender(settings.gender);
       setPatientVoice(settings.voice);
-      setPatientVoiceStyle(settings.voice_style);
+      setPatientVoiceAffect(settings.voice_style);
       setAgeInput(String(settings.age));
       setGenderInput(settings.gender);
       setVoiceInput(settings.voice);
-      setVoiceStyleInput(settings.voice_style);
-      setVoiceStyleStatusMessage("Saved. Chat and voice will use this voice type.");
+      setVoiceAffectInput(settings.voice_style);
+      setVoiceAffectStatusMessage("Saved. Chat and voice will use this voice affect.");
     } catch {
-      setVoiceStyleStatusMessage(
-        "Voice type could not be saved. Make sure the backend is running.",
+      setVoiceAffectStatusMessage(
+        "Voice affect could not be saved. Make sure the backend is running.",
       );
     } finally {
-      setIsSavingVoiceStyle(false);
+      setIsSavingVoiceAffect(false);
     }
   }
 
@@ -252,10 +252,12 @@ export function PersonaPage() {
                     <PersonaFact label="Age" value={formatAgeSummary(ageInput, patientAge)} />
                     <PersonaFact label="Gender" value={formatGender(genderInput)} />
                     <PersonaFact label="Voice" value={formatVoiceName(voiceInput)} />
-                    <PersonaFact label="Voice type" value={voiceStyleInput || patientVoiceStyle} />
+                    <PersonaFact
+                      label="Voice affect"
+                      value={voiceAffectInput || patientVoiceAffect}
+                    />
                     <PersonaFact label="Chief complaint" value="Shortness of breath" />
                     <PersonaFact label="Scenario" value="COPD exacerbation" />
-                    <PersonaFact label="Affect" value="Anxious, tired, breathless" />
                   </dl>
                   <div className="persona-settings-grid">
                     <form className="persona-setting-editor" onSubmit={handleAgeSave}>
@@ -330,28 +332,28 @@ export function PersonaPage() {
                     </form>
                     <form
                       className="persona-setting-editor"
-                      onSubmit={handleVoiceStyleSave}
+                      onSubmit={handleVoiceAffectSave}
                     >
-                      <label htmlFor="patient-voice-style">Voice type</label>
+                      <label htmlFor="patient-voice-affect">Voice affect</label>
                       <div className="persona-setting-row">
                         <select
-                          id="patient-voice-style"
-                          onChange={(event) => setVoiceStyleInput(event.target.value)}
-                          value={voiceStyleInput}
+                          id="patient-voice-affect"
+                          onChange={(event) => setVoiceAffectInput(event.target.value)}
+                          value={voiceAffectInput}
                         >
-                          {voiceStyleOptions.map((voiceStyleOption) => (
-                            <option key={voiceStyleOption} value={voiceStyleOption}>
-                              {voiceStyleOption}
+                          {voiceAffectOptions.map((voiceAffectOption) => (
+                            <option key={voiceAffectOption} value={voiceAffectOption}>
+                              {voiceAffectOption}
                             </option>
                           ))}
                         </select>
-                        <button disabled={isSavingVoiceStyle} type="submit">
-                          {isSavingVoiceStyle ? "Saving..." : "Save"}
+                        <button disabled={isSavingVoiceAffect} type="submit">
+                          {isSavingVoiceAffect ? "Saving..." : "Save"}
                         </button>
                       </div>
-                      {voiceStyleStatusMessage ? (
+                      {voiceAffectStatusMessage ? (
                         <p className="persona-setting-status">
-                          {voiceStyleStatusMessage}
+                          {voiceAffectStatusMessage}
                         </p>
                       ) : null}
                     </form>

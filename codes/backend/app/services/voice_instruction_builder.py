@@ -24,7 +24,7 @@ def build_realtime_voice_instructions(
         f"- Age: {patient_profile.get('age', 'unknown')}.\n"
         f"- Gender: {patient_profile.get('gender', patient_profile.get('sex', 'unknown'))}.\n"
         f"- Pronouns: {patient_profile.get('pronouns', 'unknown')}.\n"
-        f"- Voice style: {patient_profile.get('voice_style', 'natural simulated patient')}.\n"
+        f"- Voice affect: {_voice_affect(patient_profile)}.\n"
         "- If the student asks your age, gender, name, or background, answer using this patient identity exactly.\n"
         "- Do not use a different age, gender, name, or biography.\n\n"
         "Role and safety:\n"
@@ -86,11 +86,11 @@ def _build_voice_guidance(
             f"age {patient_profile.get('age', 'unknown')}, "
             f"gender {patient_profile.get('gender', patient_profile.get('sex', 'unknown'))}, "
             f"pronouns {patient_profile.get('pronouns', 'unknown')}, "
-            f"voice style {patient_profile.get('voice_style', 'natural simulated patient')}."
+            f"voice affect {_voice_affect(patient_profile)}."
         ),
         (
-            "Overall voice style should sound like "
-            f"{patient_profile.get('voice_style', 'a natural simulated patient')}."
+            "Overall voice affect should sound like "
+            f"{_voice_affect(patient_profile)}."
         ),
         f"Speech pattern should be {patient_state.voice_behavior.speech_pattern}.",
         f"Tone should be {patient_state.voice_behavior.tone}.",
@@ -131,3 +131,10 @@ def _build_voice_guidance(
         guidance.append("Instructor takeover is active; stay silent so the instructor can speak.")
 
     return guidance
+
+
+def _voice_affect(patient_profile: dict[str, Any]) -> str:
+    return patient_profile.get(
+        "voice_affect",
+        patient_profile.get("voice_style", "natural simulated patient"),
+    )
