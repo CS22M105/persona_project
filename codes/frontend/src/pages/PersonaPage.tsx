@@ -43,17 +43,6 @@ const voiceOptions: { label: string; value: PatientVoice }[] = [
   { label: "Verse", value: "verse" },
 ];
 
-const voiceStylePresets = [
-  voiceStyleDefault,
-  "Severe dyspnea, short broken phrases",
-  "Mildly breathless, cooperative, reassuring",
-  "Anxious adult, rapid breathing, fearful, needs reassurance",
-  "Tired adult, weak voice, slow responses, fatigued",
-  "Post-treatment, calmer, still breathless, mildly tired",
-  "Confused, breathless, worried, needs simple questions",
-  "Guarded adult, chest tightness, uncomfortable, anxious",
-];
-
 export function PersonaPage() {
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("checking");
   const [patientName, setPatientName] = useState("Linda Thompson");
@@ -249,7 +238,6 @@ export function PersonaPage() {
                     <PersonaFact label="Age" value={String(patientAge)} />
                     <PersonaFact label="Gender" value={formatGender(patientGender)} />
                     <PersonaFact label="Voice" value={formatVoiceName(patientVoice)} />
-                    <PersonaFact label="Voice style" value={patientVoiceStyle} />
                     <PersonaFact label="Chief complaint" value="Shortness of breath" />
                     <PersonaFact label="Scenario" value="COPD exacerbation" />
                     <PersonaFact label="Affect" value="Anxious, tired, breathless" />
@@ -330,22 +318,6 @@ export function PersonaPage() {
                       onSubmit={handleVoiceStyleSave}
                     >
                       <label htmlFor="patient-voice-style">Voice style</label>
-                      <select
-                        id="patient-voice-style-preset"
-                        onChange={(event) => setVoiceStyleInput(event.target.value)}
-                        value={
-                          voiceStylePresets.includes(voiceStyleInput)
-                            ? voiceStyleInput
-                            : ""
-                        }
-                      >
-                        <option value="">Custom voice style</option>
-                        {voiceStylePresets.map((voiceStylePreset) => (
-                          <option key={voiceStylePreset} value={voiceStylePreset}>
-                            {voiceStylePreset}
-                          </option>
-                        ))}
-                      </select>
                       <div className="persona-setting-row">
                         <input
                           id="patient-voice-style"
