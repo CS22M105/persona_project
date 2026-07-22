@@ -323,6 +323,55 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-22 - Step UI-6: One-Screen Transcript Record Layout
+
+### What Changed
+
+- Redesigned the transcript record page so transcript conversation, event
+  timeline, and debriefing fit into one visible desktop workspace.
+- Made each record panel internally scrollable:
+  - Transcript conversation
+  - Event timeline
+  - Debriefing preview
+- Added a debriefing preview area with:
+  - Session status
+  - Conversation count
+  - Timeline event count
+  - Start time
+  - Recent conversation entries
+  - Recent timeline entries
+- Preserved the existing Download action for the debriefing draft.
+
+### Why It Changed
+
+- The previous page placed debriefing below transcript and timeline, which made
+  instructors scroll the whole page to compare the three records.
+- A single-screen layout makes review easier during debriefing because the
+  instructor can compare conversation, clinical events, and draft report context
+  at the same time.
+- Internal scrolling prevents long transcripts or timelines from pushing the
+  controls and headings off screen.
+
+### How It Changed
+
+- Converted the desktop transcript page to a viewport-height workspace.
+- Changed the record grid to three desktop columns.
+- Made transcript, timeline, and debriefing panels flex containers with internal
+  scroll areas.
+- Kept smaller screens stacked because three columns would be too cramped on
+  mobile and tablet layouts.
+
+### Files Changed
+
+- `codes/frontend/src/pages/TranscriptsPage.tsx`
+  - Added debriefing preview content inside a scrollable debriefing body.
+
+- `codes/frontend/src/styles.css`
+  - Added one-screen transcript page sizing.
+  - Added three-column desktop record grid.
+  - Added internal scroll behavior for transcript, timeline, and debriefing.
+  - Added responsive stacked layouts for tablet and mobile.
+
 ## 2026-07-22 - Step UI-6: State Update Icon Highlight
 
 ### What Changed

@@ -206,10 +206,60 @@ export function TranscriptsPage() {
                     Download
                   </button>
                 </div>
-                <p className="debrief-placeholder">
-                  This is a minimal draft export based on the current transcript and
-                  timeline. The structured debriefing algorithm will be added later.
-                </p>
+                <div className="debrief-scroll-area">
+                  <p className="debrief-placeholder">
+                    This is a minimal draft export based on the current transcript and
+                    timeline. The structured debriefing algorithm will be added later.
+                  </p>
+                  <div className="debrief-summary-list">
+                    <TranscriptSummaryItem
+                      label="Session status"
+                      value={formatLabel(session.status)}
+                    />
+                    <TranscriptSummaryItem
+                      label="Conversation entries"
+                      value={String(messages.length)}
+                    />
+                    <TranscriptSummaryItem
+                      label="Timeline events"
+                      value={String(events.length)}
+                    />
+                    <TranscriptSummaryItem
+                      label="Started"
+                      value={formatDateTime(session.started_at)}
+                    />
+                  </div>
+                  <section className="debrief-preview-section">
+                    <h3>Recent Conversation</h3>
+                    {messages.length > 0 ? (
+                      <ol className="debrief-preview-list">
+                        {messages.slice(-4).map((message) => (
+                          <li key={message.message_id}>
+                            <strong>{formatLabel(message.speaker)}:</strong>{" "}
+                            {message.text}
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <p>No transcript messages recorded yet.</p>
+                    )}
+                  </section>
+                  <section className="debrief-preview-section">
+                    <h3>Recent Timeline</h3>
+                    {events.length > 0 ? (
+                      <ol className="debrief-preview-list">
+                        {events.slice(-5).map((event) => (
+                          <li key={event.event_id}>
+                            <strong>{formatTime(event.timestamp)}:</strong>{" "}
+                            {event.label ?? formatLabel(event.event_type)}
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <p>No timeline events recorded yet.</p>
+                    )}
+                  </section>
+                </div>
               </section>
             </div>
           ) : null}
