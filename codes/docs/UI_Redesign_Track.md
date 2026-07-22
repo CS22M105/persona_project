@@ -1573,3 +1573,36 @@ event timeline should live inside the voice room, close to instructor controls.
 
 - `codes/backend/app/services/voice_instruction_builder.py`
   - Uses Voice affect wording in Realtime voice instructions.
+
+## 2026-07-22 - Step UI-5F: Bounded Voice Room Chat Scroll
+
+### What Changed
+
+- Made the Patient Conversation card in the Voice Room a fixed, bounded panel.
+- Kept the chat input fixed at the bottom of the chat card.
+- Made only the message conversation area scroll internally.
+- Added tablet and mobile-specific chat card heights.
+
+### Why It Changed
+
+- Long chat sessions were pushing the entire Voice Room page downward.
+- During a live simulation, controls should remain easy to reach and the page
+  should not keep stretching as messages are added.
+- The instructor should be able to scroll older messages without losing the
+  current input box.
+
+### How It Changed
+
+- Added a viewport-aware height to `.voice-chat-card`.
+- Added `overflow: hidden` and `min-height: 0` through the embedded chat layout
+  chain.
+- Kept `.conversation` as the only scrolling region inside the embedded chat.
+- Added `overscroll-behavior: contain` so chat scrolling stays inside the chat
+  panel.
+
+### Files Changed
+
+- `codes/frontend/src/styles.css`
+  - Updated Voice Room chat card sizing.
+  - Updated embedded chat panel overflow behavior.
+  - Added responsive chat heights for mobile and tablet.

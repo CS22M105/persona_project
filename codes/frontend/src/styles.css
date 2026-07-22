@@ -1308,30 +1308,38 @@ h1 {
 }
 
 .voice-chat-card {
+  align-self: start;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   grid-area: conversation;
-  height: 100%;
+  height: min(520px, calc(100vh - 230px));
+  min-height: 420px;
+  min-width: 0;
+  overflow: hidden;
   padding: 14px;
 }
 
 .voice-instructor-chat {
   display: flex;
-  flex: 1;
+  flex: 1 1 auto;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
 }
 
 .voice-chat-card > h2 {
+  flex: 0 0 auto;
   margin-bottom: 12px;
 }
 
 .voice-instructor-chat .chat-panel {
   border-radius: 6px;
-  flex: 1;
-  height: 360px;
+  flex: 1 1 auto;
+  height: 100%;
   min-height: 0;
   max-width: none;
+  overflow: hidden;
 }
 
 .voice-instructor-chat .chat-header {
@@ -1345,8 +1353,10 @@ h1 {
 
 .voice-instructor-chat .conversation {
   flex: 1 1 auto;
+  height: auto;
   min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 10px 12px;
 }
 
@@ -2373,6 +2383,11 @@ h1 {
       "controls";
   }
 
+  .voice-chat-card {
+    height: 460px;
+    min-height: 0;
+  }
+
   .voice-session-status-block {
     grid-template-columns: 1fr;
   }
@@ -2397,6 +2412,11 @@ h1 {
       "state state state state state state"
       "instructor instructor instructor controls controls controls"
       "conversation conversation conversation conversation conversation conversation";
+  }
+
+  .voice-chat-card {
+    height: 500px;
+    min-height: 0;
   }
 
   .transcript-summary-strip {
