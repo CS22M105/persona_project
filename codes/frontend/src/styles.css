@@ -667,6 +667,10 @@ h1 {
   padding: 10px;
 }
 
+.persona-setting-editor-wide {
+  grid-column: 1 / -1;
+}
+
 .persona-setting-editor label {
   color: #00606d;
   font-size: 0.78rem;

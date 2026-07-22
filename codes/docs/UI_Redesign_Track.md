@@ -323,6 +323,83 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-21 - Step UI-6: Persona Voice Style and Voice Selection
+
+### What Changed
+
+- Added editable voice style to the COPD/SOB Persona Page.
+- Added explicit voice selection to the COPD/SOB Persona Page.
+- Default voice style is:
+  - `Older adult, breathless, tired, anxious`
+- Voice options are:
+  - `Marin`
+  - `Cedar`
+  - `Verse`
+- Patient Summary now displays the selected voice and voice style.
+- Backend persona settings now store:
+  - `voice`
+  - `voice_style`
+- Realtime voice session creation uses the selected `voice`.
+- Realtime voice instructions include the selected `voice_style`.
+- Text chat persona prompts also include the selected `voice_style`.
+
+### Why It Changed
+
+- Voice and voice style are persona-level settings chosen before the live
+  session.
+- The selected voice controls the generated audio voice.
+- The selected style controls how the patient should sound clinically, for
+  example older adult, breathless, tired, and anxious.
+- Keeping these settings on the Persona Page helps the instructor prepare the
+  patient before starting the Voice Room.
+
+### How It Changed
+
+- Extended the in-memory persona settings service with explicit voice and voice
+  style fields.
+- Added backend validation for supported voices and voice style length.
+- Added API support for updating voice and voice style through the existing
+  persona settings endpoint.
+- Added frontend API calls for saving voice and voice style.
+- Added Persona Page form controls for selecting voice and editing voice style.
+- Added voice style into both text and Realtime prompt builders so patient
+  responses reflect the selected style.
+
+### Files Changed
+
+- `codes/backend/app/services/persona_settings.py`
+  - Adds selected voice and voice style settings.
+  - Injects `voice` and `voice_style` into the loaded scenario profile.
+
+- `codes/backend/app/api/scenarios.py`
+  - Adds `voice` and `voice_style` to persona settings responses.
+  - Allows partial updates for voice and voice style.
+
+- `codes/backend/app/services/voice_instruction_builder.py`
+  - Adds voice style to Realtime voice instructions.
+
+- `codes/backend/app/services/persona_prompt_builder.py`
+  - Adds voice style to text chat persona instructions.
+
+- `codes/frontend/src/api/scenarios.ts`
+  - Adds `PatientVoice`.
+  - Adds update functions for voice and voice style.
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Displays voice and voice style.
+  - Adds Voice and Voice Style save controls.
+
+- `codes/frontend/src/styles.css`
+  - Adds a wider layout option for the voice style setting editor.
+
+### Current Limitation
+
+- Voice and voice style are stored in memory for the prototype and reset when the
+  backend restarts.
+- If a voice is changed while a Realtime session is already connected, the user
+  should disconnect and reconnect to hear the new selected voice. Voice style can
+  be reflected through refreshed instructions.
+
 ## 2026-07-21 - Step UI-6: Voice Persona Identity Sync Fix
 
 ### What Changed

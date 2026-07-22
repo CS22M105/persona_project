@@ -5,12 +5,16 @@ from pydantic import BaseModel, Field
 
 from app.services.persona_settings import (
     MAX_PATIENT_AGE,
+    MAX_VOICE_STYLE_LENGTH,
     MIN_PATIENT_AGE,
     get_copd_sob_patient_age,
     get_copd_sob_patient_gender,
     get_copd_sob_patient_voice,
+    get_copd_sob_voice_style,
     update_copd_sob_patient_age,
     update_copd_sob_patient_gender,
+    update_copd_sob_patient_voice,
+    update_copd_sob_voice_style,
 )
 from app.services.scenario_loader import load_copd_sob_scenario
 
@@ -23,11 +27,14 @@ class PersonaSettingsResponse(BaseModel):
     age: int
     gender: str
     voice: str
+    voice_style: str
 
 
 class PersonaSettingsUpdate(BaseModel):
     age: int | None = Field(default=None, ge=MIN_PATIENT_AGE, le=MAX_PATIENT_AGE)
     gender: Literal["female", "male"] | None = None
+    voice: Literal["marin", "cedar", "verse"] | None = None
+    voice_style: str | None = Field(default=None, max_length=MAX_VOICE_STYLE_LENGTH)
 
 
 @router.get("/copd-sob")
@@ -46,6 +53,7 @@ async def get_copd_sob_persona_settings() -> PersonaSettingsResponse:
         age=get_copd_sob_patient_age(),
         gender=get_copd_sob_patient_gender(),
         voice=get_copd_sob_patient_voice(),
+        voice_style=get_copd_sob_voice_style(),
     )
 
 
@@ -58,6 +66,10 @@ async def update_copd_sob_persona_settings(
             update_copd_sob_patient_age(request.age)
         if request.gender is not None:
             update_copd_sob_patient_gender(request.gender)
+        if request.voice is not None:
+            update_copd_sob_patient_voice(request.voice)
+        if request.voice_style is not None:
+            update_copd_sob_voice_style(request.voice_style)
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 

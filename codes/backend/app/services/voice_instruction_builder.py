@@ -24,6 +24,7 @@ def build_realtime_voice_instructions(
         f"- Age: {patient_profile.get('age', 'unknown')}.\n"
         f"- Gender: {patient_profile.get('gender', patient_profile.get('sex', 'unknown'))}.\n"
         f"- Pronouns: {patient_profile.get('pronouns', 'unknown')}.\n"
+        f"- Voice style: {patient_profile.get('voice_style', 'natural simulated patient')}.\n"
         "- If the student asks your age, gender, name, or background, answer using this patient identity exactly.\n"
         "- Do not use a different age, gender, name, or biography.\n\n"
         "Role and safety:\n"
@@ -84,7 +85,12 @@ def _build_voice_guidance(
             f"name {patient_profile.get('name', 'unknown')}, "
             f"age {patient_profile.get('age', 'unknown')}, "
             f"gender {patient_profile.get('gender', patient_profile.get('sex', 'unknown'))}, "
-            f"pronouns {patient_profile.get('pronouns', 'unknown')}."
+            f"pronouns {patient_profile.get('pronouns', 'unknown')}, "
+            f"voice style {patient_profile.get('voice_style', 'natural simulated patient')}."
+        ),
+        (
+            "Overall voice style should sound like "
+            f"{patient_profile.get('voice_style', 'a natural simulated patient')}."
         ),
         f"Speech pattern should be {patient_state.voice_behavior.speech_pattern}.",
         f"Tone should be {patient_state.voice_behavior.tone}.",

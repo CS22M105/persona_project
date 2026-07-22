@@ -5,10 +5,12 @@ export type PersonaSettings = {
   patient_name: string;
   age: number;
   gender: PatientGender;
-  voice: string;
+  voice: PatientVoice;
+  voice_style: string;
 };
 
 export type PatientGender = "female" | "male";
+export type PatientVoice = "marin" | "cedar" | "verse";
 
 export async function getCopdSobPersonaSettings(): Promise<PersonaSettings> {
   const response = await fetch(`${API_BASE_URL}/scenarios/copd-sob/persona-settings`);
@@ -49,6 +51,42 @@ export async function updateCopdSobPersonaGender(
 
   if (!response.ok) {
     throw new Error(`Persona gender update failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateCopdSobPersonaVoice(
+  voice: PatientVoice,
+): Promise<PersonaSettings> {
+  const response = await fetch(`${API_BASE_URL}/scenarios/copd-sob/persona-settings`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ voice }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Persona voice update failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function updateCopdSobPersonaVoiceStyle(
+  voiceStyle: string,
+): Promise<PersonaSettings> {
+  const response = await fetch(`${API_BASE_URL}/scenarios/copd-sob/persona-settings`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ voice_style: voiceStyle }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Persona voice style update failed with status ${response.status}`);
   }
 
   return response.json();
