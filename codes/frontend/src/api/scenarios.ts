@@ -10,7 +10,17 @@ export type PersonaSettings = {
 };
 
 export type PatientGender = "female" | "male";
-export type PatientVoice = "marin" | "cedar" | "verse";
+export type PatientVoice =
+  | "marin"
+  | "cedar"
+  | "alloy"
+  | "ash"
+  | "ballad"
+  | "coral"
+  | "echo"
+  | "sage"
+  | "shimmer"
+  | "verse";
 
 export async function getCopdSobPersonaSettings(): Promise<PersonaSettings> {
   const response = await fetch(`${API_BASE_URL}/scenarios/copd-sob/persona-settings`);

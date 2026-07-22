@@ -11,7 +11,18 @@ DEFAULT_COPD_SOB_VOICE_STYLE = "Older adult, breathless, tired, anxious"
 MIN_PATIENT_AGE = 18
 MAX_PATIENT_AGE = 110
 ALLOWED_PATIENT_GENDERS = ("female", "male")
-ALLOWED_PATIENT_VOICES = ("marin", "cedar", "verse")
+ALLOWED_PATIENT_VOICES = (
+    "marin",
+    "cedar",
+    "alloy",
+    "ash",
+    "ballad",
+    "coral",
+    "echo",
+    "sage",
+    "shimmer",
+    "verse",
+)
 MAX_VOICE_STYLE_LENGTH = 120
 
 _settings_lock = Lock()

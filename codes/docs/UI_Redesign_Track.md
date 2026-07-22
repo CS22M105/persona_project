@@ -323,6 +323,69 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-22 - Step UI-6: Expanded Voice and Voice Style Options
+
+### What Changed
+
+- Expanded the selectable Realtime voices on the Persona Page.
+- Added voice options:
+  - Marin
+  - Cedar
+  - Alloy
+  - Ash
+  - Ballad
+  - Coral
+  - Echo
+  - Sage
+  - Shimmer
+  - Verse
+- Kept Marin and Cedar labeled as recommended voices.
+- Added more voice-style presets:
+  - Older adult, breathless, tired, anxious
+  - Older adult, severe dyspnea, short broken phrases
+  - Older adult, mildly breathless, cooperative, reassuring
+  - Anxious adult, rapid breathing, fearful, needs reassurance
+  - Tired adult, weak voice, slow responses, fatigued
+  - Post-treatment, calmer, still breathless, mildly tired
+  - Confused older adult, breathless, worried, needs simple questions
+  - Guarded adult, chest tightness, uncomfortable, anxious
+
+### Why It Changed
+
+- Instructors need more flexibility when shaping the simulated patient's voice.
+- The voice setting controls the OpenAI Realtime output voice.
+- The voice style setting guides the AI's speaking behavior and emotional tone in
+  both text and voice instructions.
+
+### How It Changed
+
+- Backend voice validation now accepts the current OpenAI Realtime built-in voice
+  list used by this project.
+- Frontend voice types were expanded to match backend validation.
+- The Persona Page voice dropdown now renders from a reusable voice options list.
+- The Voice Style field now includes presets while still allowing custom text.
+
+### Files Changed
+
+- `codes/backend/app/services/persona_settings.py`
+  - Expanded `ALLOWED_PATIENT_VOICES`.
+
+- `codes/backend/app/api/scenarios.py`
+  - Expanded accepted voice values in the persona settings update schema.
+
+- `codes/frontend/src/api/scenarios.ts`
+  - Expanded `PatientVoice`.
+
+- `codes/frontend/src/pages/PersonaPage.tsx`
+  - Added reusable voice options.
+  - Added reusable voice-style preset options.
+  - Updated the Voice dropdown and Voice Style controls.
+
+### Source Note
+
+- OpenAI Realtime API reference lists the supported built-in voices and notes
+  that Marin and Cedar are recommended for best quality.
+
 ## 2026-07-21 - Step UI-6: Persona Voice Style and Voice Selection
 
 ### What Changed

@@ -30,6 +30,30 @@ const learningGoals = [
 
 const voiceStyleDefault = "Older adult, breathless, tired, anxious";
 
+const voiceOptions: { label: string; value: PatientVoice }[] = [
+  { label: "Marin - recommended", value: "marin" },
+  { label: "Cedar - recommended", value: "cedar" },
+  { label: "Alloy", value: "alloy" },
+  { label: "Ash", value: "ash" },
+  { label: "Ballad", value: "ballad" },
+  { label: "Coral", value: "coral" },
+  { label: "Echo", value: "echo" },
+  { label: "Sage", value: "sage" },
+  { label: "Shimmer", value: "shimmer" },
+  { label: "Verse", value: "verse" },
+];
+
+const voiceStylePresets = [
+  voiceStyleDefault,
+  "Older adult, severe dyspnea, short broken phrases",
+  "Older adult, mildly breathless, cooperative, reassuring",
+  "Anxious adult, rapid breathing, fearful, needs reassurance",
+  "Tired adult, weak voice, slow responses, fatigued",
+  "Post-treatment, calmer, still breathless, mildly tired",
+  "Confused older adult, breathless, worried, needs simple questions",
+  "Guarded adult, chest tightness, uncomfortable, anxious",
+];
+
 export function PersonaPage() {
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("checking");
   const [patientName, setPatientName] = useState("Linda Thompson");
@@ -287,9 +311,11 @@ export function PersonaPage() {
                           }
                           value={voiceInput}
                         >
-                          <option value="marin">Marin</option>
-                          <option value="cedar">Cedar</option>
-                          <option value="verse">Verse</option>
+                          {voiceOptions.map((voiceOption) => (
+                            <option key={voiceOption.value} value={voiceOption.value}>
+                              {voiceOption.label}
+                            </option>
+                          ))}
                         </select>
                         <button disabled={isSavingVoice} type="submit">
                           {isSavingVoice ? "Saving..." : "Save"}
@@ -304,6 +330,22 @@ export function PersonaPage() {
                       onSubmit={handleVoiceStyleSave}
                     >
                       <label htmlFor="patient-voice-style">Voice style</label>
+                      <select
+                        id="patient-voice-style-preset"
+                        onChange={(event) => setVoiceStyleInput(event.target.value)}
+                        value={
+                          voiceStylePresets.includes(voiceStyleInput)
+                            ? voiceStyleInput
+                            : ""
+                        }
+                      >
+                        <option value="">Custom voice style</option>
+                        {voiceStylePresets.map((voiceStylePreset) => (
+                          <option key={voiceStylePreset} value={voiceStylePreset}>
+                            {voiceStylePreset}
+                          </option>
+                        ))}
+                      </select>
                       <div className="persona-setting-row">
                         <input
                           id="patient-voice-style"

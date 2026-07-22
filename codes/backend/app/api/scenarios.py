@@ -33,7 +33,18 @@ class PersonaSettingsResponse(BaseModel):
 class PersonaSettingsUpdate(BaseModel):
     age: int | None = Field(default=None, ge=MIN_PATIENT_AGE, le=MAX_PATIENT_AGE)
     gender: Literal["female", "male"] | None = None
-    voice: Literal["marin", "cedar", "verse"] | None = None
+    voice: Literal[
+        "marin",
+        "cedar",
+        "alloy",
+        "ash",
+        "ballad",
+        "coral",
+        "echo",
+        "sage",
+        "shimmer",
+        "verse",
+    ] | None = None
     voice_style: str | None = Field(default=None, max_length=MAX_VOICE_STYLE_LENGTH)
 
 
