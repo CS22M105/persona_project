@@ -41,9 +41,11 @@ export function Dashboard() {
             AI Patient Voice
           </a>
           <div className="dashboard-topbar-actions">
-            <span className={`connection-pill connection-pill-${backendStatus}`}>
-              {formatBackendStatus(backendStatus)}
-            </span>
+            <span
+              aria-label={`Backend status: ${formatBackendStatus(backendStatus)}`}
+              className={`connection-dot connection-dot-${backendStatus}`}
+              title={`Backend status: ${formatBackendStatus(backendStatus)}`}
+            />
           </div>
         </header>
 

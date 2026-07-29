@@ -251,34 +251,24 @@ h1 {
   justify-content: flex-end;
 }
 
-.connection-pill {
-  align-items: center;
-  background: rgb(255 255 255 / 12%);
-  border: 1px solid rgb(255 255 255 / 30%);
-  border-radius: 999px;
-  color: #ffffff;
-  display: inline-flex;
-  font-size: 0.86rem;
-  font-weight: 800;
-  gap: 8px;
-  min-height: 32px;
-  padding: 5px 12px;
-}
-
-.connection-pill::before {
+.connection-dot {
   background: #f5c451;
+  border: 2px solid rgb(255 255 255 / 88%);
   border-radius: 999px;
-  content: "";
-  height: 8px;
-  width: 8px;
+  box-shadow: 0 0 0 4px rgb(245 196 81 / 18%);
+  display: inline-block;
+  height: 11px;
+  width: 11px;
 }
 
-.connection-pill-connected::before {
+.connection-dot-connected {
   background: #2fd174;
+  box-shadow: 0 0 0 4px rgb(47 209 116 / 18%);
 }
 
-.connection-pill-unavailable::before {
+.connection-dot-unavailable {
   background: #ff6b6b;
+  box-shadow: 0 0 0 4px rgb(255 107 107 / 18%);
 }
 
 .dashboard-hero {
