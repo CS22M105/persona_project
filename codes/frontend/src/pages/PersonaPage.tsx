@@ -232,14 +232,14 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
             </div>
           </div>
           <div className="persona-topbar-actions">
+            <a className="header-link persona-back-link" href="/">
+              Dashboard
+            </a>
             <a
               className="header-link persona-topbar-voice-link"
               href={`/voice?scenario_id=${scenario?.scenario_id ?? scenarioId}`}
             >
               Start Voice Room
-            </a>
-            <a className="header-link persona-back-link" href="/">
-              Dashboard
             </a>
             <span
               aria-label={`Backend status: ${formatBackendStatusForScreenReader(

@@ -4,6 +4,36 @@ Date: July 15, 2026
 
 ## Implementation Tracking
 
+### 2026-07-29 - Persona Page Navigation Button Order
+
+What changed:
+
+```text
+Reordered the persona page navigation actions so Dashboard appears first and
+Start Voice Room appears second.
+```
+
+Why:
+
+```text
+The persona page is the bridge between the persona list and the live session.
+Showing Dashboard first gives the instructor a predictable path back to the
+persona selection screen before the action that enters the voice room.
+```
+
+How:
+
+```text
+Moved the Dashboard link before the Start Voice Room link inside the existing
+persona-topbar-actions group. No route, API, state, or style logic changed.
+```
+
+Where:
+
+```text
+codes/frontend/src/pages/PersonaPage.tsx
+```
+
 ### 2026-07-29 - Persona Page Navigation Button Style Alignment
 
 What changed:
