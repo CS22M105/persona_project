@@ -3,8 +3,10 @@ import { FormEvent, ReactNode, useEffect, useState } from "react";
 import { getHealth } from "../api/client";
 import {
   getCopdSobPersonaSettings,
+  getScenario,
   PatientGender,
   PatientVoice,
+  ScenarioDetail,
   updateCopdSobPersonaAge,
   updateCopdSobPersonaGender,
   updateCopdSobPersonaVoice,
@@ -13,20 +15,17 @@ import {
 
 type BackendStatus = "checking" | "connected" | "unavailable";
 
-const availableCues = [
-  "HR increase",
-  "SpO2 drop",
-  "Breathing worsens",
-  "Oxygen applied",
-  "Bronchodilator",
-  "Patient improving",
-];
+type PersonaPageProps = {
+  scenarioId: string;
+};
 
-const learningGoals = [
-  "Assess and prioritize respiratory status.",
-  "Communicate clearly with a short-of-breath patient.",
-  "Recognize deterioration and choose appropriate interventions.",
-];
+type BaselineMetric = {
+  label: string;
+  value: string;
+  unit: string;
+  tone: "heart" | "oxygen" | "breathing" | "warning";
+  icon: ReactNode;
+};
 
 const voiceOptions: { label: string; value: PatientVoice }[] = [
   { label: "Marin - recommended", value: "marin" },
@@ -49,9 +48,11 @@ const voiceAffectOptions = [
   "Alert and cooperative",
 ];
 
-export function PersonaPage() {
+export function PersonaPage({ scenarioId }: PersonaPageProps) {
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("checking");
-  const [patientName, setPatientName] = useState("Linda Thompson");
+  const [scenario, setScenario] = useState<ScenarioDetail | null>(null);
+  const [isLoadingScenario, setIsLoadingScenario] = useState(true);
+  const [patientName, setPatientName] = useState("Patient");
   const [patientAge, setPatientAge] = useState(68);
   const [patientGender, setPatientGender] = useState<PatientGender>("female");
   const [patientVoice, setPatientVoice] = useState<PatientVoice>("marin");
@@ -72,32 +73,79 @@ export function PersonaPage() {
   const [genderStatusMessage, setGenderStatusMessage] = useState("");
   const [voiceStatusMessage, setVoiceStatusMessage] = useState("");
   const [voiceAffectStatusMessage, setVoiceAffectStatusMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const supportsEditableSettings = scenarioId === "copd-sob";
 
   useEffect(() => {
-    getHealth()
-      .then(() => setBackendStatus("connected"))
-      .catch(() => setBackendStatus("unavailable"));
+    loadPersonaPage();
+  }, [scenarioId]);
 
-    getCopdSobPersonaSettings()
-      .then((settings) => {
-        setPatientName(settings.patient_name);
-        setPatientAge(settings.age);
-        setPatientGender(settings.gender);
-        setPatientVoice(settings.voice);
-        setPatientVoiceAffect(settings.voice_style);
-        setAgeInput(String(settings.age));
-        setGenderInput(settings.gender);
-        setVoiceInput(settings.voice);
-        setVoiceAffectInput(settings.voice_style);
-        setAgeStatusMessage("");
-        setGenderStatusMessage("");
-        setVoiceStatusMessage("");
-        setVoiceAffectStatusMessage("");
-      })
-      .catch(() => {
-        setAgeStatusMessage("Persona settings failed to load.");
-      });
-  }, []);
+  async function loadPersonaPage() {
+    setIsLoadingScenario(true);
+    setErrorMessage("");
+
+    try {
+      await getHealth();
+      const scenarioResponse = await getScenario(scenarioId);
+      setBackendStatus("connected");
+      setScenario(scenarioResponse);
+      hydrateProfileFromScenario(scenarioResponse);
+
+      if (scenarioResponse.scenario_id === "copd-sob") {
+        await loadCopdSettings();
+      }
+    } catch {
+      setBackendStatus("unavailable");
+      setScenario(null);
+      setErrorMessage("Persona failed to load. Make sure the backend is running.");
+    } finally {
+      setIsLoadingScenario(false);
+    }
+  }
+
+  function hydrateProfileFromScenario(scenarioResponse: ScenarioDetail) {
+    const profile = scenarioResponse.patient_profile || {};
+    const age = profile.age ?? 68;
+    const gender = normalizeGender(profile.gender ?? profile.sex ?? "female");
+
+    setPatientName(profile.name ?? "Patient");
+    setPatientAge(age);
+    setPatientGender(gender);
+    setAgeInput(String(age));
+    setGenderInput(gender);
+  }
+
+  async function loadCopdSettings() {
+    try {
+      const settings = await getCopdSobPersonaSettings();
+      syncSettings(settings);
+      setAgeStatusMessage("");
+      setGenderStatusMessage("");
+      setVoiceStatusMessage("");
+      setVoiceAffectStatusMessage("");
+    } catch {
+      setAgeStatusMessage("Persona settings failed to load.");
+    }
+  }
+
+  function syncSettings(settings: {
+    patient_name: string;
+    age: number;
+    gender: PatientGender;
+    voice: PatientVoice;
+    voice_style: string;
+  }) {
+    setPatientName(settings.patient_name);
+    setPatientAge(settings.age);
+    setPatientGender(settings.gender);
+    setPatientVoice(settings.voice);
+    setPatientVoiceAffect(settings.voice_style);
+    setAgeInput(String(settings.age));
+    setGenderInput(settings.gender);
+    setVoiceInput(settings.voice);
+    setVoiceAffectInput(settings.voice_style);
+  }
 
   async function handleAgeSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -114,15 +162,7 @@ export function PersonaPage() {
 
     try {
       const settings = await updateCopdSobPersonaAge(nextAge);
-      setPatientName(settings.patient_name);
-      setPatientAge(settings.age);
-      setPatientGender(settings.gender);
-      setPatientVoice(settings.voice);
-      setPatientVoiceAffect(settings.voice_style);
-      setAgeInput(String(settings.age));
-      setGenderInput(settings.gender);
-      setVoiceInput(settings.voice);
-      setVoiceAffectInput(settings.voice_style);
+      syncSettings(settings);
       setAgeStatusMessage("Saved. Chat and voice will use this age.");
     } catch {
       setAgeStatusMessage("Age could not be saved. Make sure the backend is running.");
@@ -138,15 +178,7 @@ export function PersonaPage() {
 
     try {
       const settings = await updateCopdSobPersonaGender(genderInput);
-      setPatientName(settings.patient_name);
-      setPatientAge(settings.age);
-      setPatientGender(settings.gender);
-      setPatientVoice(settings.voice);
-      setPatientVoiceAffect(settings.voice_style);
-      setAgeInput(String(settings.age));
-      setGenderInput(settings.gender);
-      setVoiceInput(settings.voice);
-      setVoiceAffectInput(settings.voice_style);
+      syncSettings(settings);
       setGenderStatusMessage("Saved. Chat and voice will use this gender.");
     } catch {
       setGenderStatusMessage(
@@ -164,15 +196,7 @@ export function PersonaPage() {
 
     try {
       const settings = await updateCopdSobPersonaVoice(voiceInput);
-      setPatientName(settings.patient_name);
-      setPatientAge(settings.age);
-      setPatientGender(settings.gender);
-      setPatientVoice(settings.voice);
-      setPatientVoiceAffect(settings.voice_style);
-      setAgeInput(String(settings.age));
-      setGenderInput(settings.gender);
-      setVoiceInput(settings.voice);
-      setVoiceAffectInput(settings.voice_style);
+      syncSettings(settings);
       setVoiceStatusMessage("Saved. Reconnect voice to hear this voice.");
     } catch {
       setVoiceStatusMessage("Voice could not be saved. Make sure the backend is running.");
@@ -188,15 +212,7 @@ export function PersonaPage() {
 
     try {
       const settings = await updateCopdSobPersonaVoiceAffect(voiceAffectInput);
-      setPatientName(settings.patient_name);
-      setPatientAge(settings.age);
-      setPatientGender(settings.gender);
-      setPatientVoice(settings.voice);
-      setPatientVoiceAffect(settings.voice_style);
-      setAgeInput(String(settings.age));
-      setGenderInput(settings.gender);
-      setVoiceInput(settings.voice);
-      setVoiceAffectInput(settings.voice_style);
+      syncSettings(settings);
       setVoiceAffectStatusMessage("Saved. Chat and voice will use this voice affect.");
     } catch {
       setVoiceAffectStatusMessage(
@@ -207,6 +223,10 @@ export function PersonaPage() {
     }
   }
 
+  const pageTitle = scenario?.scenario_name ?? "Patient Persona";
+  const scenarioType = scenario?.card_summary?.scenario_type ?? "Simulation scenario";
+  const baselineMetrics = scenario ? buildBaselineMetrics(scenario) : [];
+
   return (
     <main className="app-shell persona-shell">
       <section className="persona-page" aria-labelledby="persona-page-title">
@@ -214,7 +234,7 @@ export function PersonaPage() {
           <div className="persona-topbar-left">
             <div className="persona-title-block">
               <p className="eyebrow">Patient persona</p>
-              <h1 id="persona-page-title">COPD / Shortness of Breath</h1>
+              <h1 id="persona-page-title">{pageTitle}</h1>
             </div>
           </div>
           <div className="persona-topbar-actions">
@@ -233,212 +253,283 @@ export function PersonaPage() {
           </div>
         </header>
 
+        {errorMessage ? <p className="chat-error">{errorMessage}</p> : null}
+
         <div className="persona-content">
-          <div className="persona-brief-grid">
-            <section
-              className="persona-brief-card persona-summary-card"
-              aria-labelledby="patient-summary-title"
-            >
-              <div className="persona-section-mark" aria-hidden="true">
-                <svg
-                  className="persona-section-icon"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <circle cx="24" cy="16" r="8" />
-                  <path d="M10 40c2.5-8.5 8-13 14-13s11.5 4.5 14 13" />
-                </svg>
-              </div>
-              <div>
-                <p className="eyebrow">Patient summary</p>
-                <h2 id="patient-summary-title">{patientName}</h2>
-                <div className="persona-summary-layout">
-                  <dl className="persona-fact-list">
-                    <PersonaFact label="Age" value={formatAgeSummary(ageInput, patientAge)} />
-                    <PersonaFact label="Gender" value={formatGender(genderInput)} />
-                    <PersonaFact label="Voice" value={formatVoiceName(voiceInput)} />
-                    <PersonaFact
-                      label="Voice affect"
-                      value={voiceAffectInput || patientVoiceAffect}
-                    />
-                    <PersonaFact label="Chief complaint" value="Shortness of breath" />
-                    <PersonaFact label="Scenario" value="COPD exacerbation" />
-                  </dl>
-                  <div className="persona-settings-grid">
-                    <form className="persona-setting-editor" onSubmit={handleAgeSave}>
-                      <label htmlFor="patient-age">Adjust age</label>
-                      <div className="persona-setting-row">
-                        <input
-                          id="patient-age"
-                          inputMode="numeric"
-                          max="110"
-                          min="18"
-                          onChange={(event) => setAgeInput(event.target.value)}
-                          type="number"
-                          value={ageInput}
-                        />
-                        <button disabled={isSavingAge} type="submit">
-                          {isSavingAge ? "Saving..." : "Save"}
-                        </button>
-                      </div>
-                      {ageStatusMessage ? (
-                        <p className="persona-setting-status">{ageStatusMessage}</p>
+          {isLoadingScenario ? (
+            <section className="dashboard-card">
+              <p className="dashboard-note">Loading persona...</p>
+            </section>
+          ) : null}
+
+          {scenario ? (
+            <div className="persona-brief-grid">
+              <section
+                className="persona-brief-card persona-summary-card"
+                aria-labelledby="patient-summary-title"
+              >
+                <div className="persona-section-mark" aria-hidden="true">
+                  <PatientIcon />
+                </div>
+                <div>
+                  <p className="eyebrow">Patient summary</p>
+                  <h2 id="patient-summary-title">{patientName}</h2>
+                  <div className="persona-summary-layout">
+                    <dl className="persona-fact-list">
+                      <PersonaFact
+                        label="Age"
+                        value={
+                          supportsEditableSettings
+                            ? formatAgeSummary(ageInput, patientAge)
+                            : String(patientAge)
+                        }
+                      />
+                      <PersonaFact
+                        label="Gender"
+                        value={formatGender(
+                          supportsEditableSettings ? genderInput : patientGender,
+                        )}
+                      />
+                      <PersonaFact
+                        label="Chief complaint"
+                        value={scenario.chief_complaint}
+                      />
+                      <PersonaFact label="Scenario" value={scenarioType} />
+                      {supportsEditableSettings ? (
+                        <>
+                          <PersonaFact
+                            label="Voice"
+                            value={formatVoiceName(voiceInput || patientVoice)}
+                          />
+                          <PersonaFact
+                            label="Voice affect"
+                            value={voiceAffectInput || patientVoiceAffect}
+                          />
+                        </>
                       ) : null}
-                    </form>
-                    <form
-                      className="persona-setting-editor"
-                      onSubmit={handleGenderSave}
-                    >
-                      <label htmlFor="patient-gender">Adjust gender</label>
-                      <div className="persona-setting-row">
-                        <select
-                          id="patient-gender"
-                          onChange={(event) => {
-                            setGenderInput(event.target.value as PatientGender);
-                          }}
-                          value={genderInput}
-                        >
-                          <option value="female">Female</option>
-                          <option value="male">Male</option>
-                        </select>
-                        <button disabled={isSavingGender} type="submit">
-                          {isSavingGender ? "Saving..." : "Save"}
-                        </button>
-                      </div>
-                      {genderStatusMessage ? (
-                        <p className="persona-setting-status">
-                          {genderStatusMessage}
-                        </p>
-                      ) : null}
-                    </form>
-                    <form className="persona-setting-editor" onSubmit={handleVoiceSave}>
-                      <label htmlFor="patient-voice">Voice</label>
-                      <div className="persona-setting-row">
-                        <select
-                          id="patient-voice"
-                          onChange={(event) => {
-                            setVoiceInput(event.target.value as PatientVoice);
-                          }}
-                          value={voiceInput}
-                        >
-                          {voiceOptions.map((voiceOption) => (
-                            <option key={voiceOption.value} value={voiceOption.value}>
-                              {voiceOption.label}
-                            </option>
-                          ))}
-                        </select>
-                        <button disabled={isSavingVoice} type="submit">
-                          {isSavingVoice ? "Saving..." : "Save"}
-                        </button>
-                      </div>
-                      {voiceStatusMessage ? (
-                        <p className="persona-setting-status">{voiceStatusMessage}</p>
-                      ) : null}
-                    </form>
-                    <form
-                      className="persona-setting-editor"
-                      onSubmit={handleVoiceAffectSave}
-                    >
-                      <label htmlFor="patient-voice-affect">Voice affect</label>
-                      <div className="persona-setting-row">
-                        <select
-                          id="patient-voice-affect"
-                          onChange={(event) => setVoiceAffectInput(event.target.value)}
-                          value={voiceAffectInput}
-                        >
-                          {voiceAffectOptions.map((voiceAffectOption) => (
-                            <option key={voiceAffectOption} value={voiceAffectOption}>
-                              {voiceAffectOption}
-                            </option>
-                          ))}
-                        </select>
-                        <button disabled={isSavingVoiceAffect} type="submit">
-                          {isSavingVoiceAffect ? "Saving..." : "Save"}
-                        </button>
-                      </div>
-                      {voiceAffectStatusMessage ? (
-                        <p className="persona-setting-status">
-                          {voiceAffectStatusMessage}
-                        </p>
-                      ) : null}
-                    </form>
+                    </dl>
+
+                    {supportsEditableSettings ? (
+                      <CopdSettingsEditors
+                        ageInput={ageInput}
+                        ageStatusMessage={ageStatusMessage}
+                        genderInput={genderInput}
+                        genderStatusMessage={genderStatusMessage}
+                        handleAgeSave={handleAgeSave}
+                        handleGenderSave={handleGenderSave}
+                        handleVoiceAffectSave={handleVoiceAffectSave}
+                        handleVoiceSave={handleVoiceSave}
+                        isSavingAge={isSavingAge}
+                        isSavingGender={isSavingGender}
+                        isSavingVoice={isSavingVoice}
+                        isSavingVoiceAffect={isSavingVoiceAffect}
+                        setAgeInput={setAgeInput}
+                        setGenderInput={setGenderInput}
+                        setVoiceAffectInput={setVoiceAffectInput}
+                        setVoiceInput={setVoiceInput}
+                        voiceAffectInput={voiceAffectInput}
+                        voiceAffectStatusMessage={voiceAffectStatusMessage}
+                        voiceInput={voiceInput}
+                        voiceStatusMessage={voiceStatusMessage}
+                      />
+                    ) : (
+                      <p className="dashboard-note">
+                        Editable persona settings will be enabled for this scenario
+                        in the generic settings step.
+                      </p>
+                    )}
                   </div>
                 </div>
-              </div>
-            </section>
+              </section>
 
-            <section className="persona-brief-card" aria-labelledby="condition-title">
-              <p className="eyebrow">Starting condition</p>
-              <div className="condition-card-header">
-                <div className="condition-title-row">
-                  <span className="condition-title-icon" aria-hidden="true">
-                    <HeartEcgIcon />
-                  </span>
-                  <h2 id="condition-title">Baseline state</h2>
+              <section className="persona-brief-card" aria-labelledby="condition-title">
+                <p className="eyebrow">Starting condition</p>
+                <div className="condition-card-header">
+                  <div className="condition-title-row">
+                    <span className="condition-title-icon" aria-hidden="true">
+                      <HeartEcgIcon />
+                    </span>
+                    <h2 id="condition-title">Baseline state</h2>
+                  </div>
+                  <a className="persona-start-button" href="/voice">
+                    Start Voice Room
+                  </a>
                 </div>
-                <a className="persona-start-button" href="/voice">
-                  Start Voice Room
-                </a>
-              </div>
-              <div className="condition-grid">
-                <ConditionMetric
-                  icon={<HeartEcgIcon />}
-                  label="HR"
-                  value="104"
-                  unit="bpm"
-                  tone="heart"
-                />
-                <ConditionMetric
-                  icon={<OxygenIcon />}
-                  label="SpO2"
-                  value="91"
-                  unit="%"
-                  tone="oxygen"
-                />
-                <ConditionMetric
-                  icon={<RespiratoryRateIcon />}
-                  label="RR"
-                  value="24"
-                  unit="/min"
-                  tone="breathing"
-                />
-                <ConditionMetric
-                  icon={<BreathingEffortIcon />}
-                  label="Breathing"
-                  value="Labored"
-                  unit=""
-                  tone="warning"
-                />
-              </div>
-            </section>
+                <div className="condition-grid">
+                  {baselineMetrics.map((metric) => (
+                    <ConditionMetric
+                      icon={metric.icon}
+                      key={metric.label}
+                      label={metric.label}
+                      tone={metric.tone}
+                      unit={metric.unit}
+                      value={metric.value}
+                    />
+                  ))}
+                </div>
+              </section>
 
-            <section className="persona-brief-card" aria-labelledby="cues-title">
-              <p className="eyebrow">Instructor cues</p>
-              <h2 id="cues-title">Available changes</h2>
-              <div className="persona-cue-list">
-                {availableCues.map((cue) => (
-                  <span className="persona-cue-chip" key={cue}>
-                    {cue}
-                  </span>
-                ))}
-              </div>
-            </section>
+              <section className="persona-brief-card" aria-labelledby="cues-title">
+                <p className="eyebrow">Instructor cues</p>
+                <h2 id="cues-title">Available changes</h2>
+                <div className="persona-cue-list">
+                  {scenario.instructor_cues.map((cue) => (
+                    <span className="persona-cue-chip" key={cue.cue_id}>
+                      {cue.label}
+                    </span>
+                  ))}
+                </div>
+              </section>
 
-            <section className="persona-brief-card" aria-labelledby="goals-title">
-              <p className="eyebrow">Learning goals</p>
-              <h2 id="goals-title">Faculty focus</h2>
-              <ol className="persona-goal-list">
-                {learningGoals.map((goal) => (
-                  <li key={goal}>{goal}</li>
-                ))}
-              </ol>
-            </section>
-          </div>
-
+              <section className="persona-brief-card" aria-labelledby="goals-title">
+                <p className="eyebrow">Learning goals</p>
+                <h2 id="goals-title">Faculty focus</h2>
+                <ol className="persona-goal-list">
+                  {scenario.learning_objectives.map((goal) => (
+                    <li key={goal}>{goal}</li>
+                  ))}
+                </ol>
+              </section>
+            </div>
+          ) : null}
         </div>
       </section>
     </main>
+  );
+}
+
+function CopdSettingsEditors({
+  ageInput,
+  ageStatusMessage,
+  genderInput,
+  genderStatusMessage,
+  handleAgeSave,
+  handleGenderSave,
+  handleVoiceAffectSave,
+  handleVoiceSave,
+  isSavingAge,
+  isSavingGender,
+  isSavingVoice,
+  isSavingVoiceAffect,
+  setAgeInput,
+  setGenderInput,
+  setVoiceAffectInput,
+  setVoiceInput,
+  voiceAffectInput,
+  voiceAffectStatusMessage,
+  voiceInput,
+  voiceStatusMessage,
+}: {
+  ageInput: string;
+  ageStatusMessage: string;
+  genderInput: PatientGender;
+  genderStatusMessage: string;
+  handleAgeSave: (event: FormEvent<HTMLFormElement>) => void;
+  handleGenderSave: (event: FormEvent<HTMLFormElement>) => void;
+  handleVoiceAffectSave: (event: FormEvent<HTMLFormElement>) => void;
+  handleVoiceSave: (event: FormEvent<HTMLFormElement>) => void;
+  isSavingAge: boolean;
+  isSavingGender: boolean;
+  isSavingVoice: boolean;
+  isSavingVoiceAffect: boolean;
+  setAgeInput: (value: string) => void;
+  setGenderInput: (value: PatientGender) => void;
+  setVoiceAffectInput: (value: string) => void;
+  setVoiceInput: (value: PatientVoice) => void;
+  voiceAffectInput: string;
+  voiceAffectStatusMessage: string;
+  voiceInput: PatientVoice;
+  voiceStatusMessage: string;
+}) {
+  return (
+    <div className="persona-settings-grid">
+      <form className="persona-setting-editor" onSubmit={handleAgeSave}>
+        <label htmlFor="patient-age">Adjust age</label>
+        <div className="persona-setting-row">
+          <input
+            id="patient-age"
+            inputMode="numeric"
+            max="110"
+            min="18"
+            onChange={(event) => setAgeInput(event.target.value)}
+            type="number"
+            value={ageInput}
+          />
+          <button disabled={isSavingAge} type="submit">
+            {isSavingAge ? "Saving..." : "Save"}
+          </button>
+        </div>
+        {ageStatusMessage ? (
+          <p className="persona-setting-status">{ageStatusMessage}</p>
+        ) : null}
+      </form>
+
+      <form className="persona-setting-editor" onSubmit={handleGenderSave}>
+        <label htmlFor="patient-gender">Adjust gender</label>
+        <div className="persona-setting-row">
+          <select
+            id="patient-gender"
+            onChange={(event) => setGenderInput(event.target.value as PatientGender)}
+            value={genderInput}
+          >
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+          </select>
+          <button disabled={isSavingGender} type="submit">
+            {isSavingGender ? "Saving..." : "Save"}
+          </button>
+        </div>
+        {genderStatusMessage ? (
+          <p className="persona-setting-status">{genderStatusMessage}</p>
+        ) : null}
+      </form>
+
+      <form className="persona-setting-editor" onSubmit={handleVoiceSave}>
+        <label htmlFor="patient-voice">Voice</label>
+        <div className="persona-setting-row">
+          <select
+            id="patient-voice"
+            onChange={(event) => setVoiceInput(event.target.value as PatientVoice)}
+            value={voiceInput}
+          >
+            {voiceOptions.map((voiceOption) => (
+              <option key={voiceOption.value} value={voiceOption.value}>
+                {voiceOption.label}
+              </option>
+            ))}
+          </select>
+          <button disabled={isSavingVoice} type="submit">
+            {isSavingVoice ? "Saving..." : "Save"}
+          </button>
+        </div>
+        {voiceStatusMessage ? (
+          <p className="persona-setting-status">{voiceStatusMessage}</p>
+        ) : null}
+      </form>
+
+      <form className="persona-setting-editor" onSubmit={handleVoiceAffectSave}>
+        <label htmlFor="patient-voice-affect">Voice affect</label>
+        <div className="persona-setting-row">
+          <select
+            id="patient-voice-affect"
+            onChange={(event) => setVoiceAffectInput(event.target.value)}
+            value={voiceAffectInput}
+          >
+            {voiceAffectOptions.map((voiceAffectOption) => (
+              <option key={voiceAffectOption} value={voiceAffectOption}>
+                {voiceAffectOption}
+              </option>
+            ))}
+          </select>
+          <button disabled={isSavingVoiceAffect} type="submit">
+            {isSavingVoiceAffect ? "Saving..." : "Save"}
+          </button>
+        </div>
+        {voiceAffectStatusMessage ? (
+          <p className="persona-setting-status">{voiceAffectStatusMessage}</p>
+        ) : null}
+      </form>
+    </div>
   );
 }
 
@@ -457,13 +548,7 @@ function ConditionMetric({
   value,
   unit,
   tone,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  unit: string;
-  tone: "heart" | "oxygen" | "breathing" | "warning";
-}) {
+}: BaselineMetric) {
   return (
     <div className={`condition-metric condition-metric-${tone}`}>
       <span className="condition-label">{label}</span>
@@ -475,6 +560,80 @@ function ConditionMetric({
         {unit ? <span className="condition-unit">{unit}</span> : null}
       </div>
     </div>
+  );
+}
+
+function buildBaselineMetrics(scenario: ScenarioDetail): BaselineMetric[] {
+  const vitals = scenario.initial_state.vitals ?? {};
+  const symptoms = scenario.initial_state.symptoms ?? {};
+  const metrics: BaselineMetric[] = [];
+
+  if (vitals.heart_rate !== undefined) {
+    metrics.push({
+      icon: <HeartEcgIcon />,
+      label: "HR",
+      tone: "heart",
+      unit: "bpm",
+      value: String(vitals.heart_rate),
+    });
+  }
+
+  if (vitals.spo2 !== undefined) {
+    metrics.push({
+      icon: <OxygenIcon />,
+      label: "SpO2",
+      tone: "oxygen",
+      unit: "%",
+      value: String(vitals.spo2),
+    });
+  }
+
+  if (vitals.respiratory_rate !== undefined) {
+    metrics.push({
+      icon: <RespiratoryRateIcon />,
+      label: "RR",
+      tone: "breathing",
+      unit: "/min",
+      value: String(vitals.respiratory_rate),
+    });
+  }
+
+  if (vitals.blood_pressure !== undefined) {
+    metrics.push({
+      icon: <HeartEcgIcon />,
+      label: "BP",
+      tone: "warning",
+      unit: "",
+      value: String(vitals.blood_pressure),
+    });
+  }
+
+  const breathingEffort = symptoms.breathing_effort;
+
+  if (breathingEffort) {
+    metrics.push({
+      icon: <BreathingEffortIcon />,
+      label: "Breathing",
+      tone: "warning",
+      unit: "",
+      value: formatValue(breathingEffort),
+    });
+  }
+
+  return metrics.slice(0, 5);
+}
+
+function PatientIcon() {
+  return (
+    <svg
+      className="persona-section-icon"
+      fill="none"
+      viewBox="0 0 48 48"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="24" cy="16" r="8" />
+      <path d="M10 40c2.5-8.5 8-13 14-13s11.5 4.5 14 13" />
+    </svg>
   );
 }
 
@@ -553,8 +712,12 @@ function formatBackendStatusForScreenReader(status: BackendStatus): string {
   return "Checking";
 }
 
-function formatGender(gender: PatientGender): string {
-  return gender.charAt(0).toUpperCase() + gender.slice(1);
+function normalizeGender(value: string): PatientGender {
+  return value.toLowerCase() === "male" ? "male" : "female";
+}
+
+function formatGender(gender: string): string {
+  return formatValue(gender);
 }
 
 function formatAgeSummary(ageInput: string, savedAge: number): string {
@@ -568,5 +731,13 @@ function formatAgeSummary(ageInput: string, savedAge: number): string {
 }
 
 function formatVoiceName(voice: string): string {
-  return voice.charAt(0).toUpperCase() + voice.slice(1);
+  return formatValue(voice);
+}
+
+function formatValue(value: string): string {
+  return value
+    .split(/[_\s-]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }

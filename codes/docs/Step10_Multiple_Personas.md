@@ -170,6 +170,70 @@ persona page route dynamic so /personas/{scenario_id} can render any selected
 scenario instead of only COPD/SOB.
 ```
 
+### 2026-07-29 - MP-4: Dynamic Persona Page Route
+
+What changed:
+
+```text
+Converted the persona page from a COPD-only route/page into a dynamic scenario
+briefing page.
+```
+
+Why:
+
+```text
+The product needs one reusable persona page that can render COPD/SOB, Chest Pain,
+and future scenarios from backend scenario JSON instead of duplicating one page
+per persona.
+```
+
+How:
+
+```text
+Added frontend getScenario(scenario_id).
+Updated routing so /personas/{scenario_id} renders PersonaPage with that ID.
+PersonaPage now:
+- loads /scenarios/{scenario_id}
+- renders scenario_name in the page title
+- renders patient name, age, gender, chief complaint, and scenario type from JSON
+- renders baseline state metrics from initial_state
+- renders instructor cue chips from instructor_cues
+- renders learning goals from learning_objectives
+- preserves existing COPD/SOB editable settings only when scenario_id is copd-sob
+```
+
+Where:
+
+```text
+codes/frontend/src/App.tsx
+codes/frontend/src/api/scenarios.ts
+codes/frontend/src/pages/PersonaPage.tsx
+```
+
+Compatibility:
+
+```text
+The COPD/SOB persona page still supports editable age, gender, voice, and voice
+affect through the existing COPD-specific settings API.
+```
+
+Current limitation:
+
+```text
+Editable persona settings are still COPD-specific. MP-5 should generalize persona
+settings by scenario_id.
+
+The Start Voice Room button still opens /voice, and the voice/state system is
+still tied to the current COPD/SOB state flow. Later steps should make the active
+scenario flow into state, cues, voice instructions, and reports.
+```
+
+Next step:
+
+```text
+MP-5: Generalize persona settings by scenario_id.
+```
+
 ## Why This Document Was Added
 
 The current product has one working persona:

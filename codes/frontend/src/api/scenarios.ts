@@ -40,11 +40,59 @@ export type ScenarioListResponse = {
   scenarios: ScenarioSummary[];
 };
 
+export type ScenarioDetail = {
+  scenario_id: string;
+  scenario_name: string;
+  version: string;
+  status: string;
+  clinical_area: string;
+  card_summary?: {
+    scenario_type?: string;
+    difficulty?: string;
+    duration?: string;
+    summary?: string;
+    is_available?: boolean;
+  };
+  patient_profile: {
+    name?: string;
+    age?: number;
+    sex?: string;
+    gender?: string;
+    pronouns?: string;
+    background?: string[];
+  };
+  chief_complaint: string;
+  learning_objectives: string[];
+  initial_state: {
+    stage?: string;
+    vitals?: Record<string, string | number>;
+    symptoms?: Record<string, string>;
+    emotion?: Record<string, string>;
+    voice_behavior?: Record<string, string>;
+    interventions?: Record<string, boolean>;
+  };
+  instructor_cues: Array<{
+    cue_id: string;
+    label: string;
+    state_updates?: Record<string, unknown>;
+  }>;
+};
+
 export async function getScenarios(): Promise<ScenarioListResponse> {
   const response = await fetch(`${API_BASE_URL}/scenarios`);
 
   if (!response.ok) {
     throw new Error(`Scenario list request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+export async function getScenario(scenarioId: string): Promise<ScenarioDetail> {
+  const response = await fetch(`${API_BASE_URL}/scenarios/${scenarioId}`);
+
+  if (!response.ok) {
+    throw new Error(`Scenario request failed with status ${response.status}`);
   }
 
   return response.json();
