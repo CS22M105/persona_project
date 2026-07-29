@@ -397,6 +397,46 @@ Dashboard renders COPD/SOB with a lungs icon and Chest Pain with a heart ECG ico
 Both cards use backend availability metadata.
 ```
 
+### 2026-07-29 - Persona Page Navigation: Move Voice Room Action To Topbar
+
+What changed:
+
+```text
+Moved the Start Voice Room action from the Baseline State card into the persona
+page navigation bar.
+```
+
+Why:
+
+```text
+The Voice Room is the main transition from a persona page into a live session.
+Putting it in the top navigation makes it visible and consistent for both COPD/SOB
+and Chest Pain without crowding the baseline-state clinical information.
+```
+
+How:
+
+```text
+The shared PersonaPage component now renders Start Voice Room in
+persona-topbar-actions using the active scenario_id. The duplicate content-card
+button was removed from the Baseline State section.
+```
+
+Where:
+
+```text
+codes/frontend/src/pages/PersonaPage.tsx
+codes/frontend/src/styles.css
+```
+
+Current behavior:
+
+```text
+Both persona pages show Dashboard, Start Voice Room, and backend connection status
+in the navigation bar. The Start Voice Room link still opens
+/voice?scenario_id={scenario_id}.
+```
+
 ### 2026-07-29 - MP-6: Scenario-Aware Patient State Manager
 
 What changed:

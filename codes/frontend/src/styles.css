@@ -552,6 +552,19 @@ h1 {
   background: #be123c;
 }
 
+.persona-topbar-voice-link {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #005c68;
+  min-height: 36px;
+  padding: 8px 12px;
+}
+
+.persona-topbar-voice-link:hover {
+  background: #edf7f3;
+  color: #005c68;
+}
+
 .persona-content {
   box-sizing: border-box;
   margin: 0 auto;

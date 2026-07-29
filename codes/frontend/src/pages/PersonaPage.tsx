@@ -232,6 +232,12 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
             </div>
           </div>
           <div className="persona-topbar-actions">
+            <a
+              className="persona-start-button persona-topbar-voice-link"
+              href={`/voice?scenario_id=${scenario?.scenario_id ?? scenarioId}`}
+            >
+              Start Voice Room
+            </a>
             <a className="header-link persona-back-link" href="/">
               Dashboard
             </a>
@@ -328,12 +334,6 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
                     </span>
                     <h2 id="condition-title">Baseline state</h2>
                   </div>
-                  <a
-                    className="persona-start-button"
-                    href={`/voice?scenario_id=${scenario.scenario_id}`}
-                  >
-                    Start Voice Room
-                  </a>
                 </div>
                 <div className="condition-grid">
                   {baselineMetrics.map((metric) => (
