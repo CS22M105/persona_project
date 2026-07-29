@@ -1,66 +1,37 @@
 import { useEffect, useState } from "react";
 
 import { getHealth } from "../api/client";
+import { getScenarios, ScenarioSummary } from "../api/scenarios";
 
 type BackendStatus = "checking" | "connected" | "unavailable";
 
-type PersonaCard = {
-  id: string;
-  name: string;
-  scenarioType: string;
-  summary: string;
-  difficulty: "Beginner" | "Intermediate" | "Advanced";
-  duration: string;
-  isAvailable: boolean;
-};
-
-const personas: PersonaCard[] = [
-  {
-    id: "copd-sob",
-    name: "COPD / Shortness of Breath",
-    scenarioType: "Respiratory distress scenario",
-    summary: "Adult patient with worsening dyspnea, anxiety, and low oxygen saturation.",
-    difficulty: "Beginner",
-    duration: "10-15 min",
-    isAvailable: true,
-  },
-  {
-    id: "post-op-pain",
-    name: "Post-op Pain",
-    scenarioType: "Post-operative assessment",
-    summary: "Pain reassessment and communication after a surgical procedure.",
-    difficulty: "Intermediate",
-    duration: "10-15 min",
-    isAvailable: false,
-  },
-  {
-    id: "sepsis-concern",
-    name: "Sepsis Concern",
-    scenarioType: "Early recognition scenario",
-    summary: "Focused escalation practice for infection-related deterioration.",
-    difficulty: "Intermediate",
-    duration: "15-20 min",
-    isAvailable: false,
-  },
-  {
-    id: "chest-pain",
-    name: "Chest Pain",
-    scenarioType: "Cardiac assessment scenario",
-    summary: "Assessment and communication for acute chest discomfort.",
-    difficulty: "Advanced",
-    duration: "15-20 min",
-    isAvailable: false,
-  },
-];
-
 export function Dashboard() {
   const [backendStatus, setBackendStatus] = useState<BackendStatus>("checking");
+  const [scenarios, setScenarios] = useState<ScenarioSummary[]>([]);
+  const [isLoadingScenarios, setIsLoadingScenarios] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    getHealth()
-      .then(() => setBackendStatus("connected"))
-      .catch(() => setBackendStatus("unavailable"));
+    loadDashboardData();
   }, []);
+
+  async function loadDashboardData() {
+    setIsLoadingScenarios(true);
+    setErrorMessage("");
+
+    try {
+      await getHealth();
+      const scenarioResponse = await getScenarios();
+      setBackendStatus("connected");
+      setScenarios(scenarioResponse.scenarios);
+    } catch {
+      setBackendStatus("unavailable");
+      setScenarios([]);
+      setErrorMessage("Persona list failed to load. Make sure the backend is running.");
+    } finally {
+      setIsLoadingScenarios(false);
+    }
+  }
 
   return (
     <main className="app-shell dashboard-shell">
@@ -85,36 +56,70 @@ export function Dashboard() {
           </p>
         </section>
 
+        {errorMessage ? <p className="chat-error">{errorMessage}</p> : null}
+
         <section className="persona-grid" aria-label="Available patient personas">
-          {personas.map((persona) => (
+          {isLoadingScenarios ? (
+            <article className="persona-select-card">
+              <div className="persona-card-mark" aria-hidden="true">
+                ...
+              </div>
+              <div>
+                <h2>Loading personas</h2>
+                <p className="persona-type">Connecting to scenario registry</p>
+                <p className="persona-summary">
+                  Patient personas will appear here when the backend responds.
+                </p>
+              </div>
+            </article>
+          ) : null}
+
+          {!isLoadingScenarios && scenarios.length === 0 && !errorMessage ? (
+            <article className="persona-select-card">
+              <div className="persona-card-mark" aria-hidden="true">
+                0
+              </div>
+              <div>
+                <h2>No personas available</h2>
+                <p className="persona-type">Scenario registry is empty</p>
+                <p className="persona-summary">
+                  Add a scenario JSON file and register it in the backend scenario
+                  registry.
+                </p>
+              </div>
+            </article>
+          ) : null}
+
+          {!isLoadingScenarios && scenarios.map((scenario) => (
             <article
               className={`persona-select-card${
-                persona.isAvailable ? " persona-select-card-active" : ""
+                scenario.is_available ? " persona-select-card-active" : ""
               }`}
-              key={persona.id}
+              key={scenario.scenario_id}
             >
               <div className="persona-card-mark" aria-hidden="true">
-                {shouldUseHeartEcgIcon(persona.id) ? (
+                {shouldUseHeartEcgIcon(scenario) ? (
                   <HeartEcgIcon />
                 ) : (
-                  getPersonaInitials(persona.name)
+                  getPersonaInitials(scenario.scenario_name)
                 )}
               </div>
               <div>
-                <h2>{persona.name}</h2>
-                <p className="persona-type">{persona.scenarioType}</p>
-                <p className="persona-summary">{persona.summary}</p>
+                <h2>{scenario.scenario_name}</h2>
+                <p className="persona-type">{scenario.scenario_type}</p>
+                <p className="persona-summary">{scenario.summary}</p>
               </div>
               <div className="persona-chip-row" aria-label="Scenario details">
-                <span className={`persona-chip ${getDifficultyClass(persona.difficulty)}`}>
-                  {persona.difficulty}
+                <span className={`persona-chip ${getDifficultyClass(scenario.difficulty)}`}>
+                  {scenario.difficulty}
                 </span>
-                <span className="persona-chip">{persona.duration}</span>
+                <span className="persona-chip">{scenario.duration}</span>
+                <span className="persona-chip">{formatClinicalArea(scenario.clinical_area)}</span>
               </div>
-              {persona.isAvailable ? (
+              {scenario.is_available ? (
                 <a
                   className="persona-action persona-action-primary"
-                  href="/personas/copd-sob"
+                  href={`/personas/${scenario.scenario_id}`}
                 >
                   Open Persona
                   <span aria-hidden="true">&gt;</span>
@@ -153,12 +158,22 @@ function getPersonaInitials(name: string): string {
     .join("");
 }
 
-function getDifficultyClass(difficulty: PersonaCard["difficulty"]): string {
-  return `persona-chip-${difficulty.toLowerCase()}`;
+function getDifficultyClass(difficulty: string): string {
+  return `persona-chip-${difficulty.toLowerCase().replace(/\s+/g, "-")}`;
 }
 
-function shouldUseHeartEcgIcon(personaId: string): boolean {
-  return personaId === "post-op-pain" || personaId === "chest-pain";
+function shouldUseHeartEcgIcon(scenario: ScenarioSummary): boolean {
+  return (
+    scenario.clinical_area.toLowerCase().includes("cardiac") ||
+    scenario.scenario_id.toLowerCase().includes("chest")
+  );
+}
+
+function formatClinicalArea(clinicalArea: string): string {
+  return clinicalArea
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 function HeartEcgIcon() {

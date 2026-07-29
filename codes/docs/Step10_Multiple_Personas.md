@@ -116,6 +116,60 @@ Next step:
 MP-3: Convert the frontend dashboard to load persona cards from GET /scenarios.
 ```
 
+### 2026-07-29 - MP-3: Dashboard Loads Personas From Scenario API
+
+What changed:
+
+```text
+Converted the frontend dashboard from a hard-coded persona list to a backend-driven
+scenario list.
+```
+
+Why:
+
+```text
+The dashboard should automatically show registered personas from the backend
+scenario registry. Adding a future persona should not require editing the
+dashboard card array by hand.
+```
+
+How:
+
+```text
+Added frontend scenario API types and getScenarios().
+Dashboard now:
+- calls GET /scenarios
+- stores returned ScenarioSummary objects
+- renders persona cards from backend data
+- shows loading state while scenarios load
+- shows an empty state if no scenarios are registered
+- shows an error if the backend scenario list fails
+- links available personas to /personas/{scenario_id}
+```
+
+Where:
+
+```text
+codes/frontend/src/api/scenarios.ts
+codes/frontend/src/pages/Dashboard.tsx
+```
+
+Compatibility:
+
+```text
+The backend currently returns only copd-sob because it is the only registered
+scenario. The dashboard will automatically show Chest Pain after chest-pain is
+registered in the backend scenario registry.
+```
+
+Current behavior:
+
+```text
+The dashboard is now scenario-registry driven. The next step is to make the
+persona page route dynamic so /personas/{scenario_id} can render any selected
+scenario instead of only COPD/SOB.
+```
+
 ## Why This Document Was Added
 
 The current product has one working persona:

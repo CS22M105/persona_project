@@ -22,6 +22,34 @@ export type PatientVoice =
   | "shimmer"
   | "verse";
 
+export type ScenarioSummary = {
+  scenario_id: string;
+  scenario_name: string;
+  status: string;
+  clinical_area: string;
+  patient_name: string;
+  chief_complaint: string;
+  scenario_type: string;
+  difficulty: string;
+  duration: string;
+  summary: string;
+  is_available: boolean;
+};
+
+export type ScenarioListResponse = {
+  scenarios: ScenarioSummary[];
+};
+
+export async function getScenarios(): Promise<ScenarioListResponse> {
+  const response = await fetch(`${API_BASE_URL}/scenarios`);
+
+  if (!response.ok) {
+    throw new Error(`Scenario list request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export async function getCopdSobPersonaSettings(): Promise<PersonaSettings> {
   const response = await fetch(`${API_BASE_URL}/scenarios/copd-sob/persona-settings`);
 
