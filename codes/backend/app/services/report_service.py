@@ -12,7 +12,7 @@ from app.schemas.report import (
     ReportTranscriptEntry,
 )
 from app.services.debrief_service import build_good_judgment_debrief_guide
-from app.services.scenario_loader import load_copd_sob_scenario
+from app.services.scenario_loader import load_scenario
 from app.services.session_service import SessionNotFoundError, get_session_by_id
 from app.services.timeline_service import list_timeline_events
 from app.services.transcript_service import list_transcript_messages
@@ -21,7 +21,6 @@ from app.services.transcript_service import list_transcript_messages
 REPORT_DISCLAIMER = (
     "This report is debrief support only. It does not replace faculty judgment."
 )
-REPORT_TITLE = "COPD/SOB Simulation Debrief Report"
 REPORT_LENGTH_TARGET = "Two-page concise faculty debrief report"
 INSTRUCTOR_NOTES_PLACEHOLDER = "Instructor notes can be added during faculty debrief."
 MAX_TRANSCRIPT_ENTRIES = 12
@@ -39,12 +38,12 @@ def build_final_debrief_report(
     if session is None:
         raise SessionNotFoundError(f"Session not found: {session_id}")
 
-    scenario = load_copd_sob_scenario()
+    scenario = load_scenario(session.scenario_id)
     transcript_messages = list_transcript_messages(db, session_id)
     timeline_events = list_timeline_events(db, session_id)
 
     return FinalDebriefReport(
-        report_title=REPORT_TITLE,
+        report_title=_report_title(scenario),
         report_length_target=REPORT_LENGTH_TARGET,
         disclaimer=REPORT_DISCLAIMER,
         session=ReportSessionMetadata(
@@ -67,7 +66,7 @@ def build_final_debrief_report(
             transcript_messages,
             timeline_events,
         ),
-        suggested_debrief_prompts=_build_debrief_prompts(),
+        suggested_debrief_prompts=_build_debrief_prompts(scenario),
         good_judgment_debrief_guide=build_good_judgment_debrief_guide(
             scenario,
             transcript_messages,
@@ -172,9 +171,9 @@ def _build_communication_observations(
         if message.speaker == "student"
     )
 
-    if any(term in student_text for term in ("breath", "shortness", "oxygen", "spo2")):
+    if student_text:
         observations.append(
-            "Learner communication included respiratory symptom or oxygen-related assessment."
+            "Learner communication included patient assessment or follow-up questions."
         )
 
     if any(term in student_text for term in ("feel", "feeling", "anxious", "scared")):
@@ -190,14 +189,9 @@ def _build_communication_observations(
             "The patient state included high anxiety; faculty can discuss calming communication."
         )
 
-    if _cue_was_applied(timeline_events, "oxygen_applied"):
+    if any(event.event_type == "instructor_cue" for event in timeline_events):
         observations.append(
-            "Oxygen intervention was cued; faculty can review reassessment after intervention."
-        )
-
-    if _cue_was_applied(timeline_events, "bronchodilator_given"):
-        observations.append(
-            "Bronchodilator intervention was cued; faculty can review medication response reassessment."
+            "Instructor cues changed the patient state; faculty can review how learners reassessed after changes."
         )
 
     if not observations:
@@ -208,13 +202,23 @@ def _build_communication_observations(
     return observations[:MAX_OBSERVATIONS]
 
 
-def _build_debrief_prompts() -> list[str]:
-    return [
-        "What respiratory assessment findings were most important in this COPD/SOB scenario?",
-        "How did the patient response change after instructor-cued state updates?",
-        "What communication strategies helped address patient anxiety or breathlessness?",
-        "What would you reassess after oxygen or bronchodilator intervention?",
-    ][:MAX_PROMPTS]
+def _build_debrief_prompts(scenario: dict[str, Any]) -> list[str]:
+    prompts: list[str] = []
+
+    for objective in scenario.get("learning_objectives", [])[:2]:
+        prompts.append(f"How did the team address this objective: {objective}?")
+
+    for rule in scenario.get("debrief_config", {}).get("critical_events", [])[:2]:
+        inquiry_template = rule.get("inquiry_template")
+
+        if inquiry_template:
+            prompts.append(inquiry_template)
+
+    prompts.append(
+        "What patient changes or communication cues would you reassess before ending the encounter?"
+    )
+
+    return prompts[:MAX_PROMPTS]
 
 
 def _snapshot_value(event: TimelineEvent, section: str, key: str) -> Any:
@@ -223,12 +227,12 @@ def _snapshot_value(event: TimelineEvent, section: str, key: str) -> Any:
     return section_values.get(key)
 
 
-def _cue_was_applied(timeline_events: list[TimelineEvent], cue_id: str) -> bool:
-    return any(event.cue_id == cue_id for event in timeline_events)
-
-
 def _scenario_name(scenario: dict[str, Any]) -> str:
     return scenario.get("scenario_name", "Simulation Scenario")
+
+
+def _report_title(scenario: dict[str, Any]) -> str:
+    return f"{_scenario_name(scenario)} Debrief Report"
 
 
 def _compact_text(text: str) -> str:

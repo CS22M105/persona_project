@@ -13,6 +13,7 @@ from app.schemas.session import (
 )
 from app.schemas.report import FinalDebriefReport
 from app.services.report_service import build_final_debrief_report
+from app.services.scenario_loader import ScenarioNotFoundError
 from app.services.session_service import (
     SessionNotFoundError,
     end_session,
@@ -86,6 +87,8 @@ async def read_session_report(
     try:
         return build_final_debrief_report(db, session_id)
     except SessionNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    except ScenarioNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
 
 

@@ -222,6 +222,71 @@ The Voice Room is now scenario-cue driven. It still expects the backend active
 state to identify the active scenario.
 ```
 
+Next step:
+
+```text
+MP-8: Make the report service load the scenario from session.scenario_id instead
+of always using COPD/SOB.
+```
+
+### 2026-07-29 - MP-8: Scenario-Aware Final Report Service
+
+What changed:
+
+```text
+Updated the final report service so reports are built from the scenario_id stored
+on the session record.
+```
+
+Why:
+
+```text
+Final reports must match the persona that was actually used in the session.
+Chest Pain reports should not use COPD/SOB titles, prompts, checklist items, or
+debrief configuration.
+```
+
+How:
+
+```text
+Backend:
+- Replaced load_copd_sob_scenario() with load_scenario(session.scenario_id)
+- Generates report_title from scenario_name
+- Builds suggested debrief prompts from scenario learning_objectives and
+  debrief_config critical events
+- Keeps assessment checklist and Good Judgment guide scenario-driven
+- Makes communication observations generic enough for multiple personas
+- Returns a clear 404 if a session references an unknown scenario
+```
+
+Where:
+
+```text
+codes/backend/app/services/report_service.py
+codes/backend/app/api/sessions.py
+```
+
+Compatibility:
+
+```text
+COPD/SOB reports still work because COPD/SOB remains registered as copd-sob.
+Existing session records with scenario_id="copd-sob" continue to load the same
+scenario JSON and Good Judgment debrief_config.
+```
+
+Current behavior:
+
+```text
+The report layer is now ready for Chest Pain once chest-pain is registered and
+sessions are started with scenario_id="chest-pain".
+```
+
+Next step:
+
+```text
+MP-9: Add Chest Pain scenario JSON and register it.
+```
+
 ### 2026-07-29 - MP-6: Scenario-Aware Patient State Manager
 
 What changed:
