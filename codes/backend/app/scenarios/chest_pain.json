@@ -9,6 +9,7 @@
     "difficulty": "Intermediate",
     "duration": "10-15 min",
     "summary": "Adult patient with chest pressure, diaphoresis, anxiety, and possible cardiac deterioration.",
+    "icon": "heart-ecg",
     "is_available": true
   },
   "patient_profile": {

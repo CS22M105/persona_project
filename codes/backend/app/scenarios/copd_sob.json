@@ -9,6 +9,7 @@
     "difficulty": "Beginner",
     "duration": "10-15 min",
     "summary": "Adult patient with worsening dyspnea, anxiety, and low oxygen saturation.",
+    "icon": "lungs",
     "is_available": true
   },
   "patient_profile": {

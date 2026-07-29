@@ -57,6 +57,7 @@ class ScenarioSummary(BaseModel):
     difficulty: str
     duration: str
     summary: str
+    icon: str
     is_available: bool = True
 
 
@@ -139,6 +140,7 @@ def _build_scenario_summary(scenario: dict[str, Any]) -> ScenarioSummary:
             "summary",
             _build_default_summary(scenario),
         ),
+        icon=card_summary.get("icon", "initials"),
         is_available=card_summary.get("is_available", True),
     )
 

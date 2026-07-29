@@ -98,11 +98,7 @@ export function Dashboard() {
               key={scenario.scenario_id}
             >
               <div className="persona-card-mark" aria-hidden="true">
-                {shouldUseHeartEcgIcon(scenario) ? (
-                  <HeartEcgIcon />
-                ) : (
-                  getPersonaInitials(scenario.scenario_name)
-                )}
+                <ScenarioIcon scenario={scenario} />
               </div>
               <div>
                 <h2>{scenario.scenario_name}</h2>
@@ -162,13 +158,6 @@ function getDifficultyClass(difficulty: string): string {
   return `persona-chip-${difficulty.toLowerCase().replace(/\s+/g, "-")}`;
 }
 
-function shouldUseHeartEcgIcon(scenario: ScenarioSummary): boolean {
-  return (
-    scenario.clinical_area.toLowerCase().includes("cardiac") ||
-    scenario.scenario_id.toLowerCase().includes("chest")
-  );
-}
-
 function formatClinicalArea(clinicalArea: string): string {
   return clinicalArea
     .split("_")
@@ -176,10 +165,39 @@ function formatClinicalArea(clinicalArea: string): string {
     .join(" ");
 }
 
+function ScenarioIcon({ scenario }: { scenario: ScenarioSummary }) {
+  if (scenario.icon === "heart-ecg") {
+    return <HeartEcgIcon />;
+  }
+
+  if (scenario.icon === "lungs") {
+    return <LungsIcon />;
+  }
+
+  return <>{getPersonaInitials(scenario.scenario_name)}</>;
+}
+
+function LungsIcon() {
+  return (
+    <svg
+      className="scenario-line-icon"
+      fill="none"
+      viewBox="0 0 48 48"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M24 8v15" />
+      <path d="M20 17c-6 1.5-10 8-10 16.5 0 4.5 2.5 6.5 6 5.5 4.5-1.3 6-7.2 6-13V18" />
+      <path d="M28 18v8c0 5.8 1.5 11.7 6 13 3.5 1 6-1 6-5.5C40 25 36 18.5 28 17" />
+      <path d="M18 24c-1.8 2.5-2.8 5.5-3 9" />
+      <path d="M30 24c1.8 2.5 2.8 5.5 3 9" />
+    </svg>
+  );
+}
+
 function HeartEcgIcon() {
   return (
     <svg
-      className="heart-ecg-icon"
+      className="scenario-line-icon heart-ecg-icon"
       fill="none"
       viewBox="0 0 48 48"
       xmlns="http://www.w3.org/2000/svg"

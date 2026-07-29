@@ -349,6 +349,54 @@ schema, so richer cardiac-specific fields can be added in a later state-schema
 refactor.
 ```
 
+### 2026-07-29 - MP-10: Enable Chest Pain Dashboard Card With Icon
+
+What changed:
+
+```text
+Enabled Chest Pain to appear on the dashboard through the scenario API and added
+scenario-driven dashboard icons.
+```
+
+Why:
+
+```text
+The dashboard should show available personas from backend scenario metadata.
+Icons should also come from scenario metadata so future personas can choose their
+own icon without changing dashboard logic.
+```
+
+How:
+
+```text
+Added card_summary.icon to scenario JSON files:
+- copd-sob uses lungs
+- chest-pain uses heart-ecg
+
+Added icon to ScenarioSummary.
+Updated the dashboard to render icons from scenario.icon.
+Added a lungs icon and reused the heart ECG icon for the cardiac persona.
+```
+
+Where:
+
+```text
+codes/backend/app/scenarios/copd_sob.json
+codes/backend/app/scenarios/chest_pain.json
+codes/backend/app/api/scenarios.py
+codes/frontend/src/api/scenarios.ts
+codes/frontend/src/pages/Dashboard.tsx
+codes/frontend/src/styles.css
+```
+
+Current behavior:
+
+```text
+GET /scenarios returns both registered personas with icon metadata.
+Dashboard renders COPD/SOB with a lungs icon and Chest Pain with a heart ECG icon.
+Both cards use backend availability metadata.
+```
+
 ### 2026-07-29 - MP-6: Scenario-Aware Patient State Manager
 
 What changed:

@@ -40,6 +40,7 @@ export type ScenarioSummary = {
   difficulty: string;
   duration: string;
   summary: string;
+  icon: "lungs" | "heart-ecg" | "initials" | string;
   is_available: boolean;
 };
 

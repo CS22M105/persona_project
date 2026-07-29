@@ -349,6 +349,7 @@ h1 {
   width: 48px;
 }
 
+.scenario-line-icon,
 .heart-ecg-icon {
   height: 30px;
   stroke: currentColor;
