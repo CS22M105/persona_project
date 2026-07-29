@@ -23,6 +23,100 @@
     "Recognize worsening respiratory distress",
     "Reassess after oxygen or medication intervention"
   ],
+  "debrief_config": {
+    "framework": "debriefing_with_good_judgment",
+    "faculty_reminder": "This guide supports faculty-led reflection and does not replace instructor judgment.",
+    "opening_prompt": "What are your initial reactions to this shortness-of-breath patient encounter?",
+    "expected_actions": [
+      {
+        "action_id": "ask_sob_onset",
+        "label": "Asked about onset of shortness of breath",
+        "evidence_keywords": ["started", "when", "how long", "onset"],
+        "learning_focus": "Focused respiratory assessment"
+      },
+      {
+        "action_id": "ask_chest_tightness",
+        "label": "Asked about chest tightness or chest discomfort",
+        "evidence_keywords": ["chest", "tight", "tightness", "pain", "pressure"],
+        "learning_focus": "Assessment of respiratory and cardiac-associated symptoms"
+      },
+      {
+        "action_id": "ask_home_oxygen",
+        "label": "Asked about home oxygen use",
+        "evidence_keywords": ["oxygen", "home oxygen", "o2", "night"],
+        "learning_focus": "COPD history and baseline respiratory support"
+      },
+      {
+        "action_id": "ask_inhaler_use",
+        "label": "Asked about rescue inhaler or medication use",
+        "evidence_keywords": ["inhaler", "medication", "medicine", "nebulizer", "treatment"],
+        "learning_focus": "Medication history and response to prior treatment"
+      },
+      {
+        "action_id": "reassess_after_intervention",
+        "label": "Reassessed after oxygen or bronchodilator intervention",
+        "evidence_keywords": ["better", "helping", "reassess", "breathing now", "feel now"],
+        "learning_focus": "Reassessment after intervention"
+      },
+      {
+        "action_id": "therapeutic_communication",
+        "label": "Used therapeutic communication with an anxious patient",
+        "evidence_keywords": ["you are safe", "we are here", "slow breaths", "help you", "stay with you"],
+        "learning_focus": "Communication with a distressed patient"
+      }
+    ],
+    "critical_events": [
+      {
+        "event_type": "instructor_cue",
+        "cue_id": "spo2_dropped",
+        "debrief_focus": "Recognition of oxygen desaturation",
+        "advocacy_template": "I noticed the patient's oxygen saturation dropped and the patient became more breathless.",
+        "inquiry_template": "What were you thinking about the patient's respiratory status at that moment?",
+        "learning_focus": "Recognizing deterioration and prioritizing respiratory assessment"
+      },
+      {
+        "event_type": "instructor_cue",
+        "cue_id": "hr_increased",
+        "debrief_focus": "Interpreting tachycardia with respiratory distress",
+        "advocacy_template": "I noticed the patient's heart rate increased while the patient sounded more anxious.",
+        "inquiry_template": "What possibilities were you considering when the heart rate increased?",
+        "learning_focus": "Connecting vital-sign changes with patient presentation"
+      },
+      {
+        "event_type": "instructor_cue",
+        "cue_id": "breathing_worsened",
+        "debrief_focus": "Response to worsening work of breathing",
+        "advocacy_template": "I noticed the patient's breathing effort worsened and the patient had more difficulty speaking.",
+        "inquiry_template": "What cues helped you decide how urgent the situation was?",
+        "learning_focus": "Escalation and prioritization during respiratory deterioration"
+      },
+      {
+        "event_type": "instructor_cue",
+        "cue_id": "oxygen_applied",
+        "debrief_focus": "Reassessment after oxygen application",
+        "advocacy_template": "I noticed oxygen was applied during the scenario.",
+        "inquiry_template": "What changes were you watching for after oxygen was started?",
+        "learning_focus": "Evaluating response to intervention"
+      },
+      {
+        "event_type": "instructor_cue",
+        "cue_id": "bronchodilator_given",
+        "debrief_focus": "Reassessment after bronchodilator treatment",
+        "advocacy_template": "I noticed a bronchodilator treatment was given.",
+        "inquiry_template": "What assessment findings were you using to evaluate whether the treatment helped?",
+        "learning_focus": "Medication response and respiratory reassessment"
+      },
+      {
+        "event_type": "instructor_cue",
+        "cue_id": "patient_improving",
+        "debrief_focus": "Recognizing partial improvement",
+        "advocacy_template": "I noticed the patient's symptoms improved but did not completely resolve.",
+        "inquiry_template": "How did you decide whether the patient was stable enough or still needed close monitoring?",
+        "learning_focus": "Ongoing reassessment and clinical judgment after improvement"
+      }
+    ],
+    "closing_prompt": "What is one action or assessment habit you would carry forward into the next respiratory distress encounter?"
+  },
   "initial_state": {
     "stage": "initial_assessment",
     "vitals": {
