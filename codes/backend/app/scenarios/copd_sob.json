@@ -4,6 +4,13 @@
   "version": "1.0",
   "status": "draft",
   "clinical_area": "respiratory",
+  "card_summary": {
+    "scenario_type": "Respiratory distress scenario",
+    "difficulty": "Beginner",
+    "duration": "10-15 min",
+    "summary": "Adult patient with worsening dyspnea, anxiety, and low oxygen saturation.",
+    "is_available": true
+  },
   "patient_profile": {
     "name": "Linda Thompson",
     "age": 68,

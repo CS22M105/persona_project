@@ -60,6 +60,62 @@ MP-2: Add generic scenario API endpoints:
 - GET /scenarios/{scenario_id}
 ```
 
+### 2026-07-29 - MP-2: Generic Scenario API Endpoints
+
+What changed:
+
+```text
+Added generic backend scenario API endpoints.
+```
+
+Why:
+
+```text
+The frontend should eventually load persona cards and persona pages from scenario
+data instead of hard-coded COPD/SOB values.
+```
+
+How:
+
+```text
+Added:
+- GET /scenarios
+- GET /scenarios/{scenario_id}
+- ScenarioSummary response model
+- ScenarioListResponse response model
+- 404 handling for unknown scenario_id values
+- card_summary metadata in the COPD/SOB scenario JSON
+```
+
+Where:
+
+```text
+codes/backend/app/api/scenarios.py
+codes/backend/app/scenarios/copd_sob.json
+```
+
+Compatibility:
+
+```text
+The existing COPD/SOB persona settings endpoints still work:
+- GET /scenarios/copd-sob/persona-settings
+- PATCH /scenarios/copd-sob/persona-settings
+```
+
+Current behavior:
+
+```text
+Only copd-sob is listed because it is the only registered scenario today.
+The API shape is now ready for Chest Pain once chest_pain.json is added to the
+scenario registry.
+```
+
+Next step:
+
+```text
+MP-3: Convert the frontend dashboard to load persona cards from GET /scenarios.
+```
+
 ## Why This Document Was Added
 
 The current product has one working persona:
