@@ -389,3 +389,47 @@ Current behavior:
 This is a data-only change. The app does not display the Good Judgment guide yet.
 The next implementation step is to create backend schemas for this debrief_config.
 ```
+
+### 2026-07-29 - Step 2: Create Debrief Schemas
+
+What changed:
+
+```text
+Added backend Pydantic schemas for Good Judgment debrief configuration and
+generated debrief guide output.
+```
+
+Why:
+
+```text
+The debrief engine needs predictable typed structures before it can safely read
+persona debrief rules and produce final report sections.
+```
+
+How:
+
+```text
+Created schemas for:
+- DebriefFramework
+- ExpectedAction
+- CriticalEventDebriefRule
+- DebriefConfig
+- ExpectedActionFinding
+- DebriefMoment
+- GoodJudgmentDebriefGuide
+```
+
+Where:
+
+```text
+codes/backend/app/schemas/debrief.py
+```
+
+Current behavior:
+
+```text
+This step adds schema definitions only. The final report still does not generate
+or display the Good Judgment guide. The next implementation step is to create the
+debrief service that reads transcript/timeline evidence and builds these schema
+objects.
+```
