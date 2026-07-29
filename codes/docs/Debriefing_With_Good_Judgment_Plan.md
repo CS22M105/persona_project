@@ -433,3 +433,46 @@ or display the Good Judgment guide. The next implementation step is to create th
 debrief service that reads transcript/timeline evidence and builds these schema
 objects.
 ```
+
+### 2026-07-29 - Step 3: Create Debrief Service
+
+What changed:
+
+```text
+Added a backend debrief service that builds a structured Good Judgment debrief
+guide from scenario configuration, transcript messages, and timeline events.
+```
+
+Why:
+
+```text
+The report generator needs a reusable service that can work across personas.
+This keeps Good Judgment logic separate from the final report rendering code.
+```
+
+How:
+
+```text
+The service:
+- Validates the persona debrief_config with DebriefConfig
+- Matches expected actions against student transcript messages
+- Marks expected actions as observed or not_observed
+- Matches critical event rules against the event timeline
+- Builds debrief moments with evidence, advocacy statements, inquiry questions,
+  and learning focus
+- Returns a GoodJudgmentDebriefGuide object
+```
+
+Where:
+
+```text
+codes/backend/app/services/debrief_service.py
+```
+
+Current behavior:
+
+```text
+The service can now generate a structured debrief guide, but the final report API
+does not include it yet. The next implementation step is to update the report
+service and report schema so this guide becomes part of the final report output.
+```
