@@ -7,19 +7,12 @@ from app.services.persona_settings import (
     MAX_PATIENT_AGE,
     MAX_VOICE_STYLE_LENGTH,
     MIN_PATIENT_AGE,
-    get_copd_sob_patient_age,
-    get_copd_sob_patient_gender,
-    get_copd_sob_patient_voice,
-    get_copd_sob_voice_style,
-    update_copd_sob_patient_age,
-    update_copd_sob_patient_gender,
-    update_copd_sob_patient_voice,
-    update_copd_sob_voice_style,
+    get_persona_settings,
+    update_persona_settings,
 )
 from app.services.scenario_loader import (
     ScenarioNotFoundError,
     list_scenarios,
-    load_copd_sob_scenario,
     load_scenario,
 )
 
@@ -81,38 +74,40 @@ async def get_scenarios() -> ScenarioListResponse:
     )
 
 
-@router.get("/copd-sob/persona-settings", response_model=PersonaSettingsResponse)
-async def get_copd_sob_persona_settings() -> PersonaSettingsResponse:
-    scenario = load_copd_sob_scenario()
-    patient_profile = scenario.get("patient_profile", {})
+@router.get("/{scenario_id}/persona-settings", response_model=PersonaSettingsResponse)
+async def get_scenario_persona_settings(
+    scenario_id: str,
+) -> PersonaSettingsResponse:
+    try:
+        scenario = load_scenario(scenario_id)
+        settings = get_persona_settings(scenario_id, scenario)
+    except (ScenarioNotFoundError, ValueError) as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
-    return PersonaSettingsResponse(
-        scenario_id=scenario.get("scenario_id", "copd-sob"),
-        patient_name=patient_profile.get("name", "Patient"),
-        age=get_copd_sob_patient_age(),
-        gender=get_copd_sob_patient_gender(),
-        voice=get_copd_sob_patient_voice(),
-        voice_style=get_copd_sob_voice_style(),
-    )
+    return _build_persona_settings_response(settings)
 
 
-@router.patch("/copd-sob/persona-settings", response_model=PersonaSettingsResponse)
-async def update_copd_sob_persona_settings(
+@router.patch("/{scenario_id}/persona-settings", response_model=PersonaSettingsResponse)
+async def update_scenario_persona_settings(
+    scenario_id: str,
     request: PersonaSettingsUpdate,
 ) -> PersonaSettingsResponse:
     try:
-        if request.age is not None:
-            update_copd_sob_patient_age(request.age)
-        if request.gender is not None:
-            update_copd_sob_patient_gender(request.gender)
-        if request.voice is not None:
-            update_copd_sob_patient_voice(request.voice)
-        if request.voice_style is not None:
-            update_copd_sob_voice_style(request.voice_style)
+        scenario = load_scenario(scenario_id)
+        settings = update_persona_settings(
+            scenario_id,
+            scenario,
+            age=request.age,
+            gender=request.gender,
+            voice=request.voice,
+            voice_style=request.voice_style,
+        )
+    except ScenarioNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
 
-    return await get_copd_sob_persona_settings()
+    return _build_persona_settings_response(settings)
 
 
 @router.get("/{scenario_id}")
@@ -145,6 +140,17 @@ def _build_scenario_summary(scenario: dict[str, Any]) -> ScenarioSummary:
             _build_default_summary(scenario),
         ),
         is_available=card_summary.get("is_available", True),
+    )
+
+
+def _build_persona_settings_response(settings: dict[str, Any]) -> PersonaSettingsResponse:
+    return PersonaSettingsResponse(
+        scenario_id=settings["scenario_id"],
+        patient_name=settings["patient_name"],
+        age=settings["age"],
+        gender=settings["gender"],
+        voice=settings["voice"],
+        voice_style=settings["voice_style"],
     )
 
 

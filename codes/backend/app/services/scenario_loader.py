@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Any, Callable, TypedDict
 
-from app.services.persona_settings import apply_copd_sob_persona_settings
+from app.services.persona_settings import apply_persona_settings
 
 
 SCENARIOS_DIR = Path(__file__).resolve().parent.parent / "scenarios"
@@ -21,7 +21,7 @@ class ScenarioRegistryEntry(TypedDict):
 SCENARIO_REGISTRY: dict[str, ScenarioRegistryEntry] = {
     "copd-sob": {
         "file_name": "copd_sob.json",
-        "settings_applier": apply_copd_sob_persona_settings,
+        "settings_applier": apply_persona_settings,
     },
 }
 

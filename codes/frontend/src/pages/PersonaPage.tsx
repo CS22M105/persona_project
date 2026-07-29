@@ -2,15 +2,12 @@ import { FormEvent, ReactNode, useEffect, useState } from "react";
 
 import { getHealth } from "../api/client";
 import {
-  getCopdSobPersonaSettings,
+  getPersonaSettings,
   getScenario,
   PatientGender,
   PatientVoice,
   ScenarioDetail,
-  updateCopdSobPersonaAge,
-  updateCopdSobPersonaGender,
-  updateCopdSobPersonaVoice,
-  updateCopdSobPersonaVoiceAffect,
+  updatePersonaSettings,
 } from "../api/scenarios";
 
 type BackendStatus = "checking" | "connected" | "unavailable";
@@ -75,8 +72,6 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
   const [voiceAffectStatusMessage, setVoiceAffectStatusMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const supportsEditableSettings = scenarioId === "copd-sob";
-
   useEffect(() => {
     loadPersonaPage();
   }, [scenarioId]);
@@ -91,10 +86,7 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
       setBackendStatus("connected");
       setScenario(scenarioResponse);
       hydrateProfileFromScenario(scenarioResponse);
-
-      if (scenarioResponse.scenario_id === "copd-sob") {
-        await loadCopdSettings();
-      }
+      await loadPersonaSettings(scenarioResponse.scenario_id);
     } catch {
       setBackendStatus("unavailable");
       setScenario(null);
@@ -116,9 +108,9 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
     setGenderInput(gender);
   }
 
-  async function loadCopdSettings() {
+  async function loadPersonaSettings(selectedScenarioId: string) {
     try {
-      const settings = await getCopdSobPersonaSettings();
+      const settings = await getPersonaSettings(selectedScenarioId);
       syncSettings(settings);
       setAgeStatusMessage("");
       setGenderStatusMessage("");
@@ -161,7 +153,7 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
     setAgeStatusMessage("");
 
     try {
-      const settings = await updateCopdSobPersonaAge(nextAge);
+      const settings = await updatePersonaSettings(scenarioId, { age: nextAge });
       syncSettings(settings);
       setAgeStatusMessage("Saved. Chat and voice will use this age.");
     } catch {
@@ -177,7 +169,7 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
     setGenderStatusMessage("");
 
     try {
-      const settings = await updateCopdSobPersonaGender(genderInput);
+      const settings = await updatePersonaSettings(scenarioId, { gender: genderInput });
       syncSettings(settings);
       setGenderStatusMessage("Saved. Chat and voice will use this gender.");
     } catch {
@@ -195,7 +187,7 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
     setVoiceStatusMessage("");
 
     try {
-      const settings = await updateCopdSobPersonaVoice(voiceInput);
+      const settings = await updatePersonaSettings(scenarioId, { voice: voiceInput });
       syncSettings(settings);
       setVoiceStatusMessage("Saved. Reconnect voice to hear this voice.");
     } catch {
@@ -211,7 +203,9 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
     setVoiceAffectStatusMessage("");
 
     try {
-      const settings = await updateCopdSobPersonaVoiceAffect(voiceAffectInput);
+      const settings = await updatePersonaSettings(scenarioId, {
+        voice_style: voiceAffectInput,
+      });
       syncSettings(settings);
       setVoiceAffectStatusMessage("Saved. Chat and voice will use this voice affect.");
     } catch {
@@ -278,66 +272,49 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
                     <dl className="persona-fact-list">
                       <PersonaFact
                         label="Age"
-                        value={
-                          supportsEditableSettings
-                            ? formatAgeSummary(ageInput, patientAge)
-                            : String(patientAge)
-                        }
+                        value={formatAgeSummary(ageInput, patientAge)}
                       />
                       <PersonaFact
                         label="Gender"
-                        value={formatGender(
-                          supportsEditableSettings ? genderInput : patientGender,
-                        )}
+                        value={formatGender(genderInput || patientGender)}
                       />
                       <PersonaFact
                         label="Chief complaint"
                         value={scenario.chief_complaint}
                       />
                       <PersonaFact label="Scenario" value={scenarioType} />
-                      {supportsEditableSettings ? (
-                        <>
-                          <PersonaFact
-                            label="Voice"
-                            value={formatVoiceName(voiceInput || patientVoice)}
-                          />
-                          <PersonaFact
-                            label="Voice affect"
-                            value={voiceAffectInput || patientVoiceAffect}
-                          />
-                        </>
-                      ) : null}
+                      <PersonaFact
+                        label="Voice"
+                        value={formatVoiceName(voiceInput || patientVoice)}
+                      />
+                      <PersonaFact
+                        label="Voice affect"
+                        value={voiceAffectInput || patientVoiceAffect}
+                      />
                     </dl>
 
-                    {supportsEditableSettings ? (
-                      <CopdSettingsEditors
-                        ageInput={ageInput}
-                        ageStatusMessage={ageStatusMessage}
-                        genderInput={genderInput}
-                        genderStatusMessage={genderStatusMessage}
-                        handleAgeSave={handleAgeSave}
-                        handleGenderSave={handleGenderSave}
-                        handleVoiceAffectSave={handleVoiceAffectSave}
-                        handleVoiceSave={handleVoiceSave}
-                        isSavingAge={isSavingAge}
-                        isSavingGender={isSavingGender}
-                        isSavingVoice={isSavingVoice}
-                        isSavingVoiceAffect={isSavingVoiceAffect}
-                        setAgeInput={setAgeInput}
-                        setGenderInput={setGenderInput}
-                        setVoiceAffectInput={setVoiceAffectInput}
-                        setVoiceInput={setVoiceInput}
-                        voiceAffectInput={voiceAffectInput}
-                        voiceAffectStatusMessage={voiceAffectStatusMessage}
-                        voiceInput={voiceInput}
-                        voiceStatusMessage={voiceStatusMessage}
-                      />
-                    ) : (
-                      <p className="dashboard-note">
-                        Editable persona settings will be enabled for this scenario
-                        in the generic settings step.
-                      </p>
-                    )}
+                    <PersonaSettingsEditors
+                      ageInput={ageInput}
+                      ageStatusMessage={ageStatusMessage}
+                      genderInput={genderInput}
+                      genderStatusMessage={genderStatusMessage}
+                      handleAgeSave={handleAgeSave}
+                      handleGenderSave={handleGenderSave}
+                      handleVoiceAffectSave={handleVoiceAffectSave}
+                      handleVoiceSave={handleVoiceSave}
+                      isSavingAge={isSavingAge}
+                      isSavingGender={isSavingGender}
+                      isSavingVoice={isSavingVoice}
+                      isSavingVoiceAffect={isSavingVoiceAffect}
+                      setAgeInput={setAgeInput}
+                      setGenderInput={setGenderInput}
+                      setVoiceAffectInput={setVoiceAffectInput}
+                      setVoiceInput={setVoiceInput}
+                      voiceAffectInput={voiceAffectInput}
+                      voiceAffectStatusMessage={voiceAffectStatusMessage}
+                      voiceInput={voiceInput}
+                      voiceStatusMessage={voiceStatusMessage}
+                    />
                   </div>
                 </div>
               </section>
@@ -398,7 +375,7 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
   );
 }
 
-function CopdSettingsEditors({
+function PersonaSettingsEditors({
   ageInput,
   ageStatusMessage,
   genderInput,

@@ -170,6 +170,77 @@ persona page route dynamic so /personas/{scenario_id} can render any selected
 scenario instead of only COPD/SOB.
 ```
 
+### 2026-07-29 - MP-5: Generic Persona Settings By Scenario ID
+
+What changed:
+
+```text
+Converted persona settings from COPD-specific globals and API calls to a generic
+settings store keyed by scenario_id.
+```
+
+Why:
+
+```text
+Future personas such as Chest Pain need the same editable settings controls
+without adding a new set of get_chest_pain_* functions or hard-coded frontend API
+calls.
+```
+
+How:
+
+```text
+Backend:
+- Added a generic in-memory settings dictionary keyed by scenario_id
+- Added get_persona_settings(scenario_id, scenario)
+- Added update_persona_settings(scenario_id, scenario, ...)
+- Added apply_persona_settings(scenario)
+- Changed the scenario registry to use the generic settings applier
+- Replaced COPD-only settings endpoints with:
+  - GET /scenarios/{scenario_id}/persona-settings
+  - PATCH /scenarios/{scenario_id}/persona-settings
+
+Frontend:
+- Added generic getPersonaSettings(scenarioId)
+- Added generic updatePersonaSettings(scenarioId, settings)
+- Updated PersonaPage to load and save settings for the selected scenarioId
+- Removed the COPD-only editable-settings gate from PersonaPage
+```
+
+Where:
+
+```text
+codes/backend/app/services/persona_settings.py
+codes/backend/app/services/scenario_loader.py
+codes/backend/app/api/scenarios.py
+codes/frontend/src/api/scenarios.ts
+codes/frontend/src/pages/PersonaPage.tsx
+```
+
+Compatibility:
+
+```text
+The existing COPD/SOB URL still works because /scenarios/copd-sob/persona-settings
+now matches the generic scenario_id endpoint.
+
+Small compatibility wrappers remain for current Realtime voice service code until
+MP-6/MP-7 make state and voice session handling active-scenario aware.
+```
+
+Current behavior:
+
+```text
+Any registered scenario can now expose editable age, gender, voice, and voice
+affect through the same API and PersonaPage UI.
+```
+
+Next step:
+
+```text
+MP-6: Generalize state manager to active scenario_id so the voice room can run
+the selected persona instead of always initializing COPD/SOB state.
+```
+
 ### 2026-07-29 - MP-4: Dynamic Persona Page Route
 
 What changed:
