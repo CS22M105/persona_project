@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -11,7 +11,7 @@ from app.schemas.session import (
 )
 from app.schemas.state import PatientStateResponse, StateEventsResponse
 from app.services.auto_patient_message import build_auto_patient_message_result
-from app.services.scenario_loader import load_copd_sob_scenario
+from app.services.scenario_loader import ScenarioNotFoundError, load_scenario
 from app.services.session_service import start_fresh_session, start_session
 from app.services.state_manager import (
     apply_instructor_cue,
@@ -30,16 +30,26 @@ router = APIRouter(prefix="/state", tags=["state"])
 
 
 @router.get("", response_model=PatientStateResponse)
-async def read_current_state() -> PatientStateResponse:
-    return PatientStateResponse(state=get_current_state())
+async def read_current_state(
+    scenario_id: str | None = Query(default=None),
+) -> PatientStateResponse:
+    try:
+        return PatientStateResponse(state=get_current_state(scenario_id))
+    except ScenarioNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 @router.post("/reset", response_model=PatientStateResponse)
 async def reset_current_state(
     db: Annotated[Session, Depends(get_db)],
+    scenario_id: str | None = Query(default=None),
 ) -> PatientStateResponse:
-    scenario = load_copd_sob_scenario()
-    updated_state = reset_state()
+    try:
+        updated_state = reset_state(scenario_id)
+    except ScenarioNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+
+    scenario = load_scenario(updated_state.scenario_id)
     start_fresh_session(db, scenario_id=scenario["scenario_id"])
 
     return PatientStateResponse(state=updated_state)
@@ -55,8 +65,8 @@ async def apply_state_cue(
     except ValueError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
 
-    scenario = load_copd_sob_scenario()
-    session = start_session(db, scenario_id=scenario["scenario_id"])
+    scenario = load_scenario(updated_state.scenario_id)
+    session = start_session(db, scenario_id=updated_state.scenario_id)
     state_snapshot = updated_state.model_dump(mode="json")
     cue_event = save_timeline_event(
         db,
@@ -177,8 +187,7 @@ def _save_safety_timeline_event(
     label: str,
     updated_state,
 ) -> None:
-    scenario = load_copd_sob_scenario()
-    session = start_session(db, scenario_id=scenario["scenario_id"])
+    session = start_session(db, scenario_id=updated_state.scenario_id)
 
     save_timeline_event(
         db,

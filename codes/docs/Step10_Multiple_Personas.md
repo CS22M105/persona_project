@@ -170,6 +170,76 @@ persona page route dynamic so /personas/{scenario_id} can render any selected
 scenario instead of only COPD/SOB.
 ```
 
+### 2026-07-29 - MP-6: Scenario-Aware Patient State Manager
+
+What changed:
+
+```text
+Generalized patient state initialization and cue handling so state is based on
+the active scenario_id instead of always loading COPD/SOB.
+```
+
+Why:
+
+```text
+Future personas need their own initial state, instructor cues, session records,
+chat context, and voice instructions. If state remains hard-wired to COPD/SOB,
+Chest Pain would still behave like the COPD patient.
+```
+
+How:
+
+```text
+Backend:
+- get_current_state() can accept an optional scenario_id
+- reset_state() can accept an optional scenario_id
+- reset_state() without a scenario_id resets the current scenario, not always COPD
+- apply_instructor_cue() loads cues from the current state's scenario_id
+- /state accepts optional scenario_id for state load/reset
+- chat responses load scenario context from current patient state
+- Realtime voice instructions load scenario context from current patient state
+- voice transcript/timeline events use the current state's scenario_id
+
+Frontend:
+- resetPatientState() and getPatientState() can pass scenario_id
+- Persona page Start Voice Room link includes /voice?scenario_id={scenario_id}
+- Voice room initializes state from the requested scenario_id when present
+```
+
+Where:
+
+```text
+codes/backend/app/services/state_manager.py
+codes/backend/app/api/state.py
+codes/backend/app/api/chat.py
+codes/backend/app/api/voice.py
+codes/backend/app/services/realtime_voice_service.py
+codes/frontend/src/api/state.ts
+codes/frontend/src/pages/PersonaPage.tsx
+codes/frontend/src/pages/VoiceRoom.tsx
+```
+
+Compatibility:
+
+```text
+Existing /state and /voice calls still work without scenario_id and default to
+the current scenario. If no state exists, the default scenario remains copd-sob.
+```
+
+Current behavior:
+
+```text
+Only copd-sob is registered today, so visible behavior remains the same. The
+state layer is now ready for Chest Pain once chest-pain is registered.
+```
+
+Next step:
+
+```text
+MP-7: Make VoiceRoom render scenario-specific cue buttons from the active
+scenario instead of a frontend hard-coded COPD cue array.
+```
+
 ### 2026-07-29 - MP-5: Generic Persona Settings By Scenario ID
 
 What changed:

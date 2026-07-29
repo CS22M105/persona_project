@@ -3,28 +3,38 @@ from datetime import UTC, datetime
 from typing import Any
 
 from app.schemas.state import PatientState, StateEvent, StateEventType
-from app.services.scenario_loader import load_copd_sob_scenario
+from app.services.scenario_loader import load_scenario
 
 
 _current_state: PatientState | None = None
 _state_events: list[StateEvent] = []
+DEFAULT_SCENARIO_ID = "copd-sob"
 
 
-def get_current_state() -> PatientState:
+def get_current_state(scenario_id: str | None = None) -> PatientState:
     global _current_state
 
     if _current_state is None:
-        _current_state = _build_initial_state()
+        _current_state = _build_initial_state(scenario_id or DEFAULT_SCENARIO_ID)
+        _log_state_event("state_reset", _current_state)
+    elif scenario_id is not None and _current_state.scenario_id != scenario_id:
+        _current_state = _build_initial_state(scenario_id)
+        _state_events.clear()
         _log_state_event("state_reset", _current_state)
 
     return _current_state
 
 
-def reset_state() -> PatientState:
+def reset_state(scenario_id: str | None = None) -> PatientState:
     global _current_state, _state_events
 
+    target_scenario_id = (
+        scenario_id
+        or (_current_state.scenario_id if _current_state is not None else None)
+        or DEFAULT_SCENARIO_ID
+    )
     _state_events = []
-    _current_state = _build_initial_state()
+    _current_state = _build_initial_state(target_scenario_id)
     _log_state_event("state_reset", _current_state)
 
     return _current_state
@@ -33,9 +43,9 @@ def reset_state() -> PatientState:
 def apply_instructor_cue(cue_id: str) -> PatientState:
     global _current_state
 
-    scenario = load_copd_sob_scenario()
-    cue = _find_instructor_cue(cue_id, scenario)
     current_state = get_current_state()
+    scenario = load_scenario(current_state.scenario_id)
+    cue = _find_instructor_cue(cue_id, scenario)
     updated_state_data = current_state.model_dump(mode="python")
 
     _deep_merge(updated_state_data, cue["state_updates"])
@@ -96,8 +106,8 @@ def get_state_events() -> list[StateEvent]:
     return list(_state_events)
 
 
-def _build_initial_state() -> PatientState:
-    scenario = load_copd_sob_scenario()
+def _build_initial_state(scenario_id: str) -> PatientState:
+    scenario = load_scenario(scenario_id)
     initial_state = deepcopy(scenario["initial_state"])
 
     return PatientState(

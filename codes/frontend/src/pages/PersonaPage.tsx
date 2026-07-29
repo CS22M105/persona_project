@@ -328,7 +328,10 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
                     </span>
                     <h2 id="condition-title">Baseline state</h2>
                   </div>
-                  <a className="persona-start-button" href="/voice">
+                  <a
+                    className="persona-start-button"
+                    href={`/voice?scenario_id=${scenario.scenario_id}`}
+                  >
                     Start Voice Room
                   </a>
                 </div>

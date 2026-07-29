@@ -185,6 +185,9 @@ const allStateMetricKeys = [
 
 
 export function VoiceRoom() {
+  const requestedScenarioId = new URLSearchParams(window.location.search).get(
+    "scenario_id",
+  );
   const [patientState, setPatientState] = useState<PatientState | null>(null);
   const [voiceSession, setVoiceSession] = useState<PublicRealtimeSession | null>(null);
   const [status, setStatus] = useState<VoiceConnectionStatus>("loading_state");
@@ -212,7 +215,7 @@ export function VoiceRoom() {
   const lastInstructionVersionRef = useRef<string | null>(null);
 
   useEffect(() => {
-    refreshPatientState();
+    refreshPatientState({ scenarioId: requestedScenarioId ?? undefined });
     refreshTextConversation();
     loadAudioDevices();
 
@@ -242,12 +245,12 @@ export function VoiceRoom() {
   }, [audioOutputDevices, selectedSpeakerType, status]);
 
   async function refreshPatientState(
-    options: { syncVoiceInstructions?: boolean } = {},
+    options: { scenarioId?: string; syncVoiceInstructions?: boolean } = {},
   ) {
     setErrorMessage("");
 
     try {
-      const response = await getPatientState();
+      const response = await getPatientState(options.scenarioId);
       setPatientState(response.state);
       setStatus((currentStatus) =>
         currentStatus === "loading_state" ? "idle" : currentStatus,
@@ -489,7 +492,9 @@ export function VoiceRoom() {
     showChangedStateHighlights(allStateMetricKeys);
 
     try {
-      const response = await resetPatientState();
+      const response = await resetPatientState(
+        requestedScenarioId ?? patientState?.scenario_id,
+      );
       setPatientState(response.state);
       setTextConversationMessages([]);
       await syncVoiceInstructions({ force: true });

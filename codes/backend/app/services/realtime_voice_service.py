@@ -5,11 +5,8 @@ import httpx
 from app.core.config import Settings, get_settings
 from app.schemas.state import PatientState, StateEvent
 from app.schemas.voice import RealtimeSessionResponse, VoiceInstructionsResponse
-from app.services.persona_settings import (
-    get_copd_sob_patient_voice,
-    get_copd_sob_persona_settings_updated_at,
-)
-from app.services.scenario_loader import load_copd_sob_scenario
+from app.services.persona_settings import get_persona_settings
+from app.services.scenario_loader import load_scenario
 from app.services.state_manager import get_current_state, get_state_events
 from app.services.voice_instruction_builder import build_realtime_voice_instructions
 
@@ -19,8 +16,9 @@ class RealtimeVoiceSessionError(RuntimeError):
 
 
 def build_current_voice_instructions() -> VoiceInstructionsResponse:
-    scenario = load_copd_sob_scenario()
     patient_state = get_current_state()
+    scenario = load_scenario(patient_state.scenario_id)
+    persona_settings = get_persona_settings(patient_state.scenario_id, scenario)
     state_events = get_state_events()
     recent_cue_count = sum(
         1 for event in state_events if event.event_type == "instructor_cue"
@@ -33,9 +31,9 @@ def build_current_voice_instructions() -> VoiceInstructionsResponse:
             state_events,
         ),
         scenario_id=scenario["scenario_id"],
-        voice=get_copd_sob_patient_voice(),
+        voice=persona_settings["voice"],
         patient_state_updated_at=patient_state.last_updated_at.isoformat(),
-        persona_settings_updated_at=get_copd_sob_persona_settings_updated_at().isoformat(),
+        persona_settings_updated_at=persona_settings["updated_at"].isoformat(),
         recent_cue_count=recent_cue_count,
     )
 
@@ -48,10 +46,11 @@ def create_realtime_voice_session(
     if settings.openai_api_key in ("", "replace_later"):
         raise RealtimeVoiceSessionError("OpenAI API key is not configured.")
 
-    scenario = load_copd_sob_scenario()
     patient_state = get_current_state()
+    scenario = load_scenario(patient_state.scenario_id)
     state_events = get_state_events()
-    voice = get_copd_sob_patient_voice()
+    persona_settings = get_persona_settings(patient_state.scenario_id, scenario)
+    voice = persona_settings["voice"]
     request_payload = _build_client_secret_payload(
         scenario=scenario,
         patient_state=patient_state,

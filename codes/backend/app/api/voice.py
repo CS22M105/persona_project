@@ -22,6 +22,7 @@ from app.services.realtime_voice_service import (
     create_realtime_voice_session,
 )
 from app.services.session_service import start_session
+from app.services.state_manager import get_current_state
 from app.services.timeline_service import save_timeline_event
 from app.services.transcript_service import save_transcript_message
 
@@ -47,7 +48,8 @@ async def create_voice_transcript_message(
     request: VoiceTranscriptCreateRequest,
     db: Annotated[Session, Depends(get_db)],
 ) -> TranscriptMessageResponse:
-    session = start_session(db, scenario_id="copd-sob")
+    patient_state = get_current_state()
+    session = start_session(db, scenario_id=patient_state.scenario_id)
     message_type = (
         "student_question" if request.speaker == "student" else "patient_reply"
     )
@@ -69,7 +71,8 @@ async def create_voice_timeline_event(
     request: VoiceTimelineEventCreateRequest,
     db: Annotated[Session, Depends(get_db)],
 ) -> TimelineEventResponse:
-    session = start_session(db, scenario_id="copd-sob")
+    patient_state = get_current_state()
+    session = start_session(db, scenario_id=patient_state.scenario_id)
 
     return save_timeline_event(
         db,

@@ -91,8 +91,10 @@ export type StateEventsResponse = {
   events: StateEvent[];
 };
 
-export async function getPatientState(): Promise<PatientStateResponse> {
-  const response = await fetch(`${API_BASE_URL}/state`);
+export async function getPatientState(
+  scenarioId?: string,
+): Promise<PatientStateResponse> {
+  const response = await fetch(buildStateUrl("/state", scenarioId));
 
   if (!response.ok) {
     throw new Error(`State request failed with status ${response.status}`);
@@ -101,8 +103,10 @@ export async function getPatientState(): Promise<PatientStateResponse> {
   return response.json();
 }
 
-export async function resetPatientState(): Promise<PatientStateResponse> {
-  const response = await fetch(`${API_BASE_URL}/state/reset`, {
+export async function resetPatientState(
+  scenarioId?: string,
+): Promise<PatientStateResponse> {
+  const response = await fetch(buildStateUrl("/state/reset", scenarioId), {
     method: "POST",
   });
 
@@ -172,4 +176,14 @@ async function postStateSafetyControl(
   }
 
   return response.json();
+}
+
+function buildStateUrl(path: string, scenarioId?: string): string {
+  const url = new URL(`${API_BASE_URL}${path}`);
+
+  if (scenarioId) {
+    url.searchParams.set("scenario_id", scenarioId);
+  }
+
+  return url.toString();
 }
