@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import {
   FinalDebriefReport,
   getCurrentSession,
+  getSessionDebrief,
   getSessionEvents,
-  getSessionReport,
   getSessionTranscript,
   GoodJudgmentDebriefGuide,
   SessionResponse,
@@ -12,7 +12,7 @@ import {
   TranscriptMessageResponse,
 } from "../api/sessions";
 
-export function TranscriptsPage() {
+export function DebriefPage() {
   const [session, setSession] = useState<SessionResponse | null>(null);
   const [messages, setMessages] = useState<TranscriptMessageResponse[]>([]);
   const [events, setEvents] = useState<TimelineEventResponse[]>([]);
@@ -42,7 +42,7 @@ export function TranscriptsPage() {
       const [transcriptResponse, eventsResponse, reportResponse] = await Promise.all([
         getSessionTranscript(currentSession.session.session_id),
         getSessionEvents(currentSession.session.session_id),
-        getSessionReport(currentSession.session.session_id),
+        getSessionDebrief(currentSession.session.session_id),
       ]);
 
       setSession(currentSession.session);
@@ -50,7 +50,7 @@ export function TranscriptsPage() {
       setEvents(eventsResponse.events);
       setReport(reportResponse);
     } catch {
-      setErrorMessage("Transcript and timeline failed to load. Make sure the backend is running.");
+      setErrorMessage("Debrief record failed to load. Make sure the backend is running.");
     } finally {
       setIsLoading(false);
     }
@@ -76,10 +76,10 @@ export function TranscriptsPage() {
   return (
     <main className="app-shell transcript-shell">
       <section className="transcript-page" aria-labelledby="transcript-page-title">
-        <nav className="voice-nav transcript-nav" aria-label="Transcript navigation">
+        <nav className="voice-nav transcript-nav" aria-label="Debrief navigation">
           <div className="voice-nav-brand">
-            <p className="eyebrow">Session record</p>
-            <h1 id="transcript-page-title">Transcripts, Timeline and Debriefing</h1>
+            <p className="eyebrow">Session debrief</p>
+            <h1 id="transcript-page-title">Debrief</h1>
           </div>
           <div className="voice-nav-actions">
             <a className="header-link" href="/">
@@ -106,7 +106,7 @@ export function TranscriptsPage() {
               value={session?.status ?? "No active session"}
             />
             <TranscriptSummaryItem
-              label="Transcript"
+              label="Conversation"
               value={`${messages.length} message${messages.length === 1 ? "" : "s"}`}
             />
             <TranscriptSummaryItem
@@ -125,7 +125,7 @@ export function TranscriptsPage() {
             <section className="dashboard-card transcript-empty-card">
               <h2>No session record yet</h2>
               <p>
-                Start a voice room or text conversation first. Transcript and timeline
+                Start a voice room or text conversation first. Conversation and timeline
                 entries will appear here once a session exists.
               </p>
             </section>

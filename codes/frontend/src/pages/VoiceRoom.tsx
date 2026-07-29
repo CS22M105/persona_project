@@ -889,8 +889,8 @@ export function VoiceRoom() {
             <a className="header-link" href="/personas/copd-sob">
               Persona page
             </a>
-            <a className="header-link" href="/transcripts">
-              Transcripts
+            <a className="header-link" href="/debrief">
+              Debrief
             </a>
             <span className={`voice-status voice-status-${status}`}>
               {statusLabel}

@@ -1,6 +1,6 @@
 import { Dashboard } from "./pages/Dashboard";
+import { DebriefPage } from "./pages/DebriefPage";
 import { PersonaPage } from "./pages/PersonaPage";
-import { TranscriptsPage } from "./pages/TranscriptsPage";
 import { VoiceRoom } from "./pages/VoiceRoom";
 
 export function App() {
@@ -12,8 +12,8 @@ export function App() {
     return <VoiceRoom />;
   }
 
-  if (window.location.pathname === "/transcripts") {
-    return <TranscriptsPage />;
+  if (window.location.pathname === "/debrief") {
+    return <DebriefPage />;
   }
 
   return <Dashboard />;

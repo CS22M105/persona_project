@@ -218,6 +218,18 @@ export async function getSessionReport(
   return response.json();
 }
 
+export async function getSessionDebrief(
+  sessionId: string,
+): Promise<FinalDebriefReport> {
+  const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}/debrief`);
+
+  if (!response.ok) {
+    throw new Error(`Debrief request failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
 export async function getSessionTranscript(
   sessionId: string,
 ): Promise<TranscriptResponse> {

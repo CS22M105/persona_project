@@ -87,3 +87,14 @@ async def read_session_report(
         return build_final_debrief_report(db, session_id)
     except SessionNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
+
+
+@router.get("/{session_id}/debrief", response_model=FinalDebriefReport)
+async def read_session_debrief(
+    session_id: str,
+    db: Annotated[Session, Depends(get_db)],
+) -> FinalDebriefReport:
+    try:
+        return build_final_debrief_report(db, session_id)
+    except SessionNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error

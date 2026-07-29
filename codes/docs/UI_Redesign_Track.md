@@ -323,6 +323,49 @@ event timeline should live inside the voice room, close to instructor controls.
 - Speaker routing depends on browser support for audio output selection APIs.
   Chrome or Edge is recommended for the demo.
 
+## 2026-07-29 - Step UI-6: Rename Session Record Entry To Debrief
+
+### What Changed
+
+- Renamed the Voice Room navigation entry from `Transcripts` to `Debrief`.
+- Changed the frontend route from `/transcripts` to `/debrief`.
+- Renamed the page component from `TranscriptsPage` to `DebriefPage`.
+- Added a backend debrief endpoint:
+  - `GET /sessions/{session_id}/debrief`
+- Added a frontend API client function:
+  - `getSessionDebrief`
+
+### Why It Changed
+
+- The product feature is no longer only a transcript viewer.
+- The page now combines conversation record, event timeline, and the
+  Debriefing with Good Judgment guide.
+- A debrief-oriented backend endpoint makes the API match the product concept
+  rather than exposing only a visually renamed frontend page.
+
+### How It Changed
+
+- Kept transcript storage and transcript retrieval in place because transcripts
+  are still the underlying conversation data.
+- Added a debrief API alias that returns the final debrief report structure.
+- Updated the Debrief page to call the debrief endpoint instead of the generic
+  report endpoint.
+
+### Files Changed
+
+- `codes/frontend/src/App.tsx`
+- `codes/frontend/src/pages/DebriefPage.tsx`
+- `codes/frontend/src/pages/VoiceRoom.tsx`
+- `codes/frontend/src/api/sessions.ts`
+- `codes/backend/app/api/sessions.py`
+
+### Current Behavior
+
+- In the Voice Room, instructors now see `Debrief`.
+- The Debrief page loads from `/debrief`.
+- Backend consumers can request the session debrief from
+  `/sessions/{session_id}/debrief`.
+
 ## 2026-07-22 - Step UI-6: One-Screen Transcript Record Layout
 
 ### What Changed
