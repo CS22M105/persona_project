@@ -221,9 +221,15 @@ export function PersonaPage() {
             <a className="header-link persona-back-link" href="/">
               Dashboard
             </a>
-            <span className={`connection-pill connection-pill-${backendStatus}`}>
-              {formatBackendStatus(backendStatus)}
-            </span>
+            <span
+              aria-label={`Backend status: ${formatBackendStatusForScreenReader(
+                backendStatus,
+              )}`}
+              className={`persona-status-dot persona-status-dot-${backendStatus}`}
+              title={`Backend status: ${formatBackendStatusForScreenReader(
+                backendStatus,
+              )}`}
+            />
           </div>
         </header>
 
@@ -535,7 +541,7 @@ function BreathingEffortIcon() {
   );
 }
 
-function formatBackendStatus(status: BackendStatus): string {
+function formatBackendStatusForScreenReader(status: BackendStatus): string {
   if (status === "connected") {
     return "Connected";
   }

@@ -519,6 +519,30 @@ h1 {
   margin-left: auto;
 }
 
+.persona-status-dot {
+  border: 2px solid rgb(255 255 255 / 82%);
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 3px rgb(255 255 255 / 16%),
+    0 4px 10px rgb(0 0 0 / 18%);
+  display: inline-block;
+  flex: 0 0 auto;
+  height: 12px;
+  width: 12px;
+}
+
+.persona-status-dot-checking {
+  background: #f5c451;
+}
+
+.persona-status-dot-connected {
+  background: #2fd174;
+}
+
+.persona-status-dot-unavailable {
+  background: #ff4d4f;
+}
+
 .persona-start-button {
   align-items: center;
   background: #e11d48;
