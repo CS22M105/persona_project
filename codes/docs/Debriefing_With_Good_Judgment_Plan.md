@@ -476,3 +476,85 @@ The service can now generate a structured debrief guide, but the final report AP
 does not include it yet. The next implementation step is to update the report
 service and report schema so this guide becomes part of the final report output.
 ```
+
+### 2026-07-29 - Step 4: Update Report Service
+
+What changed:
+
+```text
+Added the Good Judgment debrief guide to the final report response.
+```
+
+Why:
+
+```text
+The frontend report view cannot display the debriefing algorithm until the report
+API returns the structured guide.
+```
+
+How:
+
+```text
+The final report schema now includes good_judgment_debrief_guide.
+The report service calls build_good_judgment_debrief_guide using:
+- Scenario debrief_config
+- Persisted transcript messages
+- Persisted timeline events
+```
+
+Where:
+
+```text
+codes/backend/app/schemas/report.py
+codes/backend/app/services/report_service.py
+```
+
+Current behavior:
+
+```text
+The report API now returns a structured Good Judgment guide.
+```
+
+### 2026-07-29 - Step 5: Update Frontend Report View
+
+What changed:
+
+```text
+Updated the frontend session record page to display the Debriefing With Good
+Judgment guide.
+```
+
+Why:
+
+```text
+Instructors need a readable faculty-led debrief guide after the session, not only
+a transcript and timeline.
+```
+
+How:
+
+```text
+The Transcripts page now:
+- Fetches the final report for the current session
+- Displays the faculty reminder
+- Shows the opening prompt
+- Shows expected action findings with observed/not observed status
+- Shows advocacy-inquiry moments based on timeline evidence
+- Shows the closing prompt
+- Includes the Good Judgment guide in the downloadable debriefing draft
+```
+
+Where:
+
+```text
+codes/frontend/src/api/sessions.ts
+codes/frontend/src/pages/TranscriptsPage.tsx
+codes/frontend/src/styles.css
+```
+
+Current behavior:
+
+```text
+The Good Judgment guide is visible from the Transcripts, Timeline and Debriefing
+page for the current session.
+```

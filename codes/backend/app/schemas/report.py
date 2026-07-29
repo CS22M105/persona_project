@@ -3,6 +3,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.schemas.debrief import GoodJudgmentDebriefGuide
 from app.schemas.session import (
     PersistedSessionStatus,
     TimelineEventType,
@@ -69,4 +70,5 @@ class FinalDebriefReport(BaseModel):
     assessment_checklist: list[ReportChecklistItem]
     communication_observations: list[str]
     suggested_debrief_prompts: list[str]
+    good_judgment_debrief_guide: GoodJudgmentDebriefGuide
     instructor_notes_placeholder: str

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 
 import {
+  FinalDebriefReport,
   getCurrentSession,
   getSessionEvents,
+  getSessionReport,
   getSessionTranscript,
+  GoodJudgmentDebriefGuide,
   SessionResponse,
   TimelineEventResponse,
   TranscriptMessageResponse,
@@ -13,6 +16,7 @@ export function TranscriptsPage() {
   const [session, setSession] = useState<SessionResponse | null>(null);
   const [messages, setMessages] = useState<TranscriptMessageResponse[]>([]);
   const [events, setEvents] = useState<TimelineEventResponse[]>([]);
+  const [report, setReport] = useState<FinalDebriefReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -31,17 +35,20 @@ export function TranscriptsPage() {
         setSession(null);
         setMessages([]);
         setEvents([]);
+        setReport(null);
         return;
       }
 
-      const [transcriptResponse, eventsResponse] = await Promise.all([
+      const [transcriptResponse, eventsResponse, reportResponse] = await Promise.all([
         getSessionTranscript(currentSession.session.session_id),
         getSessionEvents(currentSession.session.session_id),
+        getSessionReport(currentSession.session.session_id),
       ]);
 
       setSession(currentSession.session);
       setMessages(transcriptResponse.messages);
       setEvents(eventsResponse.events);
+      setReport(reportResponse);
     } catch {
       setErrorMessage("Transcript and timeline failed to load. Make sure the backend is running.");
     } finally {
@@ -54,7 +61,7 @@ export function TranscriptsPage() {
       return;
     }
 
-    const draftText = buildDebriefingDraft(session, messages, events);
+    const draftText = buildDebriefingDraft(session, messages, events, report);
     const fileBlob = new Blob([draftText], { type: "text/plain;charset=utf-8" });
     const downloadUrl = URL.createObjectURL(fileBlob);
     const downloadLink = document.createElement("a");
@@ -195,7 +202,9 @@ export function TranscriptsPage() {
                 <div className="transcript-panel-heading">
                   <div>
                     <p className="eyebrow">Debriefing</p>
-                    <h2 id="debriefing-draft-title">Downloadable Debriefing Draft</h2>
+                    <h2 id="debriefing-draft-title">
+                      Debriefing With Good Judgment Guide
+                    </h2>
                   </div>
                   <button
                     className="transcript-download-button"
@@ -206,60 +215,15 @@ export function TranscriptsPage() {
                     Download
                   </button>
                 </div>
-                <div className="debrief-scroll-area">
-                  <p className="debrief-placeholder">
-                    This is a minimal draft export based on the current transcript and
-                    timeline. The structured debriefing algorithm will be added later.
+                {report ? (
+                  <GoodJudgmentGuideView
+                    guide={report.good_judgment_debrief_guide}
+                  />
+                ) : (
+                  <p className="dashboard-note">
+                    Debriefing guide has not loaded yet.
                   </p>
-                  <div className="debrief-summary-list">
-                    <TranscriptSummaryItem
-                      label="Session status"
-                      value={formatLabel(session.status)}
-                    />
-                    <TranscriptSummaryItem
-                      label="Conversation entries"
-                      value={String(messages.length)}
-                    />
-                    <TranscriptSummaryItem
-                      label="Timeline events"
-                      value={String(events.length)}
-                    />
-                    <TranscriptSummaryItem
-                      label="Started"
-                      value={formatDateTime(session.started_at)}
-                    />
-                  </div>
-                  <section className="debrief-preview-section">
-                    <h3>Recent Conversation</h3>
-                    {messages.length > 0 ? (
-                      <ol className="debrief-preview-list">
-                        {messages.slice(-4).map((message) => (
-                          <li key={message.message_id}>
-                            <strong>{formatLabel(message.speaker)}:</strong>{" "}
-                            {message.text}
-                          </li>
-                        ))}
-                      </ol>
-                    ) : (
-                      <p>No transcript messages recorded yet.</p>
-                    )}
-                  </section>
-                  <section className="debrief-preview-section">
-                    <h3>Recent Timeline</h3>
-                    {events.length > 0 ? (
-                      <ol className="debrief-preview-list">
-                        {events.slice(-5).map((event) => (
-                          <li key={event.event_id}>
-                            <strong>{formatTime(event.timestamp)}:</strong>{" "}
-                            {event.label ?? formatLabel(event.event_type)}
-                          </li>
-                        ))}
-                      </ol>
-                    ) : (
-                      <p>No timeline events recorded yet.</p>
-                    )}
-                  </section>
-                </div>
+                )}
               </section>
             </div>
           ) : null}
@@ -278,10 +242,100 @@ function TranscriptSummaryItem({ label, value }: { label: string; value: string 
   );
 }
 
+function GoodJudgmentGuideView({
+  guide,
+}: {
+  guide: GoodJudgmentDebriefGuide;
+}) {
+  return (
+    <div className="debrief-scroll-area">
+      <p className="debrief-faculty-reminder">{guide.faculty_reminder}</p>
+
+      <section className="debrief-preview-section">
+        <h3>Opening Prompt</h3>
+        <p>{guide.opening_prompt}</p>
+      </section>
+
+      <section className="debrief-preview-section">
+        <h3>Expected Actions</h3>
+        <div className="expected-action-list">
+          {guide.expected_action_findings.map((finding) => (
+            <article
+              className={`expected-action-item expected-action-${finding.status}`}
+              key={finding.action_id}
+            >
+              <div className="expected-action-heading">
+                <strong>{finding.label}</strong>
+                <span>{formatFindingStatus(finding.status)}</span>
+              </div>
+              <p>{finding.learning_focus}</p>
+              {finding.matched_evidence.length > 0 ? (
+                <ul>
+                  {finding.matched_evidence.map((evidence) => (
+                    <li key={evidence}>{evidence}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="report-entry-meta">
+                  No matching transcript evidence detected. Faculty review is
+                  recommended.
+                </p>
+              )}
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="debrief-preview-section">
+        <h3>Advocacy-Inquiry Moments</h3>
+        {guide.debrief_moments.length > 0 ? (
+          <div className="debrief-moment-list">
+            {guide.debrief_moments.map((moment) => (
+              <article className="debrief-moment-card" key={moment.moment_id}>
+                <h4>{moment.title}</h4>
+                <div className="debrief-moment-block">
+                  <strong>Evidence</strong>
+                  <ul>
+                    {moment.evidence.map((evidence) => (
+                      <li key={evidence}>{evidence}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="debrief-moment-block">
+                  <strong>Advocacy</strong>
+                  <p>{moment.advocacy_statement}</p>
+                </div>
+                <div className="debrief-moment-block">
+                  <strong>Inquiry</strong>
+                  <p>{moment.inquiry_question}</p>
+                </div>
+                <p className="report-entry-meta">
+                  Learning focus: {moment.learning_focus}
+                </p>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <p>
+            No critical debrief moments were detected yet. Instructor can still use
+            the opening and closing prompts for reflection.
+          </p>
+        )}
+      </section>
+
+      <section className="debrief-preview-section">
+        <h3>Closing Prompt</h3>
+        <p>{guide.closing_prompt}</p>
+      </section>
+    </div>
+  );
+}
+
 function buildDebriefingDraft(
   session: SessionResponse,
   messages: TranscriptMessageResponse[],
   events: TimelineEventResponse[],
+  report: FinalDebriefReport | null,
 ): string {
   const transcriptLines =
     messages.length > 0
@@ -299,10 +353,17 @@ function buildDebriefingDraft(
         )
       : ["- No timeline events recorded."];
 
+  const guideLines = report
+    ? buildGoodJudgmentGuideLines(report.good_judgment_debrief_guide)
+    : [
+        "Debriefing With Good Judgment Guide",
+        "- Report guide was not available at download time.",
+      ];
+
   return [
     "AI Patient Voice - Debriefing Draft",
     "",
-    "Note: This is a basic export placeholder. The selected debriefing algorithm will be added later.",
+    "Note: This guide supports faculty-led reflection and does not replace instructor judgment.",
     "",
     "Session",
     `- Session ID: ${session.session_id}`,
@@ -317,9 +378,49 @@ function buildDebriefingDraft(
     "Event Timeline",
     ...eventLines,
     "",
-    "Debriefing Algorithm",
-    "- Pending instructor-selected algorithm.",
+    ...guideLines,
   ].join("\n");
+}
+
+function buildGoodJudgmentGuideLines(
+  guide: GoodJudgmentDebriefGuide,
+): string[] {
+  const expectedActionLines = guide.expected_action_findings.flatMap((finding) => [
+    `- ${finding.label}: ${formatFindingStatus(finding.status)}`,
+    `  Learning focus: ${finding.learning_focus}`,
+    ...(finding.matched_evidence.length > 0
+      ? finding.matched_evidence.map((evidence) => `  Evidence: ${evidence}`)
+      : ["  Evidence: No matching transcript evidence detected."]
+    ),
+  ]);
+
+  const momentLines =
+    guide.debrief_moments.length > 0
+      ? guide.debrief_moments.flatMap((moment) => [
+          `- ${moment.title}`,
+          `  Advocacy: ${moment.advocacy_statement}`,
+          `  Inquiry: ${moment.inquiry_question}`,
+          `  Learning focus: ${moment.learning_focus}`,
+          ...moment.evidence.map((evidence) => `  Evidence: ${evidence}`),
+        ])
+      : ["- No critical debrief moments detected."];
+
+  return [
+    "Debriefing With Good Judgment Guide",
+    guide.faculty_reminder,
+    "",
+    "Opening Prompt",
+    guide.opening_prompt,
+    "",
+    "Expected Actions",
+    ...expectedActionLines,
+    "",
+    "Advocacy-Inquiry Moments",
+    ...momentLines,
+    "",
+    "Closing Prompt",
+    guide.closing_prompt,
+  ];
 }
 
 function formatTimelineVitals(event: TimelineEventResponse) {
@@ -369,4 +470,16 @@ function formatLabel(value: string): string {
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function formatFindingStatus(status: string): string {
+  if (status === "observed") {
+    return "Observed";
+  }
+
+  if (status === "not_observed") {
+    return "Not observed";
+  }
+
+  return "Faculty review";
 }

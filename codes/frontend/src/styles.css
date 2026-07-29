@@ -2283,12 +2283,21 @@ h1 {
   padding-top: 14px;
 }
 
-.debrief-placeholder {
+.debrief-placeholder,
+.debrief-faculty-reminder {
   color: #435166;
   font-size: 0.8rem;
   font-weight: 800;
   line-height: 1.35;
   margin: 0 0 10px;
+}
+
+.debrief-faculty-reminder {
+  background: #eef5ff;
+  border: 1px solid #c8dcff;
+  border-radius: 8px;
+  color: #244f8f;
+  padding: 10px;
 }
 
 .debrief-summary-list {
@@ -2334,6 +2343,103 @@ h1 {
 
 .debrief-preview-list li {
   overflow-wrap: anywhere;
+}
+
+.expected-action-list,
+.debrief-moment-list {
+  display: grid;
+  gap: 9px;
+}
+
+.expected-action-item,
+.debrief-moment-card {
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+}
+
+.expected-action-observed {
+  background: #edf7f3;
+  border-color: #c7e1d7;
+}
+
+.expected-action-not_observed {
+  background: #fff7e6;
+  border-color: #efd08a;
+}
+
+.expected-action-faculty_review {
+  background: #f3f6fb;
+}
+
+.expected-action-heading {
+  align-items: start;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.expected-action-heading strong,
+.debrief-moment-card h4 {
+  color: #18212f;
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.expected-action-heading span {
+  background: #ffffff;
+  border: 1px solid #dbe2ea;
+  border-radius: 999px;
+  color: #435166;
+  flex: 0 0 auto;
+  font-size: 0.66rem;
+  font-weight: 900;
+  padding: 3px 7px;
+}
+
+.expected-action-item p,
+.debrief-moment-block p {
+  color: #435166;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.expected-action-item ul,
+.debrief-moment-block ul {
+  color: #435166;
+  display: grid;
+  font-size: 0.75rem;
+  font-weight: 700;
+  gap: 5px;
+  line-height: 1.35;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.debrief-moment-card h4 {
+  font-size: 0.86rem;
+  margin: 0;
+}
+
+.debrief-moment-block {
+  background: #f7f8fb;
+  border: 1px solid #dbe2ea;
+  border-radius: 6px;
+  display: grid;
+  gap: 5px;
+  padding: 8px;
+}
+
+.debrief-moment-block strong {
+  color: #00606d;
+  font-size: 0.7rem;
+  font-weight: 900;
 }
 
 .sr-only {

@@ -122,6 +122,33 @@ export type ReportChecklistItem = {
   review_status: string;
 };
 
+export type ExpectedActionFinding = {
+  action_id: string;
+  label: string;
+  status: "observed" | "not_observed" | "faculty_review";
+  matched_evidence: string[];
+  learning_focus: string;
+};
+
+export type DebriefMoment = {
+  moment_id: string;
+  title: string;
+  evidence: string[];
+  why_it_matters: string;
+  advocacy_statement: string;
+  inquiry_question: string;
+  learning_focus: string;
+};
+
+export type GoodJudgmentDebriefGuide = {
+  framework: "debriefing_with_good_judgment";
+  faculty_reminder: string;
+  opening_prompt: string;
+  expected_action_findings: ExpectedActionFinding[];
+  debrief_moments: DebriefMoment[];
+  closing_prompt: string;
+};
+
 export type FinalDebriefReport = {
   report_title: string;
   report_length_target: string;
@@ -135,6 +162,7 @@ export type FinalDebriefReport = {
   assessment_checklist: ReportChecklistItem[];
   communication_observations: string[];
   suggested_debrief_prompts: string[];
+  good_judgment_debrief_guide: GoodJudgmentDebriefGuide;
   instructor_notes_placeholder: string;
 };
 

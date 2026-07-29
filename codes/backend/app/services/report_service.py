@@ -11,6 +11,7 @@ from app.schemas.report import (
     ReportTimelineEntry,
     ReportTranscriptEntry,
 )
+from app.services.debrief_service import build_good_judgment_debrief_guide
 from app.services.scenario_loader import load_copd_sob_scenario
 from app.services.session_service import SessionNotFoundError, get_session_by_id
 from app.services.timeline_service import list_timeline_events
@@ -67,6 +68,11 @@ def build_final_debrief_report(
             timeline_events,
         ),
         suggested_debrief_prompts=_build_debrief_prompts(),
+        good_judgment_debrief_guide=build_good_judgment_debrief_guide(
+            scenario,
+            transcript_messages,
+            timeline_events,
+        ),
         instructor_notes_placeholder=INSTRUCTOR_NOTES_PLACEHOLDER,
     )
 
