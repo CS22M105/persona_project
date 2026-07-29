@@ -170,6 +170,58 @@ persona page route dynamic so /personas/{scenario_id} can render any selected
 scenario instead of only COPD/SOB.
 ```
 
+### 2026-07-29 - MP-7: Voice Room Uses Active Scenario Cues
+
+What changed:
+
+```text
+Updated the Voice Room so instructor cue buttons are loaded from the active
+scenario instead of a hard-coded COPD/SOB frontend array.
+```
+
+Why:
+
+```text
+Each persona needs its own instructor controls. The Voice Room should render
+whatever instructor_cues are defined by the active scenario JSON so future
+personas such as Chest Pain do not require custom Voice Room code.
+```
+
+How:
+
+```text
+Voice Room now:
+- reads the active scenario_id from patient state
+- loads scenario details with getScenario(scenario_id)
+- renders currentScenario.instructor_cues
+- uses each cue's state_updates for optimistic UI state changes
+- keeps the existing backend cue endpoint and state-manager behavior
+- derives a visual control icon from cue_id/label
+- displays the active scenario name in the Voice Room title
+- links back to /personas/{scenario_id}
+```
+
+Where:
+
+```text
+codes/frontend/src/pages/VoiceRoom.tsx
+```
+
+Compatibility:
+
+```text
+COPD/SOB still works because its cues are already in copd_sob.json.
+Chest Pain cues will appear automatically after the Chest Pain scenario is
+registered and selected as the active state scenario.
+```
+
+Current behavior:
+
+```text
+The Voice Room is now scenario-cue driven. It still expects the backend active
+state to identify the active scenario.
+```
+
 ### 2026-07-29 - MP-6: Scenario-Aware Patient State Manager
 
 What changed:

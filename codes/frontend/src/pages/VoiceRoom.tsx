@@ -24,6 +24,7 @@ import {
   saveVoiceTranscriptMessage,
   VoiceInstructionsResponse,
 } from "../api/voice";
+import { getScenario, ScenarioDetail } from "../api/scenarios";
 import { Chat, ChatMessage } from "./Chat";
 
 
@@ -84,88 +85,6 @@ type ControlIconName =
   | "tone"
   | "trendUp";
 
-const cueButtons: {
-  cueId: string;
-  icon: ControlIconName;
-  label: string;
-  stateUpdates: Record<string, unknown>;
-}[] = [
-  {
-    cueId: "spo2_dropped",
-    label: "SpO2 dropped",
-    icon: "oxygen",
-    stateUpdates: {
-      vitals: { spo2: 88 },
-      symptoms: { breathing_effort: "severe" },
-      emotion: { anxiety: "high" },
-      voice_behavior: {
-        speech_pattern: "very short phrases",
-        tone: "more anxious and breathless",
-      },
-    },
-  },
-  {
-    cueId: "hr_increased",
-    label: "HR increased",
-    icon: "heart",
-    stateUpdates: {
-      vitals: { heart_rate: 128 },
-      emotion: { anxiety: "high" },
-    },
-  },
-  {
-    cueId: "breathing_worsened",
-    label: "Breathing worsened",
-    icon: "air",
-    stateUpdates: {
-      stage: "worsening",
-      symptoms: {
-        breathing_effort: "severe",
-        chest_tightness: "moderate",
-      },
-      voice_behavior: {
-        speech_pattern: "very short phrases",
-        tone: "fearful and breathless",
-      },
-    },
-  },
-  {
-    cueId: "oxygen_applied",
-    label: "Oxygen applied",
-    icon: "activity",
-    stateUpdates: {
-      interventions: { oxygen_applied: true },
-    },
-  },
-  {
-    cueId: "bronchodilator_given",
-    label: "Bronchodilator given",
-    icon: "therapy",
-    stateUpdates: {
-      interventions: { bronchodilator_given: true },
-    },
-  },
-  {
-    cueId: "patient_improving",
-    label: "Patient improving",
-    icon: "trendUp",
-    stateUpdates: {
-      stage: "partial_improvement",
-      vitals: {
-        heart_rate: 104,
-        spo2: 93,
-        respiratory_rate: 22,
-      },
-      symptoms: { breathing_effort: "mild" },
-      emotion: { anxiety: "mild" },
-      voice_behavior: {
-        speech_pattern: "short but more comfortable phrases",
-        tone: "calmer",
-      },
-    },
-  },
-];
-
 const allStateMetricKeys = [
   "status",
   "stage",
@@ -189,6 +108,7 @@ export function VoiceRoom() {
     "scenario_id",
   );
   const [patientState, setPatientState] = useState<PatientState | null>(null);
+  const [currentScenario, setCurrentScenario] = useState<ScenarioDetail | null>(null);
   const [voiceSession, setVoiceSession] = useState<PublicRealtimeSession | null>(null);
   const [status, setStatus] = useState<VoiceConnectionStatus>("loading_state");
   const [isMuted, setIsMuted] = useState(false);
@@ -252,6 +172,7 @@ export function VoiceRoom() {
     try {
       const response = await getPatientState(options.scenarioId);
       setPatientState(response.state);
+      await loadScenarioForState(response.state.scenario_id);
       setStatus((currentStatus) =>
         currentStatus === "loading_state" ? "idle" : currentStatus,
       );
@@ -263,6 +184,15 @@ export function VoiceRoom() {
       setStatus("error");
       setErrorMessage("Patient state failed to load. Make sure the backend is running.");
     }
+  }
+
+  async function loadScenarioForState(scenarioId: string) {
+    if (currentScenario?.scenario_id === scenarioId) {
+      return;
+    }
+
+    const scenario = await getScenario(scenarioId);
+    setCurrentScenario(scenario);
   }
 
   async function refreshTextConversation() {
@@ -507,14 +437,17 @@ export function VoiceRoom() {
   }
 
   async function handleCueClick(cueId: string) {
-    const cue = cueButtons.find((button) => button.cueId === cueId);
+    const cue = currentScenario?.instructor_cues.find(
+      (scenarioCue) => scenarioCue.cue_id === cueId,
+    );
+    const stateUpdates = cue?.state_updates ?? {};
 
     setActiveInstructorAction(cueId);
     setErrorMessage("");
-    showChangedStateHighlights(cue ? getChangedStateKeys(cue.stateUpdates) : []);
+    showChangedStateHighlights(getChangedStateKeys(stateUpdates));
     setPatientState((currentState) =>
       currentState && cue
-        ? applyOptimisticStateUpdates(currentState, cue.stateUpdates)
+        ? applyOptimisticStateUpdates(currentState, stateUpdates)
         : currentState,
     );
 
@@ -878,6 +811,10 @@ export function VoiceRoom() {
   const aiIsPaused = Boolean(patientState?.safety.ai_paused);
   const takeoverIsActive = Boolean(patientState?.safety.instructor_takeover);
   const statusLabel = formatStatus(status);
+  const activeScenarioId = patientState?.scenario_id ?? requestedScenarioId ?? "copd-sob";
+  const activeScenarioName =
+    currentScenario?.scenario_name ?? formatScenarioName(activeScenarioId);
+  const instructorCues = currentScenario?.instructor_cues ?? [];
 
   return (
     <main className="app-shell voice-shell">
@@ -885,13 +822,13 @@ export function VoiceRoom() {
         <nav className="voice-nav" aria-label="Voice room navigation">
           <div className="voice-nav-brand">
             <p className="eyebrow">Student voice room</p>
-            <h1 id="voice-title">AI Patient Voice: COPD/SOB</h1>
+            <h1 id="voice-title">AI Patient Voice: {activeScenarioName}</h1>
           </div>
           <div className="voice-nav-actions">
             <a className="header-link" href="/">
               Dashboard
             </a>
-            <a className="header-link" href="/personas/copd-sob">
+            <a className="header-link" href={`/personas/${activeScenarioId}`}>
               Persona page
             </a>
             <a className="header-link" href="/debrief">
@@ -1047,17 +984,22 @@ export function VoiceRoom() {
               </button>
             </div>
             <div className="instructor-control-grid">
-              {cueButtons.map((cue) => (
+              {instructorCues.map((cue) => (
                 <ControlTile
-                  disabled={activeInstructorAction === cue.cueId}
-                  isLoading={activeInstructorAction === cue.cueId}
-                  key={cue.cueId}
+                  disabled={activeInstructorAction === cue.cue_id}
+                  icon={getCueIcon(cue.cue_id, cue.label)}
+                  isLoading={activeInstructorAction === cue.cue_id}
+                  key={cue.cue_id}
                   label={cue.label}
-                  onClick={() => handleCueClick(cue.cueId)}
-                  icon={cue.icon}
+                  onClick={() => handleCueClick(cue.cue_id)}
                 />
               ))}
             </div>
+            {instructorCues.length === 0 ? (
+              <p className="dashboard-note">
+                Scenario cues have not loaded yet.
+              </p>
+            ) : null}
             <div className="voice-session-status-block">
               <h3>Voice Session Status</h3>
               <p className="voice-session-guidance">
@@ -1591,6 +1533,53 @@ function formatStatus(status: VoiceConnectionStatus): string {
   };
 
   return labels[status];
+}
+
+
+function getCueIcon(cueId: string, label: string): ControlIconName {
+  const cueText = `${cueId} ${label}`.toLowerCase();
+
+  if (cueText.includes("spo2") || cueText.includes("oxygen")) {
+    return "oxygen";
+  }
+
+  if (cueText.includes("heart") || cueText.includes("hr")) {
+    return "heart";
+  }
+
+  if (cueText.includes("breath") || cueText.includes("respiratory")) {
+    return "air";
+  }
+
+  if (cueText.includes("bronchodilator") || cueText.includes("medication")) {
+    return "therapy";
+  }
+
+  if (cueText.includes("chest") || cueText.includes("pain")) {
+    return "chest";
+  }
+
+  if (cueText.includes("blood pressure") || cueText.includes("bp")) {
+    return "pressure";
+  }
+
+  if (cueText.includes("anxious") || cueText.includes("anxiety")) {
+    return "anxiety";
+  }
+
+  if (cueText.includes("improv")) {
+    return "trendUp";
+  }
+
+  return "activity";
+}
+
+
+function formatScenarioName(scenarioId: string): string {
+  return scenarioId
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 
