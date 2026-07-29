@@ -4,6 +4,41 @@ Date: July 15, 2026
 
 ## Implementation Tracking
 
+### 2026-07-29 - Persona Page Navigation Button Style Alignment
+
+What changed:
+
+```text
+Updated the persona page navigation buttons to match the compact navigation
+button style used on the voice room page.
+```
+
+Why:
+
+```text
+The persona page and voice room are part of the same multi-persona workflow.
+Using the same navigation button style makes the transition between pages feel
+consistent and product-like.
+```
+
+How:
+
+```text
+Changed the "Start Voice Room" link to use the shared header-link navigation
+class.
+Added persona-topbar-specific header-link styling that mirrors the voice room
+navigation button dimensions, font weight, padding, and hover behavior.
+Removed the older large persona-start-button styling from the active persona
+page navigation flow.
+```
+
+Where:
+
+```text
+codes/frontend/src/pages/PersonaPage.tsx
+codes/frontend/src/styles.css
+```
+
 ### 2026-07-29 - MP-1: Scenario Registry And Generic Loader
 
 What changed:

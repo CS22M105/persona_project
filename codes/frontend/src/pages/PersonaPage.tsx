@@ -233,7 +233,7 @@ export function PersonaPage({ scenarioId }: PersonaPageProps) {
           </div>
           <div className="persona-topbar-actions">
             <a
-              className="persona-start-button persona-topbar-voice-link"
+              className="header-link persona-topbar-voice-link"
               href={`/voice?scenario_id=${scenario?.scenario_id ?? scenarioId}`}
             >
               Start Voice Room
