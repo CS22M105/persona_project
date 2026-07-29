@@ -1523,13 +1523,13 @@ function formatBoolean(value: boolean): string {
 
 function formatStatus(status: VoiceConnectionStatus): string {
   const labels: Record<VoiceConnectionStatus, string> = {
-    idle: "Not connected",
-    loading_state: "Loading state",
-    requesting_microphone: "Requesting microphone",
-    connecting: "Connecting",
-    ready: "Ready",
-    disconnected: "Disconnected",
-    error: "Needs attention",
+    idle: "AI not connected",
+    loading_state: "AI loading state",
+    requesting_microphone: "AI requesting microphone",
+    connecting: "AI connecting",
+    ready: "AI connected",
+    disconnected: "AI not connected",
+    error: "AI needs attention",
   };
 
   return labels[status];
