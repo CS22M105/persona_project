@@ -558,3 +558,42 @@ Current behavior:
 The Good Judgment guide is visible from the Transcripts, Timeline and Debriefing
 page for the current session.
 ```
+
+### 2026-07-29 - Debrief Export Format Options
+
+What changed:
+
+```text
+Added export format options for the debriefing guide.
+```
+
+Why:
+
+```text
+Faculty should not be limited to downloading only a .txt file. Different use
+cases need different formats:
+- Markdown for editable debrief notes
+- Text for simple sharing
+- JSON for structured records or future integrations
+```
+
+How:
+
+```text
+The Debrief page now has a format selector next to the Download button.
+The export builder creates the correct file content, file name, extension, and
+MIME type based on the selected format.
+```
+
+Where:
+
+```text
+codes/frontend/src/pages/DebriefPage.tsx
+codes/frontend/src/styles.css
+```
+
+Current behavior:
+
+```text
+The instructor can download the debriefing guide as .md, .txt, or .json.
+```

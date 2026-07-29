@@ -12,11 +12,14 @@ import {
   TranscriptMessageResponse,
 } from "../api/sessions";
 
+type DebriefExportFormat = "txt" | "md" | "json";
+
 export function DebriefPage() {
   const [session, setSession] = useState<SessionResponse | null>(null);
   const [messages, setMessages] = useState<TranscriptMessageResponse[]>([]);
   const [events, setEvents] = useState<TimelineEventResponse[]>([]);
   const [report, setReport] = useState<FinalDebriefReport | null>(null);
+  const [exportFormat, setExportFormat] = useState<DebriefExportFormat>("md");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -61,12 +64,20 @@ export function DebriefPage() {
       return;
     }
 
-    const draftText = buildDebriefingDraft(session, messages, events, report);
-    const fileBlob = new Blob([draftText], { type: "text/plain;charset=utf-8" });
+    const exportFile = buildDebriefingExport(
+      session,
+      messages,
+      events,
+      report,
+      exportFormat,
+    );
+    const fileBlob = new Blob([exportFile.content], {
+      type: `${exportFile.mimeType};charset=utf-8`,
+    });
     const downloadUrl = URL.createObjectURL(fileBlob);
     const downloadLink = document.createElement("a");
     downloadLink.href = downloadUrl;
-    downloadLink.download = `debriefing-draft-${session.session_id}.txt`;
+    downloadLink.download = exportFile.fileName;
     document.body.appendChild(downloadLink);
     downloadLink.click();
     downloadLink.remove();
@@ -206,14 +217,28 @@ export function DebriefPage() {
                       Debriefing With Good Judgment Guide
                     </h2>
                   </div>
-                  <button
-                    className="transcript-download-button"
-                    disabled={messages.length === 0 && events.length === 0}
-                    onClick={handleDownloadDebriefingDraft}
-                    type="button"
-                  >
-                    Download
-                  </button>
+                  <div className="debrief-export-controls">
+                    <label htmlFor="debrief-export-format">Format</label>
+                    <select
+                      id="debrief-export-format"
+                      onChange={(event) =>
+                        setExportFormat(event.target.value as DebriefExportFormat)
+                      }
+                      value={exportFormat}
+                    >
+                      <option value="md">Markdown</option>
+                      <option value="txt">Text</option>
+                      <option value="json">JSON</option>
+                    </select>
+                    <button
+                      className="transcript-download-button"
+                      disabled={messages.length === 0 && events.length === 0}
+                      onClick={handleDownloadDebriefingDraft}
+                      type="button"
+                    >
+                      Download
+                    </button>
+                  </div>
                 </div>
                 {report ? (
                   <GoodJudgmentGuideView
@@ -331,7 +356,51 @@ function GoodJudgmentGuideView({
   );
 }
 
-function buildDebriefingDraft(
+function buildDebriefingExport(
+  session: SessionResponse,
+  messages: TranscriptMessageResponse[],
+  events: TimelineEventResponse[],
+  report: FinalDebriefReport | null,
+  format: DebriefExportFormat,
+) {
+  const baseFileName = `debriefing-guide-${session.session_id}`;
+
+  if (format === "json") {
+    return {
+      content: JSON.stringify(
+        {
+          exported_at: new Date().toISOString(),
+          session,
+          transcript_messages: messages,
+          timeline_events: events,
+          final_report: report,
+          good_judgment_debrief_guide:
+            report?.good_judgment_debrief_guide ?? null,
+        },
+        null,
+        2,
+      ),
+      fileName: `${baseFileName}.json`,
+      mimeType: "application/json",
+    };
+  }
+
+  if (format === "md") {
+    return {
+      content: buildDebriefingMarkdown(session, messages, events, report),
+      fileName: `${baseFileName}.md`,
+      mimeType: "text/markdown",
+    };
+  }
+
+  return {
+    content: buildDebriefingText(session, messages, events, report),
+    fileName: `${baseFileName}.txt`,
+    mimeType: "text/plain",
+  };
+}
+
+function buildDebriefingText(
   session: SessionResponse,
   messages: TranscriptMessageResponse[],
   events: TimelineEventResponse[],
@@ -382,6 +451,63 @@ function buildDebriefingDraft(
   ].join("\n");
 }
 
+function buildDebriefingMarkdown(
+  session: SessionResponse,
+  messages: TranscriptMessageResponse[],
+  events: TimelineEventResponse[],
+  report: FinalDebriefReport | null,
+): string {
+  const transcriptLines =
+    messages.length > 0
+      ? messages.map(
+          (message) =>
+            `- **${formatTime(message.timestamp)} | ${formatLabel(message.speaker)}:** ${message.text}`,
+        )
+      : ["- No transcript messages recorded."];
+
+  const eventLines =
+    events.length > 0
+      ? events.map(
+          (event) =>
+            `- **${formatTime(event.timestamp)}:** ${event.label ?? formatLabel(event.event_type)}`,
+        )
+      : ["- No timeline events recorded."];
+
+  const guideLines = report
+    ? buildGoodJudgmentGuideMarkdownLines(report.good_judgment_debrief_guide)
+    : [
+        "## Debriefing With Good Judgment Guide",
+        "",
+        "- Report guide was not available at download time.",
+      ];
+
+  return [
+    "# AI Patient Voice - Debriefing Guide",
+    "",
+    "> This guide supports faculty-led reflection and does not replace instructor judgment.",
+    "",
+    "## Session",
+    "",
+    `- **Session ID:** ${session.session_id}`,
+    `- **Scenario ID:** ${session.scenario_id}`,
+    `- **Status:** ${session.status}`,
+    `- **Started:** ${formatDateTime(session.started_at)}`,
+    session.ended_at
+      ? `- **Ended:** ${formatDateTime(session.ended_at)}`
+      : "- **Ended:** Not ended",
+    "",
+    "## Transcript",
+    "",
+    ...transcriptLines,
+    "",
+    "## Event Timeline",
+    "",
+    ...eventLines,
+    "",
+    ...guideLines,
+  ].join("\n");
+}
+
 function buildGoodJudgmentGuideLines(
   guide: GoodJudgmentDebriefGuide,
 ): string[] {
@@ -419,6 +545,55 @@ function buildGoodJudgmentGuideLines(
     ...momentLines,
     "",
     "Closing Prompt",
+    guide.closing_prompt,
+  ];
+}
+
+function buildGoodJudgmentGuideMarkdownLines(
+  guide: GoodJudgmentDebriefGuide,
+): string[] {
+  const expectedActionLines = guide.expected_action_findings.flatMap((finding) => [
+    `### ${finding.label}`,
+    "",
+    `- **Status:** ${formatFindingStatus(finding.status)}`,
+    `- **Learning focus:** ${finding.learning_focus}`,
+    ...(finding.matched_evidence.length > 0
+      ? finding.matched_evidence.map((evidence) => `- **Evidence:** ${evidence}`)
+      : ["- **Evidence:** No matching transcript evidence detected."]
+    ),
+    "",
+  ]);
+
+  const momentLines =
+    guide.debrief_moments.length > 0
+      ? guide.debrief_moments.flatMap((moment) => [
+          `### ${moment.title}`,
+          "",
+          `- **Advocacy:** ${moment.advocacy_statement}`,
+          `- **Inquiry:** ${moment.inquiry_question}`,
+          `- **Learning focus:** ${moment.learning_focus}`,
+          ...moment.evidence.map((evidence) => `- **Evidence:** ${evidence}`),
+          "",
+        ])
+      : ["- No critical debrief moments detected.", ""];
+
+  return [
+    "## Debriefing With Good Judgment Guide",
+    "",
+    `> ${guide.faculty_reminder}`,
+    "",
+    "### Opening Prompt",
+    "",
+    guide.opening_prompt,
+    "",
+    "## Expected Actions",
+    "",
+    ...expectedActionLines,
+    "## Advocacy-Inquiry Moments",
+    "",
+    ...momentLines,
+    "## Closing Prompt",
+    "",
     guide.closing_prompt,
   ];
 }

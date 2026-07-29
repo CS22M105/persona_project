@@ -2299,6 +2299,36 @@ h1 {
   cursor: not-allowed;
 }
 
+.debrief-export-controls {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.debrief-export-controls label {
+  color: #667085;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.debrief-export-controls select {
+  background: #ffffff;
+  border: 1px solid #c8d2dc;
+  border-radius: 6px;
+  color: #18212f;
+  font-size: 0.78rem;
+  font-weight: 900;
+  min-height: 32px;
+  padding: 5px 8px;
+}
+
+.debrief-export-controls select:focus {
+  border-color: #006f7b;
+  outline: 3px solid #d9f3f0;
+}
+
 .debrief-scroll-area {
   flex: 1 1 auto;
   min-height: 0;
