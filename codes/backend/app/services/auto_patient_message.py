@@ -26,7 +26,7 @@ def build_auto_patient_message_result(
     patient_state: PatientState,
 ) -> AutoPatientMessageResult:
     cue_label = _find_cue_label(cue_id, scenario)
-    reaction_text = _build_deterministic_cue_reaction(cue_id, patient_state)
+    reaction_text = _build_deterministic_cue_reaction(cue_id, scenario, patient_state)
 
     return AutoPatientMessageResult(
         message=AutoPatientMessage(
@@ -41,8 +41,17 @@ def build_auto_patient_message_result(
 
 def _build_deterministic_cue_reaction(
     cue_id: str,
+    scenario: dict[str, Any],
     patient_state: PatientState,
 ) -> str:
+    scenario_reactions = scenario.get("auto_patient_reactions", {})
+
+    if isinstance(scenario_reactions, dict):
+        scenario_reaction = scenario_reactions.get(cue_id)
+
+        if isinstance(scenario_reaction, str) and scenario_reaction.strip():
+            return scenario_reaction.strip()
+
     reactions = {
         "spo2_dropped": "I feel like I am getting less air. It is harder to breathe.",
         "hr_increased": "My heart feels like it is racing, and I feel more nervous.",

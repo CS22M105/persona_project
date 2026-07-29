@@ -287,6 +287,68 @@ Next step:
 MP-9: Add Chest Pain scenario JSON and register it.
 ```
 
+### 2026-07-29 - MP-9: Add Chest Pain Scenario JSON And Register It
+
+What changed:
+
+```text
+Added Chest Pain / Suspected Cardiac Event as the second registered persona.
+```
+
+Why:
+
+```text
+The system needs a second persona to prove that the scenario registry, dashboard,
+voice room cues, reports, and Good Judgment debriefing can work beyond COPD/SOB.
+```
+
+How:
+
+```text
+Added a new chest_pain.json scenario with:
+- scenario metadata and dashboard card_summary
+- patient profile
+- chief complaint
+- cardiac-focused learning objectives
+- initial state that fits the current PatientState schema
+- allowed patient disclosures
+- hidden information rules
+- instructor cues
+- scenario-specific auto patient reactions
+- safety rules
+- assessment checklist
+- Debriefing with Good Judgment debrief_config
+
+Registered chest-pain in SCENARIO_REGISTRY.
+Updated auto patient reactions so scenarios can define cue-specific immediate
+patient responses through auto_patient_reactions.
+```
+
+Where:
+
+```text
+codes/backend/app/scenarios/chest_pain.json
+codes/backend/app/services/scenario_loader.py
+codes/backend/app/services/auto_patient_message.py
+```
+
+Compatibility:
+
+```text
+COPD/SOB still works. The auto reaction service still uses its existing fallback
+messages when a scenario does not define auto_patient_reactions.
+```
+
+Current behavior:
+
+```text
+GET /scenarios should now return copd-sob and chest-pain.
+Chest Pain is registered and available for dashboard rendering.
+Some deeper state fields are still limited by the current shared PatientState
+schema, so richer cardiac-specific fields can be added in a later state-schema
+refactor.
+```
+
 ### 2026-07-29 - MP-6: Scenario-Aware Patient State Manager
 
 What changed:

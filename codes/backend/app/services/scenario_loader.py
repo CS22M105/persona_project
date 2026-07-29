@@ -23,6 +23,10 @@ SCENARIO_REGISTRY: dict[str, ScenarioRegistryEntry] = {
         "file_name": "copd_sob.json",
         "settings_applier": apply_persona_settings,
     },
+    "chest-pain": {
+        "file_name": "chest_pain.json",
+        "settings_applier": apply_persona_settings,
+    },
 }
 
 
